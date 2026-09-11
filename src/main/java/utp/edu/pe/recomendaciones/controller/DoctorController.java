@@ -1,4 +1,4 @@
-package utp.edu.pe.recomendacion_citas.controller;
+package utp.edu.pe.recomendaciones.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
