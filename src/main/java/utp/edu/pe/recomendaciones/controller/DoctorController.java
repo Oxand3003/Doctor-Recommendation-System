@@ -35,14 +35,24 @@ public class DoctorController {
   @Operation(summary = "Obtiene un medico por su id")
   @GetMapping("/{id}")
   public ResponseEntity<Doctor> obtenerPorId(@PathVariable Long id) {
+    if (id == null || id <= 0) {
+      throw new IllegalArgumentException("El id debe ser mayor a cero.");
+    }
     return ResponseEntity.ok(doctorService.buscarPorId(id));
   }
 
   @Operation(summary = "Recomienda medicos por especialidad ordenados por puntaje")
   @GetMapping("/recomendar")
   public ResponseEntity<List<RecomendacionDTO>> recomendar(
-      @RequestParam String especialidad,
-      @RequestParam(defaultValue = "5") int limite) {
+      @RequestParam(name = "especialidad") String especialidad,
+      @RequestParam(name = "limite", defaultValue = "5") int limite) {
+
+    if (especialidad == null || especialidad.isBlank()) {
+      throw new IllegalArgumentException("La especialidad no puede estar vacia.");
+    }
+    if (limite <= 0) {
+      throw new IllegalArgumentException("El limite debe ser mayor a cero.");
+    }
 
     List<RecomendacionDTO> recomendados = recomendacionService.recomendarPorEspecialidad(especialidad, limite);
     return ResponseEntity.ok(recomendados);
