@@ -1,4 +1,4 @@
-package utp.edu.pe.recomendacion_citas;
+package utp.edu.pe.recomendaciones;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
