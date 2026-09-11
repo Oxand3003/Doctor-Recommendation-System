@@ -1,33 +1,247 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Doctor Recommendation System</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header>
-      <h1>Doctor Recommendation System</h1>
-      <p>Encuentra al médico ideal según especialidad, rating y experiencia.</p>
-    </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCerca — Encuentra al doctor indicado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F9F8;
+    --surface:#FFFFFF;
+    --mint:#E4F0EB;
+    --ink:#132B27;
+    --muted:#5C726C;
+    --primary:#0E6B5C;
+    --primary-dark:#0A4E43;
+    --accent:#F4A259;
+    --line:#DDE7E3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:500;line-height:1.15;letter-spacing:-.01em}
+  a{text-decoration:none;color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 
-    <section id="beneficios">
-      <h2>¿Cómo funciona?</h2>
-      <ul>
-        <li>Elige la especialidad que necesitas.</li>
-        <li>El sistema ordena a los médicos disponibles por rating y años de experiencia.</li>
-        <li>Ves el establecimiento y los datos de contacto del médico recomendado.</li>
-      </ul>
-    </section>
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;background:rgba(247,249,248,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces';font-size:1.4rem;font-weight:600;color:var(--ink)}
+  .logo-mark{width:34px;height:34px;border-radius:10px;background:var(--primary);display:grid;place-items:center;color:#fff;font-size:1.1rem}
+  .nav-links{display:flex;align-items:center;gap:32px}
+  .nav-links a{color:var(--muted);font-size:.95rem;font-weight:500;transition:color .15s}
+  .nav-links a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:.95rem;border-radius:12px;padding:11px 20px;cursor:pointer;border:none;transition:transform .12s,box-shadow .15s,background .15s}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 
-    <section id="acceso">
-      <h2>¿Listo para encontrar a tu médico?</h2>
-      <a href="/buscar" class="btn-principal">Buscar médicos recomendados</a>
-    </section>
+  /* HERO */
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:72px 0 64px}
+  .tag{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--primary-dark);font-size:.85rem;font-weight:600;padding:7px 14px;border-radius:100px;margin-bottom:22px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}
+  .hero h1{font-size:clamp(2.4rem,5vw,3.6rem)}
+  .hero p.lead{color:var(--muted);font-size:1.15rem;margin:20px 0 30px;max-width:44ch}
 
-    <footer>
-      <p>Doctor Recommendation System · Conectando pacientes con el médico adecuado.</p>
-    </footer>
-  </body>
+  /* SEARCH */
+  .search{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;gap:8px;box-shadow:0 12px 40px -20px rgba(14,107,92,.35)}
+  .field{flex:1;display:flex;align-items:center;gap:10px;padding:8px 14px}
+  .field svg{flex-shrink:0;color:var(--primary)}
+  .field input{border:none;outline:none;font-family:inherit;font-size:1rem;width:100%;color:var(--ink);background:transparent}
+  .field input::placeholder{color:#9AAAA4}
+  .field.split{border-left:1px solid var(--line)}
+  .search .btn{border-radius:12px;padding:12px 22px}
+  @media(max-width:560px){.search{flex-direction:column}.field.split{border-left:none;border-top:1px solid var(--line)}}
+
+  .stats{display:flex;gap:34px;margin-top:34px}
+  .stat b{font-family:'Fraunces';font-size:1.6rem;color:var(--ink);display:block}
+  .stat span{color:var(--muted);font-size:.9rem}
+
+  /* HERO CARD */
+  .hero-visual{position:relative}
+  .doc-card{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:0 24px 60px -30px rgba(19,43,39,.4)}
+  .doc-top{display:flex;align-items:center;gap:14px}
+  .avatar{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#0E6B5C,#149B84);display:grid;place-items:center;color:#fff;font-family:'Fraunces';font-size:1.5rem;font-weight:600}
+  .doc-top h3{font-size:1.15rem}
+  .doc-top .spec{color:var(--muted);font-size:.9rem}
+  .rating{margin-left:auto;background:var(--mint);color:var(--primary-dark);font-weight:600;font-size:.9rem;padding:5px 11px;border-radius:10px}
+  .doc-tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+  .doc-tags span{background:var(--bg);border:1px solid var(--line);color:var(--muted);font-size:.82rem;padding:5px 11px;border-radius:8px}
+  .doc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--line)}
+  .doc-foot .when{color:var(--muted);font-size:.88rem}
+  .float-badge{position:absolute;bottom:-18px;left:-18px;background:var(--accent);color:#5A2E00;font-weight:600;font-size:.85rem;padding:10px 16px;border-radius:14px;box-shadow:0 12px 30px -12px rgba(244,162,89,.7)}
+
+  /* SECTIONS */
+  section.block{padding:72px 0}
+  .head{text-align:center;max-width:600px;margin:0 auto 48px}
+  .head h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}
+  .head p{color:var(--muted);margin-top:14px;font-size:1.05rem}
+
+  /* SPECIALTIES */
+  .spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .spec-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;transition:transform .15s,border-color .15s;cursor:pointer}
+  .spec-card:hover{transform:translateY(-3px);border-color:var(--primary)}
+  .spec-ico{width:48px;height:48px;border-radius:13px;background:var(--mint);display:grid;place-items:center;font-size:1.5rem;margin-bottom:16px}
+  .spec-card h3{font-size:1.1rem;margin-bottom:4px}
+  .spec-card p{color:var(--muted);font-size:.88rem}
+
+  /* HOW */
+  .how{background:var(--primary);border-radius:28px;padding:60px 48px;color:#fff}
+  .how .head h2{color:#fff}
+  .how .head p{color:#BEE0D8}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:8px}
+  .step .num{font-family:'Fraunces';font-size:2.2rem;color:var(--accent);margin-bottom:10px}
+  .step h3{color:#fff;font-size:1.2rem;margin-bottom:8px}
+  .step p{color:#BEE0D8;font-size:.95rem}
+
+  /* CTA */
+  .cta{text-align:center;background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:64px 32px}
+  .cta h2{font-size:clamp(1.9rem,3.5vw,2.6rem)}
+  .cta p{color:var(--muted);margin:16px auto 28px;max-width:46ch}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--line);margin-top:72px;padding:40px 0}
+  .foot-in{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;color:var(--muted);font-size:.9rem}
+  .foot-in .logo{font-size:1.15rem}
+
+  @media(max-width:860px){
+    .hero{grid-template-columns:1fr;gap:40px;padding:48px 0}
+    .spec-grid{grid-template-columns:repeat(2,1fr)}
+    .steps{grid-template-columns:1fr;gap:28px}
+    .nav-links a:not(.btn){display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a href="#" class="logo"><span class="logo-mark">✚</span>MediCerca</a>
+    <div class="nav-links">
+      <a href="#especialidades">Especialidades</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="#">Para doctores</a>
+      <a href="#" class="btn btn-ghost">Iniciar sesión</a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <span class="tag"><span class="dot"></span> Recomendaciones basadas en pacientes reales</span>
+    <h1>Encuentra al doctor indicado, sin dar vueltas.</h1>
+    <p class="lead">Te recomendamos especialistas según tus síntomas, tu zona y las opiniones de pacientes como tú. Simple y confiable.</p>
+
+    <div class="search">
+      <label class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma">
+      </label>
+      <label class="field split">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input type="text" placeholder="Tu ciudad o distrito" aria-label="Ubicación">
+      </label>
+      <button class="btn btn-primary">Buscar</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b>+1,200</b><span>Doctores verificados</span></div>
+      <div class="stat"><b>32</b><span>Especialidades</span></div>
+      <div class="stat"><b>4.8★</b><span>Valoración media</span></div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="doc-card">
+      <div class="doc-top">
+        <div class="avatar">RM</div>
+        <div>
+          <h3>Dra. Rosa Medina</h3>
+          <div class="spec">Cardióloga</div>
+        </div>
+        <div class="rating">4.9 ★</div>
+      </div>
+      <div class="doc-tags">
+        <span>Disponible hoy</span>
+        <span>Habla quechua</span>
+        <span>15 años exp.</span>
+      </div>
+      <div class="doc-foot">
+        <div class="when">Próxima cita: <b style="color:var(--ink)">Mañana 9:00 am</b></div>
+        <button class="btn btn-primary" style="padding:9px 16px;font-size:.88rem">Reservar</button>
+      </div>
+    </div>
+    <div class="float-badge">98% recomiendan ✓</div>
+  </div>
+</header>
+
+<section class="block wrap" id="especialidades">
+  <div class="head">
+    <h2>Especialidades más buscadas</h2>
+    <p>Elige por dónde empezar. Te mostramos los mejores especialistas cerca de ti.</p>
+  </div>
+  <div class="spec-grid">
+    <div class="spec-card"><div class="spec-ico">🫀</div><h3>Cardiología</h3><p>Corazón y presión arterial</p></div>
+    <div class="spec-card"><div class="spec-ico">🦷</div><h3>Odontología</h3><p>Salud dental y ortodoncia</p></div>
+    <div class="spec-card"><div class="spec-ico">🧠</div><h3>Neurología</h3><p>Sistema nervioso</p></div>
+    <div class="spec-card"><div class="spec-ico">👶</div><h3>Pediatría</h3><p>Cuidado de los más pequeños</p></div>
+    <div class="spec-card"><div class="spec-ico">🩺</div><h3>Medicina general</h3><p>Chequeos y diagnóstico</p></div>
+    <div class="spec-card"><div class="spec-ico">👁️</div><h3>Oftalmología</h3><p>Salud visual</p></div>
+    <div class="spec-card"><div class="spec-ico">🦴</div><h3>Traumatología</h3><p>Huesos y articulaciones</p></div>
+    <div class="spec-card"><div class="spec-ico">🧴</div><h3>Dermatología</h3><p>Piel, cabello y uñas</p></div>
+  </div>
+</section>
+
+<section class="block wrap" id="como">
+  <div class="how">
+    <div class="head">
+      <h2>Cómo funciona</h2>
+      <p>De la búsqueda a la cita en tres pasos.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Cuéntanos qué necesitas</h3>
+        <p>Escribe tu síntoma o la especialidad y tu ubicación. Nosotros filtramos por ti.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Compara recomendaciones</h3>
+        <p>Mira valoraciones reales, experiencia y disponibilidad de cada doctor.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Reserva tu cita</h3>
+        <p>Agenda en línea el horario que te acomode. Recibes confirmación al instante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block wrap">
+  <div class="cta">
+    <h2>¿Listo para encontrar a tu doctor?</h2>
+    <p>Miles de pacientes ya reciben recomendaciones a su medida. Empieza gratis, sin complicaciones.</p>
+    <button class="btn btn-primary" style="padding:14px 28px;font-size:1.05rem">Buscar un doctor ahora</button>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <a href="#" class="logo"><span class="logo-mark">✚</span>MediCerca</a>
+    <div>© 2026 MediCerca · Encuentra salud de confianza cerca de ti.</div>
+  </div>
+</footer>
+
+</body>
 </html>
