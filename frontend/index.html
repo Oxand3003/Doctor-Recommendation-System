@@ -29,17 +29,18 @@
     <h1>Encuentra al doctor indicado, sin dar vueltas.</h1>
     <p class="lead">Te recomendamos especialistas según tus síntomas, tu zona y las opiniones de pacientes como tú. Simple y confiable.</p>
 
-    <div class="search">
+    <form class="search" id="search-form">
       <label class="field">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input type="text" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma">
+        <input id="specialty-input" type="text" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma" required>
       </label>
       <label class="field split">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-        <input type="text" placeholder="Tu ciudad o distrito" aria-label="Ubicación">
+        <input id="location-input" type="text" placeholder="Tu ciudad o distrito" aria-label="Ubicación">
       </label>
-      <button class="btn btn-primary">Buscar</button>
-    </div>
+      <button class="btn btn-primary" type="submit">Buscar</button>
+    </form>
+    <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
 
     <div class="stats">
       <div class="stat"><b>+1,200</b><span>Doctores verificados</span></div>
@@ -72,20 +73,28 @@
   </div>
 </header>
 
+<section class="block wrap results-section" id="resultados" aria-labelledby="results-title" hidden>
+  <div class="head">
+    <h2 id="results-title">Doctores recomendados</h2>
+    <p id="results-summary"></p>
+  </div>
+  <div class="results-grid" id="results-list"></div>
+</section>
+
 <section class="block wrap" id="especialidades">
   <div class="head">
     <h2>Especialidades más buscadas</h2>
     <p>Elige por dónde empezar. Te mostramos los mejores especialistas cerca de ti.</p>
   </div>
   <div class="spec-grid">
-    <div class="spec-card"><h3>Cardiología</h3><p>Corazón y presión arterial</p></div>
-    <div class="spec-card"><h3>Odontología</h3><p>Salud dental y ortodoncia</p></div>
-    <div class="spec-card"><h3>Neurología</h3><p>Sistema nervioso</p></div>
-    <div class="spec-card"><h3>Pediatría</h3><p>Cuidado de los más pequeños</p></div>
-    <div class="spec-card"><h3>Medicina general</h3><p>Chequeos y diagnóstico</p></div>
-    <div class="spec-card"><h3>Oftalmología</h3><p>Salud visual</p></div>
-    <div class="spec-card"><h3>Traumatología</h3><p>Huesos y articulaciones</p></div>
-    <div class="spec-card"><h3>Dermatología</h3><p>Piel, cabello y uñas</p></div>
+    <button class="spec-card" type="button" data-specialty="Cardiología"><h3>Cardiología</h3><p>Corazón y presión arterial</p></button>
+    <button class="spec-card" type="button" data-specialty="Odontología"><h3>Odontología</h3><p>Salud dental y ortodoncia</p></button>
+    <button class="spec-card" type="button" data-specialty="Neurología"><h3>Neurología</h3><p>Sistema nervioso</p></button>
+    <button class="spec-card" type="button" data-specialty="Pediatría"><h3>Pediatría</h3><p>Cuidado de los más pequeños</p></button>
+    <button class="spec-card" type="button" data-specialty="Medicina General"><h3>Medicina general</h3><p>Chequeos y diagnóstico</p></button>
+    <button class="spec-card" type="button" data-specialty="Oftalmología"><h3>Oftalmología</h3><p>Salud visual</p></button>
+    <button class="spec-card" type="button" data-specialty="Traumatología"><h3>Traumatología</h3><p>Huesos y articulaciones</p></button>
+    <button class="spec-card" type="button" data-specialty="Dermatología"><h3>Dermatología</h3><p>Piel, cabello y uñas</p></button>
   </div>
 </section>
 
@@ -119,7 +128,7 @@
   <div class="cta">
     <h2>¿Listo para encontrar a tu doctor?</h2>
     <p>Miles de pacientes ya reciben recomendaciones a su medida. Empieza gratis, sin complicaciones.</p>
-    <button class="btn btn-primary" style="padding:14px 28px;font-size:1.05rem">Buscar un doctor ahora</button>
+    <button class="btn btn-primary" id="cta-search" type="button" style="padding:14px 28px;font-size:1.05rem">Buscar un doctor ahora</button>
   </div>
 </section>
 
@@ -130,5 +139,6 @@
   </div>
 </footer>
 
+<script src="index.js"></script>
 </body>
 </html>
