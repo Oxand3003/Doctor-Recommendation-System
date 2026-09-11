@@ -24,7 +24,7 @@ public class DoctorService {
 
     public Doctor buscarPorId(Long id) {
         return doctorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException(
+                                .orElseThrow(() -> new DoctorNotFoundException(
                   "No existe un medico con id: " + id));
     }
 }
