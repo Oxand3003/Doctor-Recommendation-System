@@ -1,4 +1,4 @@
-package pe.edu.salud.recomendaciones.exception;
+package utp.edu.pe.recomendaciones.exception;
 
 
 
