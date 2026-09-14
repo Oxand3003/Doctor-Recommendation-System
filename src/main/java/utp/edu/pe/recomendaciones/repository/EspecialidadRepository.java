@@ -2,7 +2,7 @@ package utp.edu.pe.recomendaciones.repository;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import pe.edu.salud.recomendaciones.domain.Especialidad;
+import utp.edu.pe.recomendaciones.domain.Especialidad;
 
 /**
  * MODULO DE DOMINIO (Integrante 1)
