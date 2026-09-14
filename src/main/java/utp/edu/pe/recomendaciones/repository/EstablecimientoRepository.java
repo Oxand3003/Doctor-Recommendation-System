@@ -1,10 +1,10 @@
 package utp.edu.pe.recomendaciones.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
-import pe.edu.salud.recomendaciones.domain.EstablecimientoSalud;
+import utp.edu.pe.recomendaciones.domain.Establecimiento;
 
 /**
  * MODULO DE DOMINIO (Integrante 1)
- * Acceso a datos de EstablecimientoSalud.
+ * Acceso a datos de Establecimiento.
  */
-public interface EstablecimientoRepository extends JpaRepository<EstablecimientoSalud, Long> {
+public interface EstablecimientoRepository extends JpaRepository<Establecimiento, Long> {
 }
