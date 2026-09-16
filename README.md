@@ -41,7 +41,6 @@ Entidades de apoyo: **Especialidad** y **Establecimiento**.
 | J. Alvarez F. | Manejo de errores y documentación | `feature/recomendacion-doctores` |
 | Raúl Rosas | Lógica de recomendación | `feature/nucleo-recommendations` |
 | Jhonatan Alva Castillo | Perfil del doctor y reserva de citas | `feature/perfil-doctores` |
-| Joaquín Díaz | CRUD de doctores y correcciones | `feature/crud-doctores` |
 
 Aporte por integrante según `git shortlog -s -n --all`:
 
