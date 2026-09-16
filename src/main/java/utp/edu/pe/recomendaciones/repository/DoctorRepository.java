@@ -7,4 +7,8 @@ import utp.edu.pe.recomendaciones.domain.Doctor;
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
   List<Doctor> findByEspecialidad_NombreIgnoreCaseAndDisponibleTrue(String especialidad);
+
+  boolean existsByCmp(String cmp);
+
+  boolean existsByCmpAndIdNot(String cmp, Long id);
 }
