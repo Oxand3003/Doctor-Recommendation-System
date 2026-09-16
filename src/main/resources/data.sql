@@ -18,3 +18,9 @@ VALUES
   (4, 'Luis', 'Castillo Vega', 'CMP10004', 4.6, 12, FALSE, 2, 3),
   (5, 'Sofía', 'Mendoza Ruiz', 'CMP10005', 4.9, 8, TRUE, 3, 1),
   (6, 'Jorge', 'Vargas León', 'CMP10006', 4.5, 18, TRUE, 4, 3);
+
+-- Los ids de arriba se insertaron a mano; hay que adelantar los contadores
+-- de autoincremento para que el proximo INSERT (via la API) no choque con ellos.
+ALTER TABLE especialidades ALTER COLUMN id RESTART WITH 5;
+ALTER TABLE establecimientos ALTER COLUMN id RESTART WITH 4;
+ALTER TABLE doctores ALTER COLUMN id RESTART WITH 7;
