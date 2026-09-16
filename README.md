@@ -11,6 +11,29 @@ El paciente que no sabe qué especialista necesita elige mal, no vuelve y deja l
 cita sin concretar. Cada mes eso se traduce en consultas agendadas que se pierden
 y en reclamos por haber sido derivado al especialista equivocado.
 
+---
+
+## 🛡️ Flujo de Trabajo y Reglas del Repositorio
+
+Para mantener la estabilidad del código y asegurar un desarrollo ordenado, este equipo sigue un flujo de trabajo basado en Ramas (Branching Workflow). 
+
+Dado que las limitaciones de la plataforma en repositorios privados no nos permiten bloquear las ramas técnicamente, **este documento actúa como un acuerdo obligatorio** para todos los miembros del equipo.
+
+### 🚫 Regla de Oro: Protección de la rama `main`
+**Queda estrictamente prohibido hacer un `git push` directo a la rama `main`.** 
+La rama `main` debe reflejar únicamente el código que está 100% probado, estable y listo para producción. 
+
+### 🔄 Flujo de Integración
+Todo el desarrollo debe seguir el siguiente proceso:
+
+1. **La rama base de desarrollo es `develop`:** Todo el código nuevo, características y correcciones se integran primero aquí.
+2. **Creación de ramas:** Si vas a trabajar en una nueva tarea, crea una rama a partir de `develop` (ejemplo: `feature/nueva-vista` o `fix/error-login`).
+3. **Pull Requests (PR):** Una vez termines tu tarea, abre un Pull Request hacia `develop`. Pide a un compañero que revise tu código antes de hacer el merge.
+4. **Merge a `main`:** Solo se hará un merge de `develop` a `main` cuando el equipo acuerde que hay una versión estable y lista para ser entregada o desplegada.
+
+El respeto a este flujo es responsabilidad de todos para evitar romper el entorno de trabajo del resto del equipo y prevenir conflictos graves de código.
+
+---
 
 ## Entidad núcleo
 
