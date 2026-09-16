@@ -181,6 +181,69 @@ Base: `http://localhost:8080/api/v1/doctors`
 Documentación interactiva: `http://localhost:8080/swagger-ui/index.html`
 Consola de base de datos: `http://localhost:8080/h2-console`
 
+### Cómo probar el CRUD
+
+La base ya trae 10 médicos de ejemplo. Comandos listos para copiar y pegar
+(requieren la app corriendo en `http://localhost:8080`):
+
+```bash
+# 1. Listar todos los médicos
+curl http://localhost:8080/api/v1/doctors
+
+# 2. Obtener un médico por id
+curl http://localhost:8080/api/v1/doctors/1
+
+# 3. Crear un médico nuevo
+curl -X POST http://localhost:8080/api/v1/doctors \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombres": "Test",
+    "apellidos": "Prueba QA",
+    "cmp": "CMPDEMO1",
+    "rating": 4.5,
+    "aniosExperiencia": 5,
+    "disponible": true,
+    "especialidadId": 1
+  }'
+# -> 201 Created, con el médico creado y su id nuevo (ej: 11)
+
+# 4. Actualizar ese médico (usa el id que devolvió el paso 3)
+curl -X PUT http://localhost:8080/api/v1/doctors/11 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombres": "Test",
+    "apellidos": "Prueba Editada",
+    "cmp": "CMPDEMO1",
+    "rating": 4.8,
+    "aniosExperiencia": 6,
+    "disponible": false,
+    "especialidadId": 2
+  }'
+# -> 200 OK, con los datos actualizados
+
+# 5. Eliminarlo
+curl -X DELETE http://localhost:8080/api/v1/doctors/11
+# -> 204 No Content
+
+# 6. Confirmar que ya no existe
+curl http://localhost:8080/api/v1/doctors/11
+# -> 404 Not Found
+
+# 7. Validación: no se permite un CMP duplicado
+curl -X POST http://localhost:8080/api/v1/doctors \
+  -H "Content-Type: application/json" \
+  -d '{"nombres":"X","apellidos":"Y","cmp":"CMP10001","rating":4.0,"aniosExperiencia":1,"especialidadId":1}'
+# -> 400 Bad Request, "Ya existe un medico registrado con el CMP: CMP10001"
+```
+
+Especialidades disponibles para `especialidadId`: 1 Cardiología, 2 Dermatología,
+3 Pediatría, 4 Medicina General, 5 Odontología, 6 Neurología, 7 Oftalmología,
+8 Traumatología.
+
+También se puede probar todo esto de forma visual en
+`http://localhost:8080/swagger-ui/index.html`, o correr `./mvnw test` para ver
+los 13 tests automatizados pasar.
+
 ### Fórmula de recomendación
 
 ```
