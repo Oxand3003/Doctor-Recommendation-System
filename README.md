@@ -121,23 +121,23 @@ Ramas utilizadas:
 
 ## Fusión y conflicto resuelto
 
-Se realizaron **6 fusiones hacia `develop`** (una por cada pull request más el
-merge de integración). El conflicto real ocurrió en el `<title>` de
-`frontend/index.html`, cuando dos ramas modificaron la misma línea:
+Se realizaron varias fusiones hacia `develop` (una por cada pull request más
+los merges de integración). El conflicto real ocurrió en el `<title>` de
+`frontend/index.html`, cuando `feature/pagina-principal` y `feature/controller`
+modificaron la misma línea a partir de la misma base:
 
 ```
 <<<<<<< HEAD
-<title>MediCerca — Encuentra al doctor indicado mediante este sitio web</title>
+<title>MediCerca — Encuentra a tu doctor ideal</title>
 =======
-<title>MediCerca — Encuentra a tu doctor real ideal</title>
->>>>>>> feature/pagina-principal
+<title>MediCerca — Encuentra al doctores indicados</title>
+>>>>>>> origin/feature/controller
 ```
 
-Se conservó la versión de `feature/pagina-principal` por ser la más corta y
-legible, y porque describe mejor el propósito del sitio. Commit de resolución:
-`c968490` — *merge: resolver conflicto en titulo de landing page*.
-
-Las capturas del antes y del después deben guardarse en `docs/evidencias/`.
+Se conservó la versión de `feature/pagina-principal` ("Encuentra a tu doctor
+ideal") por ser más natural y estar libre de errores gramaticales. Commit de
+resolución: `c968490` — *merge: resolver conflicto en titulo de landing page*
+(verificable con `git show c968490:frontend/index.html`).
 
 ---
 
