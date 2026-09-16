@@ -1,12 +1,18 @@
 package utp.edu.pe.recomendacion_citas;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +23,7 @@ import utp.edu.pe.recomendaciones.exception.ApiExceptionHandler;
 import utp.edu.pe.recomendaciones.controller.DoctorController;
 import utp.edu.pe.recomendaciones.domain.Doctor;
 import utp.edu.pe.recomendaciones.domain.Especialidad;
+import utp.edu.pe.recomendaciones.dto.DoctorRequest;
 import utp.edu.pe.recomendaciones.dto.RecomendacionDTO;
 import utp.edu.pe.recomendaciones.exception.DoctorNotFoundException;
 import utp.edu.pe.recomendaciones.service.DoctorService;
@@ -134,6 +141,97 @@ class DoctorControllerTest {
         .thenThrow(new DoctorNotFoundException("No existe un medico con id: 99"));
 
     mockMvc.perform(get("/api/v1/doctors/99"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error").value("Not Found"));
+  }
+
+  @Test
+  void creaDoctorConCreated() throws Exception {
+    Doctor creado = new Doctor(
+        "Sofia",
+        "Lujan Peña",
+        "CMP10003",
+        0.0,
+        0,
+        true,
+        new Especialidad("Pediatría"),
+        null);
+    when(doctorService.crear(any(DoctorRequest.class))).thenReturn(creado);
+
+    mockMvc.perform(post("/api/v1/doctors")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "nombres": "Sofia",
+                  "apellidos": "Lujan Peña",
+                  "cmp": "CMP10003",
+                  "especialidadId": 1
+                }
+                """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.cmp").value("CMP10003"));
+  }
+
+  @Test
+  void rechazaCreacionSinEspecialidadConBadRequest() throws Exception {
+    when(doctorService.crear(any(DoctorRequest.class)))
+        .thenThrow(new IllegalArgumentException("Debe indicar la especialidad del medico."));
+
+    mockMvc.perform(post("/api/v1/doctors")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "nombres": "Sofia",
+                  "apellidos": "Lujan Peña",
+                  "cmp": "CMP10003"
+                }
+                """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value("Bad Request"));
+  }
+
+  @Test
+  void actualizaDoctorConOk() throws Exception {
+    Doctor actualizado = new Doctor(
+        "Carlos",
+        "Ramírez Soto",
+        "CMP10002",
+        4.9,
+        21,
+        true,
+        new Especialidad("Cardiología"),
+        null);
+    when(doctorService.actualizar(eq(1L), any(DoctorRequest.class))).thenReturn(actualizado);
+
+    mockMvc.perform(put("/api/v1/doctors/1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("""
+                {
+                  "nombres": "Carlos",
+                  "apellidos": "Ramírez Soto",
+                  "cmp": "CMP10002",
+                  "rating": 4.9,
+                  "aniosExperiencia": 21,
+                  "disponible": true,
+                  "especialidadId": 1
+                }
+                """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.aniosExperiencia").value(21));
+  }
+
+  @Test
+  void eliminaDoctorConNoContent() throws Exception {
+    mockMvc.perform(delete("/api/v1/doctors/1"))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void devuelveNotFoundAlEliminarDoctorInexistente() throws Exception {
+    org.mockito.Mockito.doThrow(new DoctorNotFoundException("No existe un medico con id: 99"))
+        .when(doctorService).eliminar(99L);
+
+    mockMvc.perform(delete("/api/v1/doctors/99"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error").value("Not Found"));
   }
