@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MediCerca — Encuentra a tu doctor ideal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a href="#" class="logo">MediCerca</a>
+    <div class="nav-links">
+      <a href="#especialidades">Especialidades</a>
+      <a href="#como">Cómo funciona</a>
+      <a href="perfil-doctor.html">Ver perfil doctor</a>
+      <a href="#" class="btn btn-ghost">Iniciar sesión</a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div>
+    <span class="tag"><span class="dot"></span> Recomendaciones basadas en pacientes reales</span>
+    <h1>Encuentra al doctor indicado, sin dar vueltas.</h1>
+    <p class="lead">Te recomendamos especialistas según tus síntomas, tu zona y las opiniones de pacientes como tú. Simple y confiable.</p>
+
+    <form class="search" id="search-form">
+      <label class="field">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="specialty-input" type="text" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma" required>
+      </label>
+      <label class="field split">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input id="location-input" type="text" placeholder="Tu ciudad o distrito" aria-label="Ubicación">
+      </label>
+      <button class="btn btn-primary" type="submit">Buscar</button>
+    </form>
+    <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+
+    <div class="stats">
+      <div class="stat"><b>+1,200</b><span>Doctores verificados</span></div>
+      <div class="stat"><b>32</b><span>Especialidades</span></div>
+      <div class="stat"><b>4.8</b><span>Valoración media</span></div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="doc-card">
+      <div class="doc-top">
+        <div class="avatar">RM</div>
+        <div>
+          <h3><a href="perfil-doctor.html" style="color:inherit;text-decoration:none">Dra. Rosa Medina</a></h3>
+          <div class="spec">Cardióloga</div>
+        </div>
+        <div class="rating">4.9</div>
+      </div>
+      <div class="doc-tags">
+        <span>Disponible hoy</span>
+        <span>Habla quechua</span>
+        <span>15 años exp.</span>
+      </div>
+      <div class="doc-foot">
+        <div class="when">Próxima cita: <b style="color:var(--ink)">Mañana 9:00 am</b></div>
+        <a href="perfil-doctor.html" class="btn btn-primary" style="padding:9px 16px;font-size:.88rem">Reservar</a>
+      </div>
+    </div>
+    <div class="float-badge">98% recomiendan</div>
+  </div>
+</header>
+
+<section class="block wrap results-section" id="resultados" aria-labelledby="results-title" hidden>
+  <div class="head">
+    <h2 id="results-title">Doctores recomendados</h2>
+    <p id="results-summary"></p>
+  </div>
+  <div class="results-grid" id="results-list"></div>
+</section>
+
+<section class="block wrap" id="especialidades">
+  <div class="head">
+    <h2>Especialidades más buscadas</h2>
+    <p>Elige por dónde empezar. Te mostramos los mejores especialistas cerca de ti.</p>
+  </div>
+  <div class="spec-grid">
+    <button class="spec-card" type="button" data-specialty="Cardiología"><h3>Cardiología</h3><p>Corazón y presión arterial</p></button>
+    <button class="spec-card" type="button" data-specialty="Odontología"><h3>Odontología</h3><p>Salud dental y ortodoncia</p></button>
+    <button class="spec-card" type="button" data-specialty="Neurología"><h3>Neurología</h3><p>Sistema nervioso</p></button>
+    <button class="spec-card" type="button" data-specialty="Pediatría"><h3>Pediatría</h3><p>Cuidado de los más pequeños</p></button>
+    <button class="spec-card" type="button" data-specialty="Medicina General"><h3>Medicina general</h3><p>Chequeos y diagnóstico</p></button>
+    <button class="spec-card" type="button" data-specialty="Oftalmología"><h3>Oftalmología</h3><p>Salud visual</p></button>
+    <button class="spec-card" type="button" data-specialty="Traumatología"><h3>Traumatología</h3><p>Huesos y articulaciones</p></button>
+    <button class="spec-card" type="button" data-specialty="Dermatología"><h3>Dermatología</h3><p>Piel, cabello y uñas</p></button>
+  </div>
+</section>
+
+<section class="block wrap" id="como">
+  <div class="how">
+    <div class="head">
+      <h2>Cómo funciona</h2>
+      <p>De la búsqueda a la cita en tres pasos.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Cuéntanos qué necesitas</h3>
+        <p>Escribe tu síntoma o la especialidad y tu ubicación. Nosotros filtramos por ti.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Compara recomendaciones</h3>
+        <p>Mira valoraciones reales, experiencia y disponibilidad de cada doctor.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Reserva tu cita</h3>
+        <p>Agenda en línea el horario que te acomode. Recibes confirmación al instante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block wrap">
+  <div class="cta">
+    <h2>¿Listo para encontrar a tu doctor?</h2>
+    <p>Miles de pacientes ya reciben recomendaciones a su medida. Empieza gratis, sin complicaciones.</p>
+    <button class="btn btn-primary" id="cta-search" type="button" style="padding:14px 28px;font-size:1.05rem">Buscar un doctor ahora</button>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-in">
+    <a href="#" class="logo">MediCerca</a>
+    <div>© 2026 MediCerca · Encuentra salud de confianza cerca de ti.</div>
+  </div>
+</footer>
+
+<script src="index.js"></script>
+</body>
+</html>
