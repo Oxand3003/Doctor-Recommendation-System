@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi cuenta | MediCerca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="portal.css">
+</head>
+<body>
+  <nav><div class="wrap nav-in"><a href="index.html" class="logo">MediCerca</a><div class="nav-links"><a href="index.html">Buscar médicos</a><button class="btn btn-ghost" id="logout-button" type="button">Cerrar sesión</button></div></div></nav>
+  <main class="wrap portal-main">
+    <section class="portal-heading"><span class="tag"><span class="dot"></span> Mi cuenta</span><h1 id="account-name">Cargando cuenta...</h1><p id="account-role"></p></section>
+    <section class="account-card"><div class="account-grid" id="account-details"></div><p class="search-status" id="account-status" role="status" aria-live="polite"></p><a class="btn btn-primary" id="account-action" href="index.html" hidden></a></section>
+    <h2 class="portal-section-title" id="appointments-title" hidden></h2>
+    <section class="appointment-list" id="appointment-list"></section>
+  </main>
+  <footer><div class="wrap foot-in"><a href="index.html" class="logo">MediCerca</a><div>© 2026 MediCerca · MediCerca</div></div></footer>
+  <script src="cuenta.js"></script>
+</body>
+</html>

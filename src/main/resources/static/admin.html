@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración | MediCerca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="auth.css"><link rel="stylesheet" href="portal.css">
+</head>
+<body>
+  <nav><div class="wrap nav-in"><a href="index.html" class="logo">MediCerca</a><div class="nav-links"><a href="index.html">Inicio</a><button class="btn btn-ghost" id="logout-button" type="button">Cerrar sesión</button></div></div></nav>
+  <main class="wrap portal-main">
+    <section class="portal-heading"><span class="tag"><span class="dot"></span> Administración</span><h1>Verificación de médicos</h1><p>Revisa los datos y documentos antes de aprobar una cuenta profesional.</p></section>
+    <p class="search-status" id="admin-status" role="status" aria-live="polite">Cargando solicitudes...</p>
+    <section class="application-list" id="application-list"></section>
+  </main>
+  <footer><div class="wrap foot-in"><a href="index.html" class="logo">MediCerca</a><div>Panel de administración</div></div></footer>
+  <script src="admin.js"></script>
+</body>
+</html>

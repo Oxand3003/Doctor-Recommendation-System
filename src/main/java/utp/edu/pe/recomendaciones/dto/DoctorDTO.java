@@ -17,6 +17,8 @@ public class DoctorDTO {
   private String especialidad;
   private Long establecimientoId;
   private String establecimiento;
+  private String establecimientoDireccion;
+  private String establecimientoDistrito;
 
   public DoctorDTO() {
   }
@@ -32,7 +34,9 @@ public class DoctorDTO {
       Long especialidadId,
       String especialidad,
       Long establecimientoId,
-      String establecimiento) {
+      String establecimiento,
+      String establecimientoDireccion,
+      String establecimientoDistrito) {
     this.id = id;
     this.nombres = nombres;
     this.apellidos = apellidos;
@@ -44,6 +48,8 @@ public class DoctorDTO {
     this.especialidad = especialidad;
     this.establecimientoId = establecimientoId;
     this.establecimiento = establecimiento;
+    this.establecimientoDireccion = establecimientoDireccion;
+    this.establecimientoDistrito = establecimientoDistrito;
   }
 
   public Long getId() {
@@ -132,5 +138,21 @@ public class DoctorDTO {
 
   public void setEstablecimiento(String establecimiento) {
     this.establecimiento = establecimiento;
+  }
+
+  public String getEstablecimientoDireccion() {
+    return establecimientoDireccion;
+  }
+
+  public void setEstablecimientoDireccion(String establecimientoDireccion) {
+    this.establecimientoDireccion = establecimientoDireccion;
+  }
+
+  public String getEstablecimientoDistrito() {
+    return establecimientoDistrito;
+  }
+
+  public void setEstablecimientoDistrito(String establecimientoDistrito) {
+    this.establecimientoDistrito = establecimientoDistrito;
   }
 }

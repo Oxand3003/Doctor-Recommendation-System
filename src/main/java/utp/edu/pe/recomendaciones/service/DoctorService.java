@@ -32,14 +32,17 @@ public class DoctorService {
 
     @Transactional(readOnly = true)
     public List<Doctor> listarTodos() {
-        return doctorRepository.findAll();
+        return doctorRepository.findByDisponibleTrue();
     }
 
     @Transactional(readOnly = true)
     public Doctor buscarPorId(Long id) {
-        return doctorRepository.findById(id)
-                                .orElseThrow(() -> new DoctorNotFoundException(
-                  "No existe un medico con id: " + id));
+        Doctor doctor = doctorRepository.findById(id)
+            .orElseThrow(() -> new DoctorNotFoundException("No existe un medico con id: " + id));
+        if (!Boolean.TRUE.equals(doctor.getDisponible())) {
+            throw new DoctorNotFoundException("No existe un médico disponible con id: " + id);
+        }
+        return doctor;
     }
 
     /** Crea un medico nuevo validando que el CMP no este repetido. */

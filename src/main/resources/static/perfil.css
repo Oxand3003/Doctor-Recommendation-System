@@ -99,6 +99,11 @@
   border-radius: 100px;
 }
 
+.verified-badge.unavailable-badge {
+  background: #fce9e7;
+  color: #9c342a;
+}
+
 .score-badge {
   display: inline-flex;
   align-items: center;
@@ -965,4 +970,3 @@
     grid-template-columns: 1fr;
   }
 }
-

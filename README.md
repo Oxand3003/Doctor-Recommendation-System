@@ -47,9 +47,13 @@ El respeto a este flujo es responsabilidad de todos para evitar romper el entorn
 | `cmp` | String | obligatorio y único (colegiatura) |
 | `rating` | Double | 0.0 a 5.0 |
 | `aniosExperiencia` | Integer | 0 a 80 |
-| `disponible` | Boolean | por defecto `true` |
+| `disponible` | Boolean | indica si acepta reservas; el alta profesional queda desactivada hasta aprobación |
 | `especialidad` | Especialidad | relación obligatoria |
 | `establecimiento` | Establecimiento | relación opcional |
+
+Los perfiles creados desde el catálogo de demostración aparecen disponibles.
+Los registros asociados a una cuenta médica quedan pendientes y no se publican
+hasta que el administrador los aprueba.
 
 Entidades de apoyo: **Especialidad** y **Establecimiento**.
 
@@ -150,99 +154,94 @@ git clone https://github.com/Oxand3003/Doctor-Recommendation-System.git
 cd Doctor-Recommendation-System
 git checkout develop
 
-# levantar la API
-mvn spring-boot:run
+# crear el esquema en MySQL (solicita la contraseña de MySQL)
+mysql -u root -p < database/medicerca_mysql.sql
+
+# levantar la aplicación
+MYSQL_USER=root MYSQL_PASSWORD='tu contraseña' ./mvnw spring-boot:run
 ```
 
-La API queda en `http://localhost:8080`. La base de datos es H2 en memoria y se
-crea con datos de ejemplo en cada arranque (`src/main/resources/data.sql`).
+El SQL crea el esquema `medicerca` en MySQL con `utf8mb4`. La aplicación usa MySQL
+en `localhost:3306`, base `medicerca`, usuario `root` y la contraseña que indiques
+en `MYSQL_PASSWORD`. Si usas otro usuario, URL o puerto, configura
+`MYSQL_USER`, `MYSQL_PASSWORD` y `MEDICERCA_DB_URL`.
 
-Para abrir el frontend, servir la carpeta `frontend/` con cualquier servidor
-estático y entrar a `index.html`.
+La aplicación sirve la API y el frontend en `http://localhost:8080`. Al primer
+inicio agrega las especialidades y establecimientos de ejemplo y crea un
+administrador inicial. El catálogo de doctores de demostración también se carga
+si aún no hay especialidades registradas.
+
+El administrador inicial es `admin@medicerca.local` con contraseña
+`Admin123!`. Puedes cambiar esos valores con las variables `ADMIN_EMAIL` y
+`ADMIN_PASSWORD` antes de iniciar la aplicación.
+
+Para conectar MySQL Workbench u otro cliente:
+
+| Campo | Valor |
+|---|---|
+| Host | `localhost` |
+| Puerto | `3306` |
+| Base de datos | `medicerca` |
+| Usuario | `root` o el valor de `MYSQL_USER` |
+| Contraseña | tu contraseña de MySQL o el valor de `MYSQL_PASSWORD` |
+
+La interfaz principal está en `http://localhost:8080/`. Desde ahí puedes buscar
+especialistas, abrir un perfil y registrar una cita; el horario y la reserva se
+guardan en la base de datos.
+
+Desde `http://localhost:8080/auth.html` se puede iniciar sesión o crear una
+cuenta. Los pacientes quedan activos al registrarse. Los médicos envían su CMP,
+RNE si corresponde, formación profesional y un enlace de sustento; el administrador
+debe revisar y aprobar la solicitud para habilitar el perfil y el acceso.
 
 > **Nota:** si `./mvnw` falla, usar `mvn` del sistema. El wrapper necesita
 > `.mvn/wrapper/maven-wrapper.jar`, que está en el `.gitignore`.
 
 ---
 
-## Endpoints
+## Cuentas y permisos
 
-Base: `http://localhost:8080/api/v1/doctors`
-
-| Método | Ruta | Descripción |
+| Rol | Cómo se obtiene | Permisos principales |
 |---|---|---|
-| GET | `/` | Lista todos los médicos |
-| GET | `/{id}` | Obtiene un médico por id |
-| POST | `/` | Registra un médico nuevo |
-| PUT | `/{id}` | Actualiza un médico |
-| DELETE | `/{id}` | Elimina un médico |
-| GET | `/recomendar?especialidad=&limite=` | Recomienda médicos por especialidad |
+| Cliente | Registro inmediato desde `auth.html` | Buscar médicos, reservar y consultar sus citas |
+| Médico | Solicitud con CMP, formación y enlace de sustento | Acceso al perfil y a sus citas después de aprobación administrativa |
+| Administrador | Cuenta inicial creada al arrancar | Revisar solicitudes, aprobar/rechazar médicos y administrar el catálogo de médicos |
 
-Documentación interactiva: `http://localhost:8080/swagger-ui/index.html`
-Consola de base de datos: `http://localhost:8080/h2-console`
+Los registros médicos quedan `PENDIENTE`: no pueden iniciar sesión ni aparecer en
+las recomendaciones hasta que un administrador revise el CMP y abra el enlace
+de sustento. En esta versión el documento se entrega como URL compartida; no se
+suben archivos al servidor.
 
-### Cómo probar el CRUD
+## Endpoints principales
 
-La base ya trae 10 médicos de ejemplo. Comandos listos para copiar y pegar
-(requieren la app corriendo en `http://localhost:8080`):
+Base: `http://localhost:8080/api/v1`
 
-```bash
-# 1. Listar todos los médicos
-curl http://localhost:8080/api/v1/doctors
+| Método | Ruta | Acceso |
+|---|---|---|
+| POST | `/auth/register/client` | Público; crea cliente activo |
+| POST | `/auth/register/doctor` | Público; crea solicitud médica pendiente |
+| POST | `/auth/login` | Público; inicia sesión |
+| GET | `/auth/me` | Cuenta autenticada |
+| POST | `/auth/logout` | Cuenta autenticada |
+| GET | `/doctors`, `/doctors/{id}`, `/doctors/recomendar` | Público; médicos disponibles |
+| POST/PUT/DELETE | `/doctors/...` | Administrador |
+| GET | `/catalog/specialties`, `/catalog/establishments` | Público; formularios |
+| GET | `/admin/doctor-applications` | Administrador |
+| POST | `/admin/doctor-applications/{id}/approve` o `/reject` | Administrador |
+| POST | `/appointments` | Cliente; reserva un horario disponible |
+| GET | `/appointments/availability?doctorId=&fecha=` | Público; horas ocupadas |
+| GET | `/appointments/{id}` | Cliente dueño de la cita, médico asignado o administrador |
+| GET | `/client/me/appointments` | Cliente; solo sus citas |
+| GET | `/doctor/me/appointments` | Médico aprobado; citas asignadas |
 
-# 2. Obtener un médico por id
-curl http://localhost:8080/api/v1/doctors/1
+Las solicitudes `POST`, `PUT` y `DELETE` usan sesión y protección CSRF. La
+interfaz obtiene el token automáticamente. Documentación interactiva:
+`http://localhost:8080/swagger-ui/index.html`.
 
-# 3. Crear un médico nuevo
-curl -X POST http://localhost:8080/api/v1/doctors \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres": "Test",
-    "apellidos": "Prueba QA",
-    "cmp": "CMPDEMO1",
-    "rating": 4.5,
-    "aniosExperiencia": 5,
-    "disponible": true,
-    "especialidadId": 1
-  }'
-# -> 201 Created, con el médico creado y su id nuevo (ej: 11)
-
-# 4. Actualizar ese médico (usa el id que devolvió el paso 3)
-curl -X PUT http://localhost:8080/api/v1/doctors/11 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres": "Test",
-    "apellidos": "Prueba Editada",
-    "cmp": "CMPDEMO1",
-    "rating": 4.8,
-    "aniosExperiencia": 6,
-    "disponible": false,
-    "especialidadId": 2
-  }'
-# -> 200 OK, con los datos actualizados
-
-# 5. Eliminarlo
-curl -X DELETE http://localhost:8080/api/v1/doctors/11
-# -> 204 No Content
-
-# 6. Confirmar que ya no existe
-curl http://localhost:8080/api/v1/doctors/11
-# -> 404 Not Found
-
-# 7. Validación: no se permite un CMP duplicado
-curl -X POST http://localhost:8080/api/v1/doctors \
-  -H "Content-Type: application/json" \
-  -d '{"nombres":"X","apellidos":"Y","cmp":"CMP10001","rating":4.0,"aniosExperiencia":1,"especialidadId":1}'
-# -> 400 Bad Request, "Ya existe un medico registrado con el CMP: CMP10001"
-```
-
-Especialidades disponibles para `especialidadId`: 1 Cardiología, 2 Dermatología,
-3 Pediatría, 4 Medicina General, 5 Odontología, 6 Neurología, 7 Oftalmología,
-8 Traumatología.
-
-También se puede probar todo esto de forma visual en
-`http://localhost:8080/swagger-ui/index.html`, o correr `./mvnw test` para ver
-los 13 tests automatizados pasar.
+Una vez dentro de `http://localhost:8080`, el usuario puede registrarse, iniciar
+sesión, mantener los horarios existentes y reservar una cita en un horario libre.
+La identidad del paciente se toma de su cuenta, para evitar que se reserven citas
+con datos de otra persona.
 
 ### Fórmula de recomendación
 
@@ -260,11 +259,13 @@ para priorizar la satisfacción del paciente sin ignorar la experiencia clínica
 
 ```
 src/main/java/utp/edu/pe/recomendaciones/
-├── config/       CORS y metadatos de OpenAPI
+├── config/       Seguridad, carga inicial y metadatos de OpenAPI
 ├── controller/   Endpoints REST
-├── domain/       Entidades JPA (Doctor, Especialidad, Establecimiento)
+├── domain/       Entidades JPA (usuarios, médicos, citas y catálogos)
 ├── dto/          Objetos de entrada y salida
 ├── exception/    Manejo global de errores
 ├── repository/   Acceso a datos
+├── security/     Carga de cuentas y roles para Spring Security
 └── service/      Lógica de negocio
-frontend/         Landing page, buscador y perfil del doctor
+src/main/resources/static/  Landing, buscador, perfiles, acceso y paneles de cuenta
+database/                   Esquema SQL para MySQL

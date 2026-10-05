@@ -84,7 +84,8 @@ public class DoctorController {
   @GetMapping("/recomendar")
   public ResponseEntity<List<RecomendacionDTO>> recomendar(
       @RequestParam(name = "especialidad") String especialidad,
-      @RequestParam(name = "limite", defaultValue = "5") int limite) {
+      @RequestParam(name = "limite", defaultValue = "5") int limite,
+      @RequestParam(name = "distrito", required = false) String distrito) {
 
     if (especialidad == null || especialidad.isBlank()) {
       throw new IllegalArgumentException("La especialidad no puede estar vacia.");
@@ -93,7 +94,9 @@ public class DoctorController {
       throw new IllegalArgumentException("El limite debe ser mayor a cero.");
     }
 
-    List<RecomendacionDTO> recomendados = recomendacionService.recomendarPorEspecialidad(especialidad, limite);
+    List<RecomendacionDTO> recomendados = distrito == null || distrito.isBlank()
+        ? recomendacionService.recomendarPorEspecialidad(especialidad, limite)
+        : recomendacionService.recomendarPorEspecialidad(especialidad, limite, distrito);
     return ResponseEntity.ok(recomendados);
   }
 
@@ -110,6 +113,8 @@ public class DoctorController {
         doctor.getEspecialidad() == null ? null : doctor.getEspecialidad().getId(),
         doctor.getEspecialidad() == null ? null : doctor.getEspecialidad().getNombre(),
         doctor.getEstablecimiento() == null ? null : doctor.getEstablecimiento().getId(),
-        doctor.getEstablecimiento() == null ? null : doctor.getEstablecimiento().getNombre());
+        doctor.getEstablecimiento() == null ? null : doctor.getEstablecimiento().getNombre(),
+        doctor.getEstablecimiento() == null ? null : doctor.getEstablecimiento().getDireccion(),
+        doctor.getEstablecimiento() == null ? null : doctor.getEstablecimiento().getDistrito());
   }
 }

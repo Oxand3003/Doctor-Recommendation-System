@@ -1,0 +1,16 @@
+.portal-main{padding-top:48px;padding-bottom:64px}
+.portal-heading{margin-bottom:28px}
+.portal-heading h1{font-size:clamp(2rem,4vw,2.8rem);margin-bottom:8px}
+.portal-heading p{color:var(--muted)}
+.application-list,.appointment-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.application-card,.appointment-card,.account-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 14px 36px -28px rgba(19,43,39,.3)}
+.application-card h2{font-size:1.35rem;margin-bottom:14px}
+.application-card p,.appointment-card p{color:var(--muted);margin:5px 0;font-size:.94rem;overflow-wrap:anywhere}
+.application-card strong{color:var(--ink)}
+.proof-link{display:inline-block;margin-top:12px;color:var(--primary);font-weight:600;overflow-wrap:anywhere}
+.application-actions{display:flex;gap:10px;margin-top:18px}
+.account-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+.account-grid p{margin:0;color:var(--muted)}
+.account-grid strong{color:var(--ink)}
+.portal-section-title{font-size:1.55rem;margin:30px 0 16px}
+@media(max-width:760px){.application-list,.appointment-list{grid-template-columns:1fr}.account-grid{grid-template-columns:1fr}.application-actions{flex-wrap:wrap}}

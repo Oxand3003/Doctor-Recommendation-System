@@ -11,6 +11,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.security.core.AuthenticationException;
+import utp.edu.pe.recomendaciones.exception.UsuarioNotFoundException;
 
 /**
  * Unico manejador global de errores del API.
@@ -22,6 +24,31 @@ public class ApiExceptionHandler {
   @ExceptionHandler(DoctorNotFoundException.class)
   public ResponseEntity<Map<String, String>> handleDoctorNotFound(DoctorNotFoundException exception) {
     return response(HttpStatus.NOT_FOUND, exception.getMessage());
+  }
+
+  @ExceptionHandler(UsuarioNotFoundException.class)
+  public ResponseEntity<Map<String, String>> handleUsuarioNotFound(UsuarioNotFoundException exception) {
+    return response(HttpStatus.NOT_FOUND, exception.getMessage());
+  }
+
+  @ExceptionHandler(AuthenticationException.class)
+  public ResponseEntity<Map<String, String>> handleAuthentication(AuthenticationException exception) {
+    return response(HttpStatus.UNAUTHORIZED, "Credenciales inválidas o cuenta pendiente de aprobación.");
+  }
+
+  @ExceptionHandler(CitaNotFoundException.class)
+  public ResponseEntity<Map<String, String>> handleCitaNotFound(CitaNotFoundException exception) {
+    return response(HttpStatus.NOT_FOUND, exception.getMessage());
+  }
+
+  @ExceptionHandler(CitaNoDisponibleException.class)
+  public ResponseEntity<Map<String, String>> handleCitaNoDisponible(CitaNoDisponibleException exception) {
+    return response(HttpStatus.CONFLICT, exception.getMessage());
+  }
+
+  @ExceptionHandler(CitaNoAutorizadaException.class)
+  public ResponseEntity<Map<String, String>> handleCitaNoAutorizada(CitaNoAutorizadaException exception) {
+    return response(HttpStatus.FORBIDDEN, exception.getMessage());
   }
 
   @ExceptionHandler({

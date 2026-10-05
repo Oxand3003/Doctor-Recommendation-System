@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso | MediCerca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="perfil.css">
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <nav>
+    <div class="wrap nav-in">
+      <a href="index.html" class="logo">MediCerca</a>
+      <div class="nav-links"><a href="index.html">Volver al inicio</a></div>
+    </div>
+  </nav>
+
+  <main class="wrap auth-main">
+    <section class="auth-card">
+      <span class="tag"><span class="dot"></span> Acceso a MediCerca</span>
+      <h1>Tu cuenta de salud</h1>
+      <p class="auth-intro">Inicia sesión o crea una cuenta. Los perfiles médicos quedan pendientes hasta que un administrador revise sus credenciales.</p>
+
+      <div class="auth-tabs" role="tablist" aria-label="Opciones de cuenta">
+        <button class="auth-tab active" id="tab-login" type="button">Iniciar sesión</button>
+        <button class="auth-tab" id="tab-register" type="button">Crear cuenta</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <div class="form-group"><label for="login-email">Correo electrónico</label><input id="login-email" name="email" type="email" autocomplete="email" required></div>
+        <div class="form-group"><label for="login-password">Contraseña</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+        <p class="search-status" id="login-status" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Ingresar</button>
+      </form>
+
+      <div id="register-panel" hidden>
+        <div class="auth-tabs auth-tabs-small" role="tablist" aria-label="Tipo de cuenta">
+          <button class="auth-tab active" id="tab-client" type="button">Soy paciente</button>
+          <button class="auth-tab" id="tab-doctor" type="button">Soy médico</button>
+        </div>
+
+        <form id="client-form" class="auth-form" hidden>
+          <div class="auth-grid">
+            <div class="form-group"><label for="client-nombres">Nombres *</label><input id="client-nombres" name="nombres" maxlength="100" autocomplete="given-name" required></div>
+            <div class="form-group"><label for="client-apellidos">Apellidos *</label><input id="client-apellidos" name="apellidos" maxlength="100" autocomplete="family-name" required></div>
+            <div class="form-group"><label for="client-dni">DNI *</label><input id="client-dni" name="dni" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
+            <div class="form-group"><label for="client-phone">Teléfono *</label><input id="client-phone" name="telefono" type="tel" maxlength="30" autocomplete="tel" required></div>
+            <div class="form-group auth-span"><label for="client-email">Correo electrónico *</label><input id="client-email" name="email" type="email" maxlength="190" autocomplete="email" required></div>
+            <div class="form-group auth-span"><label for="client-password">Contraseña (mínimo 8 caracteres) *</label><input id="client-password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+          </div>
+          <p class="search-status" id="client-status" role="status" aria-live="polite"></p>
+          <button class="btn btn-primary" type="submit">Crear cuenta de paciente</button>
+        </form>
+
+        <form id="doctor-form" class="auth-form" hidden>
+          <h2>Datos de identificación</h2>
+          <div class="auth-grid">
+            <div class="form-group"><label for="doctor-nombres">Nombres *</label><input id="doctor-nombres" name="nombres" maxlength="100" required></div>
+            <div class="form-group"><label for="doctor-apellidos">Apellidos *</label><input id="doctor-apellidos" name="apellidos" maxlength="100" required></div>
+            <div class="form-group"><label for="doctor-dni">DNI *</label><input id="doctor-dni" name="dni" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
+            <div class="form-group"><label for="doctor-phone">Teléfono *</label><input id="doctor-phone" name="telefono" type="tel" maxlength="30" required></div>
+            <div class="form-group"><label for="doctor-email">Correo electrónico *</label><input id="doctor-email" name="email" type="email" maxlength="190" required></div>
+            <div class="form-group"><label for="doctor-password">Contraseña (mínimo 8 caracteres) *</label><input id="doctor-password" name="password" type="password" minlength="8" maxlength="72" required></div>
+          </div>
+
+          <h2>Datos profesionales para verificación</h2>
+          <div class="auth-grid">
+            <div class="form-group"><label for="doctor-cmp">Número CMP *</label><input id="doctor-cmp" name="cmp" pattern="[A-Za-z0-9-]{4,20}" maxlength="20" required></div>
+            <div class="form-group"><label for="doctor-rne">Número RNE (si corresponde)</label><input id="doctor-rne" name="rne" maxlength="20"></div>
+            <div class="form-group"><label for="doctor-title">Título profesional *</label><input id="doctor-title" name="tituloProfesional" maxlength="150" placeholder="Médico cirujano" required></div>
+            <div class="form-group"><label for="doctor-university">Universidad *</label><input id="doctor-university" name="universidad" maxlength="180" required></div>
+            <div class="form-group"><label for="doctor-graduation">Año de egreso *</label><input id="doctor-graduation" name="anioEgreso" type="number" min="1950" max="2100" required></div>
+            <div class="form-group"><label for="doctor-experience">Años de experiencia *</label><input id="doctor-experience" name="aniosExperiencia" type="number" min="0" max="80" required></div>
+            <div class="form-group"><label for="doctor-specialty">Especialidad *</label><select id="doctor-specialty" name="especialidadId" required><option value="">Selecciona una especialidad</option></select></div>
+            <div class="form-group"><label for="doctor-establishment">Establecimiento (opcional)</label><select id="doctor-establishment" name="establecimientoId"><option value="">Aún no tengo uno</option></select></div>
+            <div class="form-group auth-span"><label for="doctor-proof">Enlace a constancia CMP, RNE o título *</label><input id="doctor-proof" name="sustentoUrl" type="url" maxlength="500" placeholder="https://..." required><small>Comparte un enlace que el administrador pueda abrir y corroborar.</small></div>
+          </div>
+          <p class="auth-note">Tu cuenta permanecerá pendiente. No podrás iniciar sesión ni aparecer en las recomendaciones hasta su aprobación.</p>
+          <p class="search-status" id="doctor-status" role="status" aria-live="polite"></p>
+          <button class="btn btn-primary" type="submit">Enviar solicitud de verificación</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap foot-in"><a href="index.html" class="logo">MediCerca</a><div>© 2026 MediCerca · Plataforma de recomendación de citas médicas</div></div></footer>
+  <script src="auth.js"></script>
+</body>
+</html>

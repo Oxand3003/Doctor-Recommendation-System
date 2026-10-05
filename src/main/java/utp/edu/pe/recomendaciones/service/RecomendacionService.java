@@ -1,6 +1,7 @@
 package utp.edu.pe.recomendaciones.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import utp.edu.pe.recomendaciones.domain.Doctor;
 import utp.edu.pe.recomendaciones.dto.RecomendacionDTO;
 import utp.edu.pe.recomendaciones.exception.DoctorNotFoundException;
@@ -9,6 +10,8 @@ import utp.edu.pe.recomendaciones.repository.DoctorRepository;
 import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.text.Normalizer;
 
 /* LOGICA DE NEGOCIO */
 
@@ -33,7 +36,13 @@ public class RecomendacionService {
    * @param especialidad nombre de la especialidad (ej: "Cardiologia")
    * @param limite       cantidad maxima de resultados (top N)
    */
+  @Transactional(readOnly = true)
   public List<RecomendacionDTO> recomendarPorEspecialidad(String especialidad, int limite) {
+    return recomendarPorEspecialidad(especialidad, limite, null);
+  }
+
+  @Transactional(readOnly = true)
+  public List<RecomendacionDTO> recomendarPorEspecialidad(String especialidad, int limite, String distrito) {
     if (especialidad == null || especialidad.isBlank()) {
       throw new IllegalArgumentException("La especialidad no puede estar vacia.");
     }
@@ -41,8 +50,19 @@ public class RecomendacionService {
       throw new IllegalArgumentException("El limite debe ser mayor a cero.");
     }
 
-    List<Doctor> disponibles = doctorRepository
-        .findByEspecialidad_NombreIgnoreCaseAndDisponibleTrue(especialidad.trim());
+    String filtroEspecialidad = normalizar(especialidad);
+    List<Doctor> disponibles = doctorRepository.findByDisponibleTrue().stream()
+        .filter(doctor -> normalizar(doctor.getEspecialidad().getNombre()).equals(filtroEspecialidad))
+        .toList();
+
+    if (distrito != null && !distrito.isBlank()) {
+      String filtroDistrito = normalizar(distrito);
+      disponibles = disponibles.stream()
+          .filter(doctor -> doctor.getEstablecimiento() != null
+              && doctor.getEstablecimiento().getDistrito() != null
+              && normalizar(doctor.getEstablecimiento().getDistrito()).contains(filtroDistrito))
+          .toList();
+    }
 
     if (disponibles.isEmpty()) {
       throw new DoctorNotFoundException(
@@ -54,6 +74,12 @@ public class RecomendacionService {
         .sorted(Comparator.comparingDouble(RecomendacionDTO::getPuntajeRecomendacion).reversed())
         .limit(limite)
         .collect(Collectors.toList());
+  }
+
+  private String normalizar(String valor) {
+    return Normalizer.normalize(valor.trim(), Normalizer.Form.NFD)
+        .replaceAll("\\p{M}+", "")
+        .toLowerCase(Locale.ROOT);
   }
 
   /** Convierte un Doctor en DTO y calcula su puntaje de recomendacion. */
