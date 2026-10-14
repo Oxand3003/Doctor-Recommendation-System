@@ -141,10 +141,34 @@ public class SugerenciaEspecialidadService {
     diccionario.put("Pediatría", List.of(
         "niño", "nino", "niña", "nina", "bebe", "lactante", "vacuna", "recien nacido"));
 
+    diccionario.put("Urología", List.of(
+        "rinon", "riñon", "vejiga", "orina", "orinar", "prostata", "pene", "testiculo",
+        "testiculos", "sangre en la orina", "infeccion urinaria", "calculo renal",
+        "pelvica", "pelvico", "pelvis", "genital", "genitales", "zona intima"));
+
+    diccionario.put("Ginecología", List.of(
+        "menstruacion", "regla", "ovario", "ovarios", "utero", "embarazo", "embarazada",
+        "vagina", "flujo vaginal", "menopausia", "papanicolau"));
+
+    diccionario.put("Psiquiatría", List.of(
+        "ansiedad", "depresion", "estres", "insomnio", "salud mental", "animo",
+        "ataque de panico", "tristeza", "angustia"));
+
+    diccionario.put("Otorrinolaringología", List.of(
+        "oido", "oidos", "garganta", "nariz", "sinusitis", "ronquera", "dolor de oido",
+        "amigdalas", "congestion nasal", "zumbido"));
+
+    diccionario.put("Endocrinología", List.of(
+        "tiroides", "diabetes", "hormonas", "azucar alta", "glucosa", "sobrepeso",
+        "obesidad", "hipotiroidismo"));
+
+    diccionario.put("Gastroenterología", List.of(
+        "abdomen", "estomago", "barriga", "digestion", "nauseas", "vomito", "diarrea",
+        "acidez", "gastritis", "higado", "colon"));
+
     diccionario.put("Medicina General", List.of(
         "fiebre", "cansancio", "malestar general", "chequeo", "gripe", "resfriado",
-        "control", "revision general", "abdomen", "estomago", "barriga", "digestion",
-        "nauseas", "vomito", "diarrea"));
+        "control", "revision general"));
 
     return diccionario;
   }

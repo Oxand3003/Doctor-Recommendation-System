@@ -6,7 +6,13 @@ INSERT INTO especialidades (id, nombre) VALUES
   (5, 'Odontología'),
   (6, 'Neurología'),
   (7, 'Oftalmología'),
-  (8, 'Traumatología');
+  (8, 'Traumatología'),
+  (9, 'Urología'),
+  (10, 'Ginecología'),
+  (11, 'Psiquiatría'),
+  (12, 'Otorrinolaringología'),
+  (13, 'Endocrinología'),
+  (14, 'Gastroenterología');
 
 INSERT INTO establecimientos (id, nombre, direccion, distrito) VALUES
   (1, 'Clínica San Felipe', 'Av. Gregorio Escobedo 650', 'Jesús María'),
@@ -25,11 +31,17 @@ VALUES
   (7, 'Patricia', 'Ríos Salazar', 'CMP10007', 4.7, 11, TRUE, 5, 2),
   (8, 'Diego', 'Herrera Lazo', 'CMP10008', 4.6, 14, TRUE, 6, 1),
   (9, 'Carmen', 'Vega Núñez', 'CMP10009', 4.8, 9, TRUE, 7, 3),
-  (10, 'Ricardo', 'Salas Ponce', 'CMP10010', 4.5, 16, TRUE, 8, 2);
+  (10, 'Ricardo', 'Salas Ponce', 'CMP10010', 4.5, 16, TRUE, 8, 2),
+  (11, 'Eduardo', 'Paredes Luna', 'CMP10011', 4.6, 13, TRUE, 9, 1),
+  (12, 'Valeria', 'Chávez Rojas', 'CMP10012', 4.9, 11, TRUE, 10, 2),
+  (13, 'Renzo', 'Ibáñez Campos', 'CMP10013', 4.7, 9, TRUE, 11, 3),
+  (14, 'Daniela', 'Flores Quiroz', 'CMP10014', 4.5, 7, TRUE, 12, 1),
+  (15, 'Hugo', 'Medina Paz', 'CMP10015', 4.6, 17, TRUE, 13, 2),
+  (16, 'Pamela', 'Osorio Díaz', 'CMP10016', 4.8, 10, TRUE, 14, 3);
 
 -- Reiniciar los contadores de identidad.
 -- Sin estas tres lineas, el primer medico que se registre por el CRUD intenta
 -- usar el id 1 y choca con los datos de ejemplo (clave primaria duplicada).
-ALTER TABLE especialidades ALTER COLUMN id RESTART WITH 9;
+ALTER TABLE especialidades ALTER COLUMN id RESTART WITH 15;
 ALTER TABLE establecimientos ALTER COLUMN id RESTART WITH 4;
-ALTER TABLE doctores ALTER COLUMN id RESTART WITH 11;
+ALTER TABLE doctores ALTER COLUMN id RESTART WITH 17;
