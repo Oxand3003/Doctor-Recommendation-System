@@ -85,6 +85,60 @@ section.block{padding:72px 0}
 .spec-card h3{font-size:1.1rem;margin-bottom:4px}
 .spec-card p{color:var(--muted);font-size:.88rem}
 
+/* DIAGNOSTICO POR SINTOMAS */
+.diag-card{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:0 20px 50px -34px rgba(19,43,39,.4);max-width:760px;margin:0 auto}
+.diag-tabs{display:flex;gap:6px;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:24px}
+.diag-tab{flex:1;border:none;background:transparent;padding:11px 14px;border-radius:10px;font:inherit;font-weight:600;font-size:.92rem;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
+.diag-tab.active{background:var(--surface);color:var(--primary-dark);box-shadow:0 2px 8px rgba(19,43,39,.08)}
+.diag-panel[hidden]{display:none}
+
+#sintoma-form{display:flex;flex-direction:column;gap:14px}
+#sintoma-input{width:100%;resize:vertical;min-height:84px;border:1px solid var(--line);border-radius:14px;padding:14px 16px;font:inherit;font-size:1rem;color:var(--ink);background:var(--bg)}
+#sintoma-input:focus{outline:2px solid var(--primary);outline-offset:1px}
+#sintoma-form .btn{align-self:flex-end}
+
+.maniqui-wrap{display:flex;align-items:center;gap:32px;flex-wrap:wrap;justify-content:center}
+.maniqui{width:170px;height:auto;flex-shrink:0}
+.maniqui-silueta{fill:var(--mint);stroke:var(--line);stroke-width:1.5}
+.maniqui-shadow{fill:#DDE7E3;opacity:.6}
+.hotspot{cursor:pointer}
+.hotspot-dot{fill:var(--accent);stroke:#fff;stroke-width:2}
+.hotspot-pulse{fill:var(--accent);opacity:.35;animation:hotspot-pulse 2.2s ease-out infinite}
+.hotspot:hover .hotspot-dot,.hotspot:focus-visible .hotspot-dot{fill:var(--primary-dark)}
+.hotspot:focus-visible{outline:2px solid var(--primary);outline-offset:3px;border-radius:50%}
+@keyframes hotspot-pulse{
+  0%{transform:scale(1);opacity:.45}
+  70%{transform:scale(2.1);opacity:0}
+  100%{transform:scale(2.1);opacity:0}
+}
+
+.maniqui-legend{display:grid;grid-template-columns:repeat(2,auto);gap:8px 14px;list-style:none}
+.maniqui-legend button{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);padding:8px 14px;border-radius:999px;font:inherit;font-size:.85rem;color:var(--ink);cursor:pointer;transition:border-color .15s,color .15s}
+.maniqui-legend button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.maniqui-legend button:hover{border-color:var(--primary);color:var(--primary-dark)}
+
+.diag-status{text-align:center;color:var(--muted);font-size:.9rem;min-height:1.4em;margin-top:14px}
+
+.diag-resultado[hidden]{display:none}
+.diag-resultado{margin-top:26px;padding-top:26px;border-top:1px solid var(--line)}
+.diag-resultado-principal{text-align:center}
+.diag-badge{display:inline-block;background:var(--mint);color:var(--primary-dark);font-size:.78rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:5px 12px;border-radius:999px;margin-bottom:10px}
+.diag-resultado-principal h3{font-size:1.6rem;margin-bottom:14px}
+.diag-confianza{display:flex;align-items:center;gap:10px;max-width:320px;margin:0 auto 14px}
+.diag-confianza-bar{flex:1;height:8px;background:var(--mint);border-radius:999px;overflow:hidden}
+.diag-confianza-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:999px;transition:width .4s ease}
+.diag-confianza span{font-size:.82rem;color:var(--muted);font-weight:600;white-space:nowrap}
+.diag-coincidencias{color:var(--muted);font-size:.88rem;margin-bottom:20px}
+.diag-alternativas{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+.diag-alt-chip{border:1px solid var(--line);background:var(--bg);color:var(--muted);font-size:.82rem;padding:6px 13px;border-radius:999px;cursor:pointer}
+.diag-alt-chip:hover{border-color:var(--primary);color:var(--primary-dark)}
+
+@media(max-width:560px){
+  .diag-card{padding:22px}
+  .maniqui-wrap{flex-direction:column}
+  .maniqui-legend{grid-template-columns:1fr 1fr}
+}
+
 /* RESULTS */
 .results-section[hidden]{display:none}
 .results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
