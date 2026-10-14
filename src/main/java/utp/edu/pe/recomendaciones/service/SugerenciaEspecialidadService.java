@@ -136,7 +136,8 @@ public class SugerenciaEspecialidadService {
 
     diccionario.put("Medicina General", List.of(
         "fiebre", "cansancio", "malestar general", "chequeo", "gripe", "resfriado",
-        "control", "revision general"));
+        "control", "revision general", "abdomen", "estomago", "barriga", "digestion",
+        "nauseas", "vomito", "diarrea"));
 
     return diccionario;
   }
