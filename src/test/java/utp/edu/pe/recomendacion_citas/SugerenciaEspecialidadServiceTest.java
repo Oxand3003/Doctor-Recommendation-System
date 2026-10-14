@@ -37,7 +37,13 @@ class SugerenciaEspecialidadServiceTest {
         conId(5L, "Odontología"),
         conId(6L, "Neurología"),
         conId(7L, "Oftalmología"),
-        conId(8L, "Traumatología"));
+        conId(8L, "Traumatología"),
+        conId(9L, "Urología"),
+        conId(10L, "Ginecología"),
+        conId(11L, "Psiquiatría"),
+        conId(12L, "Otorrinolaringología"),
+        conId(13L, "Endocrinología"),
+        conId(14L, "Gastroenterología"));
     when(especialidadRepository.findAll()).thenReturn(especialidades);
   }
 
@@ -72,6 +78,31 @@ class SugerenciaEspecialidadServiceTest {
 
     assertThat(sugerencia.getEspecialidad()).isEqualTo("Traumatología");
     assertThat(sugerencia.getCoincidencias()).contains("rodilla");
+  }
+
+  @Test
+  void sugiereUrologiaPorZonaPelvica() {
+    conEspecialidadesDeEjemplo();
+    SugerenciaDTO sugerencia = service.sugerir("Zona pélvica");
+
+    assertThat(sugerencia.getEspecialidad()).isEqualTo("Urología");
+    assertThat(sugerencia.getEspecialidadId()).isEqualTo(9L);
+  }
+
+  @Test
+  void sugiereGastroenterologiaPorDolorAbdominal() {
+    conEspecialidadesDeEjemplo();
+    SugerenciaDTO sugerencia = service.sugerir("me duele mucho el estomago y tengo nauseas");
+
+    assertThat(sugerencia.getEspecialidad()).isEqualTo("Gastroenterología");
+  }
+
+  @Test
+  void reconoceElNombreDeLaEspecialidadEscritoDirectamente() {
+    conEspecialidadesDeEjemplo();
+    SugerenciaDTO sugerencia = service.sugerir("necesito un especialista en urologia");
+
+    assertThat(sugerencia.getEspecialidad()).isEqualTo("Urología");
   }
 
   @Test
