@@ -43,6 +43,13 @@ public class SugerenciaEspecialidadService {
 
     for (Map.Entry<String, List<String>> entrada : PALABRAS_CLAVE.entrySet()) {
       List<String> encontradas = new ArrayList<>();
+
+      // Si el texto ya trae el nombre de la especialidad (ej: "quiero un cardiologo"),
+      // cuenta como la coincidencia mas fuerte posible.
+      if (normalizado.contains(normalizar(entrada.getKey()))) {
+        encontradas.add(entrada.getKey());
+      }
+
       for (String palabraClave : entrada.getValue()) {
         if (normalizado.contains(palabraClave)) {
           encontradas.add(palabraClave);
