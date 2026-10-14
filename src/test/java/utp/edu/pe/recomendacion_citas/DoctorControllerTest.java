@@ -28,6 +28,7 @@ import utp.edu.pe.recomendaciones.dto.RecomendacionDTO;
 import utp.edu.pe.recomendaciones.exception.DoctorNotFoundException;
 import utp.edu.pe.recomendaciones.service.DoctorService;
 import utp.edu.pe.recomendaciones.service.RecomendacionService;
+import utp.edu.pe.recomendaciones.service.SugerenciaEspecialidadService;
 
 @ExtendWith(MockitoExtension.class)
 class DoctorControllerTest {
@@ -40,10 +41,13 @@ class DoctorControllerTest {
   @Mock
   private RecomendacionService recomendacionService;
 
+  @Mock
+  private SugerenciaEspecialidadService sugerenciaEspecialidadService;
+
   @BeforeEach
   void configurarMockMvc() {
     mockMvc = MockMvcBuilders.standaloneSetup(
-            new DoctorController(doctorService, recomendacionService))
+            new DoctorController(doctorService, recomendacionService, sugerenciaEspecialidadService))
         .setControllerAdvice(new ApiExceptionHandler())
         .build();
   }
