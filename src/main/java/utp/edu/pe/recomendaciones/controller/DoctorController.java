@@ -12,8 +12,11 @@ import utp.edu.pe.recomendaciones.domain.Doctor;
 import utp.edu.pe.recomendaciones.dto.DoctorDTO;
 import utp.edu.pe.recomendaciones.dto.DoctorRequestDTO;
 import utp.edu.pe.recomendaciones.dto.RecomendacionDTO;
+import utp.edu.pe.recomendaciones.dto.SugerenciaDTO;
+import utp.edu.pe.recomendaciones.dto.SugerenciaRequestDTO;
 import utp.edu.pe.recomendaciones.service.DoctorService;
 import utp.edu.pe.recomendaciones.service.RecomendacionService;
+import utp.edu.pe.recomendaciones.service.SugerenciaEspecialidadService;
 
 /* Endpoints para la gestion de doctores */
 
@@ -24,10 +27,15 @@ public class DoctorController {
 
   private final DoctorService doctorService;
   private final RecomendacionService recomendacionService;
+  private final SugerenciaEspecialidadService sugerenciaEspecialidadService;
 
-  public DoctorController(DoctorService doctorService, RecomendacionService recomendacionService) {
+  public DoctorController(
+      DoctorService doctorService,
+      RecomendacionService recomendacionService,
+      SugerenciaEspecialidadService sugerenciaEspecialidadService) {
     this.doctorService = doctorService;
     this.recomendacionService = recomendacionService;
+    this.sugerenciaEspecialidadService = sugerenciaEspecialidadService;
   }
 
   @Operation(summary = "Lista todos los medicos registrados")
@@ -95,6 +103,13 @@ public class DoctorController {
 
     List<RecomendacionDTO> recomendados = recomendacionService.recomendarPorEspecialidad(especialidad, limite);
     return ResponseEntity.ok(recomendados);
+  }
+
+  @Operation(summary = "Sugiere una especialidad a partir de un sintoma o zona del cuerpo")
+  @PostMapping("/sugerir-especialidad")
+  public ResponseEntity<SugerenciaDTO> sugerirEspecialidad(@RequestBody SugerenciaRequestDTO request) {
+    String sintoma = request == null ? null : request.getSintoma();
+    return ResponseEntity.ok(sugerenciaEspecialidadService.sugerir(sintoma));
   }
 
   /** Convierte la entidad en el DTO que se expone al cliente. */
