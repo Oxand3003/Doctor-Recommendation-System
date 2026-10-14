@@ -36,7 +36,8 @@ nav{position:sticky;top:0;z-index:50;background:rgba(247,249,248,.82);backdrop-f
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 
 /* HERO */
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:72px 0 64px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:start;padding:72px 0 64px}
+.hero-visual{margin-top:6px}
 .tag{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--primary-dark);font-size:.85rem;font-weight:600;padding:7px 14px;border-radius:100px;margin-bottom:22px}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}
 .hero h1{font-size:clamp(2.4rem,5vw,3.6rem)}

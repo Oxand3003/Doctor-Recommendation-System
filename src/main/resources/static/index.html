@@ -32,7 +32,23 @@
     <form class="search" id="search-form">
       <label class="field">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="specialty-input" type="text" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma" required>
+        <input id="specialty-input" type="text" list="especialidades-list" placeholder="¿Qué especialidad o síntoma?" aria-label="Especialidad o síntoma" autocomplete="off" required>
+        <datalist id="especialidades-list">
+          <option value="Cardiología">
+          <option value="Dermatología">
+          <option value="Pediatría">
+          <option value="Medicina General">
+          <option value="Odontología">
+          <option value="Neurología">
+          <option value="Oftalmología">
+          <option value="Traumatología">
+          <option value="Urología">
+          <option value="Ginecología">
+          <option value="Psiquiatría">
+          <option value="Otorrinolaringología">
+          <option value="Endocrinología">
+          <option value="Gastroenterología">
+        </datalist>
       </label>
       <label class="field split">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -78,12 +94,16 @@
           <title>Boca / dientes</title>
           <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
         </g>
-        <g class="hotspot" tabindex="0" role="button" data-zona="pecho" aria-label="Pecho" transform="translate(100,112)">
+        <g class="hotspot" tabindex="0" role="button" data-zona="pecho" aria-label="Pecho" transform="translate(100,106)">
           <title>Pecho</title>
           <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
         </g>
-        <g class="hotspot" tabindex="0" role="button" data-zona="abdomen" aria-label="Abdomen" transform="translate(100,166)">
+        <g class="hotspot" tabindex="0" role="button" data-zona="abdomen" aria-label="Abdomen" transform="translate(100,148)">
           <title>Abdomen</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="pelvis" aria-label="Zona pélvica" transform="translate(100,186)">
+          <title>Zona pélvica</title>
           <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
         </g>
         <g class="hotspot" tabindex="0" role="button" data-zona="brazo" aria-label="Brazo" transform="translate(151,150)">
@@ -126,6 +146,12 @@
     <button class="spec-card" type="button" data-specialty="Oftalmología"><h3>Oftalmología</h3><p>Salud visual</p></button>
     <button class="spec-card" type="button" data-specialty="Traumatología"><h3>Traumatología</h3><p>Huesos y articulaciones</p></button>
     <button class="spec-card" type="button" data-specialty="Dermatología"><h3>Dermatología</h3><p>Piel, cabello y uñas</p></button>
+    <button class="spec-card" type="button" data-specialty="Urología"><h3>Urología</h3><p>Sistema urinario y próstata</p></button>
+    <button class="spec-card" type="button" data-specialty="Ginecología"><h3>Ginecología</h3><p>Salud femenina y embarazo</p></button>
+    <button class="spec-card" type="button" data-specialty="Psiquiatría"><h3>Psiquiatría</h3><p>Salud mental y emocional</p></button>
+    <button class="spec-card" type="button" data-specialty="Otorrinolaringología"><h3>Otorrinolaringología</h3><p>Oído, nariz y garganta</p></button>
+    <button class="spec-card" type="button" data-specialty="Endocrinología"><h3>Endocrinología</h3><p>Hormonas y diabetes</p></button>
+    <button class="spec-card" type="button" data-specialty="Gastroenterología"><h3>Gastroenterología</h3><p>Estómago y digestión</p></button>
   </div>
 </section>
 

@@ -145,6 +145,7 @@ const ETIQUETAS_ZONA = {
   boca: 'Boca / dientes',
   pecho: 'Pecho',
   abdomen: 'Abdomen',
+  pelvis: 'Zona pélvica',
   brazo: 'Brazo',
   rodilla: 'Rodilla / pierna',
   tobillo: 'Pie / tobillo',
