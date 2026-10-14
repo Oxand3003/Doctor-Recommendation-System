@@ -16,9 +16,9 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
-function renderResults(doctors, specialty) {
+function renderResults(doctors, etiqueta) {
   resultsSection.hidden = false;
-  resultsSummary.textContent = `${doctors.length} recomendacion${doctors.length === 1 ? '' : 'es'} para ${specialty}.`;
+  resultsSummary.textContent = `${doctors.length} recomendacion${doctors.length === 1 ? '' : 'es'} para ${etiqueta}.`;
 
   if (doctors.length === 0) {
     resultsList.innerHTML = '<p class="empty-state">No encontramos doctores disponibles para esta especialidad.</p>';
@@ -41,8 +41,15 @@ function renderResults(doctors, specialty) {
   `).join('');
 }
 
-async function searchDoctors(specialty) {
-  const normalizedSpecialty = specialty.trim();
+/**
+ * Busca medicos por especialidad exacta. `etiqueta` es el texto que se
+ * muestra al paciente (puede ser distinto de `especialidad` cuando viene
+ * de interpretar un sintoma, ej: "Cardiología (según tu síntoma)").
+ */
+async function searchDoctors(especialidad, etiqueta) {
+  const normalizedSpecialty = especialidad.trim();
+  const etiquetaMostrada = etiqueta || normalizedSpecialty;
+
   if (!normalizedSpecialty) {
     searchStatus.textContent = 'Escribe una especialidad para buscar.';
     specialtyInput.focus();
@@ -60,7 +67,7 @@ async function searchDoctors(specialty) {
     if (!response.ok) {
       throw new Error(payload.message || 'No fue posible completar la búsqueda.');
     }
-    renderResults(payload, normalizedSpecialty);
+    renderResults(payload, etiquetaMostrada);
     searchStatus.textContent = 'Búsqueda completada.';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (error) {
@@ -70,9 +77,52 @@ async function searchDoctors(specialty) {
   }
 }
 
+// --- Interpretar especialidad o sintoma escrito libremente ---
+
+const ESPECIALIDADES_CONOCIDAS = new Set(
+  Array.from(document.querySelectorAll('[data-specialty]')).map((el) => el.dataset.specialty.toLowerCase())
+);
+
+async function interpretarComoEspecialidad(texto) {
+  const response = await fetch(`${API_BASE_URL}/doctors/sugerir-especialidad`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sintoma: texto }),
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.message || 'No se pudo interpretar el texto.');
+  }
+  return payload.especialidad;
+}
+
+async function buscarPorTextoLibre(texto) {
+  const normalizado = texto.trim();
+  if (!normalizado) {
+    searchStatus.textContent = 'Escribe una especialidad o describe tu síntoma.';
+    specialtyInput.focus();
+    return;
+  }
+
+  // Si ya es el nombre exacto de una especialidad, no hace falta interpretar nada.
+  if (ESPECIALIDADES_CONOCIDAS.has(normalizado.toLowerCase())) {
+    searchDoctors(normalizado);
+    return;
+  }
+
+  searchStatus.textContent = 'Analizando tu síntoma...';
+  try {
+    const especialidad = await interpretarComoEspecialidad(normalizado);
+    specialtyInput.value = especialidad;
+    await searchDoctors(especialidad, `${especialidad} (según tu síntoma)`);
+  } catch (error) {
+    searchStatus.textContent = escapeHtml(error.message);
+  }
+}
+
 searchForm.addEventListener('submit', (event) => {
   event.preventDefault();
-  searchDoctors(specialtyInput.value);
+  buscarPorTextoLibre(specialtyInput.value);
 });
 
 document.querySelectorAll('[data-specialty]').forEach((button) => {
@@ -87,24 +137,7 @@ document.querySelector('#cta-search').addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// --- Sugerencia de especialidad por sintomas / maniqui ---
-
-const diagTabs = document.querySelectorAll('.diag-tab');
-const diagPanels = {
-  texto: document.querySelector('#panel-texto'),
-  cuerpo: document.querySelector('#panel-cuerpo'),
-};
-const sintomaForm = document.querySelector('#sintoma-form');
-const sintomaInput = document.querySelector('#sintoma-input');
-const diagStatus = document.querySelector('#diag-status');
-const diagResultado = document.querySelector('#diag-resultado');
-const diagBadge = document.querySelector('#diag-badge');
-const diagEspecialidad = document.querySelector('#diag-especialidad');
-const diagConfianzaFill = document.querySelector('#diag-confianza-fill');
-const diagConfianzaTexto = document.querySelector('#diag-confianza-texto');
-const diagCoincidencias = document.querySelector('#diag-coincidencias');
-const diagAlternativas = document.querySelector('#diag-alternativas');
-const diagVerDoctores = document.querySelector('#diag-ver-doctores');
+// --- Maniqui: señalar la zona del cuerpo que duele ---
 
 const ETIQUETAS_ZONA = {
   cabeza: 'Cabeza',
@@ -117,97 +150,16 @@ const ETIQUETAS_ZONA = {
   tobillo: 'Pie / tobillo',
 };
 
-diagTabs.forEach((tab) => {
-  tab.addEventListener('click', () => {
-    diagTabs.forEach((t) => {
-      t.classList.remove('active');
-      t.setAttribute('aria-selected', 'false');
-    });
-    tab.classList.add('active');
-    tab.setAttribute('aria-selected', 'true');
-
-    Object.entries(diagPanels).forEach(([key, panel]) => {
-      panel.hidden = key !== tab.dataset.tab;
-    });
-  });
-});
-
-let especialidadSugerida = null;
-
-async function sugerirEspecialidad(sintoma, etiquetaOrigen) {
-  diagStatus.textContent = 'Analizando...';
-  diagResultado.hidden = true;
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/doctors/sugerir-especialidad`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sintoma }),
-    });
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.message || 'No se pudo analizar el sintoma.');
-    }
-    renderSugerencia(payload, etiquetaOrigen);
-    diagStatus.textContent = '';
-  } catch (error) {
-    diagStatus.textContent = escapeHtml(error.message);
-  }
-}
-
-function renderSugerencia(sugerencia, etiquetaOrigen) {
-  especialidadSugerida = sugerencia.especialidad;
-
-  diagBadge.textContent = etiquetaOrigen
-    ? `Según "${etiquetaOrigen}"`
-    : 'Especialidad sugerida';
-  diagEspecialidad.textContent = sugerencia.especialidad;
-
-  const porcentaje = Math.round((sugerencia.confianza || 0) * 100);
-  diagConfianzaFill.style.width = `${Math.max(porcentaje, 6)}%`;
-  diagConfianzaTexto.textContent = `${porcentaje}% de coincidencia`;
-
-  diagCoincidencias.textContent = sugerencia.coincidencias && sugerencia.coincidencias.length
-    ? `Detectamos: ${sugerencia.coincidencias.join(', ')}`
-    : 'No encontramos palabras clave exactas; esta es una sugerencia general.';
-
-  diagAlternativas.innerHTML = '';
-  if (sugerencia.alternativas && sugerencia.alternativas.length) {
-    const titulo = document.createElement('span');
-    titulo.className = 'diag-coincidencias';
-    titulo.textContent = 'También podría ser:';
-    diagAlternativas.appendChild(titulo);
-
-    sugerencia.alternativas.forEach((alt) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.className = 'diag-alt-chip';
-      chip.textContent = alt.especialidad;
-      chip.addEventListener('click', () => {
-        especialidadSugerida = alt.especialidad;
-        renderSugerencia(alt, etiquetaOrigen);
-      });
-      diagAlternativas.appendChild(chip);
-    });
-  }
-
-  diagResultado.hidden = false;
-  diagResultado.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
-
-sintomaForm.addEventListener('submit', (event) => {
-  event.preventDefault();
-  const texto = sintomaInput.value.trim();
-  if (!texto) {
-    diagStatus.textContent = 'Escribe un síntoma para analizarlo.';
-    return;
-  }
-  sugerirEspecialidad(texto, null);
-});
-
-function activarZona(zona) {
+async function activarZona(zona) {
   const etiqueta = ETIQUETAS_ZONA[zona] || zona;
-  sugerirEspecialidad(etiqueta, etiqueta);
+  searchStatus.textContent = `Analizando "${etiqueta}"...`;
+  try {
+    const especialidad = await interpretarComoEspecialidad(etiqueta);
+    specialtyInput.value = especialidad;
+    await searchDoctors(especialidad, `${especialidad} (según "${etiqueta}")`);
+  } catch (error) {
+    searchStatus.textContent = escapeHtml(error.message);
+  }
 }
 
 document.querySelectorAll('.hotspot').forEach((hotspot) => {
@@ -218,16 +170,4 @@ document.querySelectorAll('.hotspot').forEach((hotspot) => {
       activarZona(hotspot.dataset.zona);
     }
   });
-});
-
-document.querySelectorAll('.maniqui-legend button').forEach((button) => {
-  button.addEventListener('click', () => activarZona(button.dataset.zona));
-});
-
-diagVerDoctores.addEventListener('click', () => {
-  if (!especialidadSugerida) {
-    return;
-  }
-  specialtyInput.value = especialidadSugerida;
-  searchDoctors(especialidadSugerida);
 });

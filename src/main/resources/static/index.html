@@ -50,119 +50,59 @@
   </div>
 
   <div class="hero-visual">
-    <div class="doc-card">
-      <div class="doc-top">
-        <div class="avatar">RM</div>
-        <div>
-          <h3><a href="perfil-doctor.html" style="color:inherit;text-decoration:none">Dra. Rosa Medina</a></h3>
-          <div class="spec">Cardióloga</div>
-        </div>
-        <div class="rating">4.9</div>
-      </div>
-      <div class="doc-tags">
-        <span>Disponible hoy</span>
-        <span>Habla quechua</span>
-        <span>15 años exp.</span>
-      </div>
-      <div class="doc-foot">
-        <div class="when">Próxima cita: <b style="color:var(--ink)">Mañana 9:00 am</b></div>
-        <a href="perfil-doctor.html" class="btn btn-primary" style="padding:9px 16px;font-size:.88rem">Reservar</a>
-      </div>
+    <div class="maniqui-card">
+      <p class="maniqui-caption">O toca dónde te duele</p>
+      <svg class="maniqui" viewBox="0 0 200 360" role="img" aria-label="Maniquí del cuerpo humano con zonas señalables">
+        <ellipse class="maniqui-shadow" cx="100" cy="350" rx="55" ry="7"/>
+        <circle class="maniqui-silueta" cx="100" cy="40" r="28"/>
+        <rect class="maniqui-silueta" x="92" y="62" width="16" height="16" rx="5"/>
+        <rect class="maniqui-silueta" x="62" y="76" width="76" height="118" rx="30"/>
+        <rect class="maniqui-silueta" x="37" y="92" width="23" height="100" rx="11"/>
+        <rect class="maniqui-silueta" x="140" y="92" width="23" height="100" rx="11"/>
+        <circle class="maniqui-silueta" cx="48" cy="196" r="12"/>
+        <circle class="maniqui-silueta" cx="152" cy="196" r="12"/>
+        <rect class="maniqui-silueta" x="68" y="192" width="28" height="134" rx="13"/>
+        <rect class="maniqui-silueta" x="104" y="192" width="28" height="134" rx="13"/>
+        <ellipse class="maniqui-silueta" cx="82" cy="332" rx="17" ry="10"/>
+        <ellipse class="maniqui-silueta" cx="118" cy="332" rx="17" ry="10"/>
+
+        <g class="hotspot" tabindex="0" role="button" data-zona="cabeza" aria-label="Cabeza" transform="translate(100,26)">
+          <title>Cabeza</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="ojos" aria-label="Ojos" transform="translate(100,44)">
+          <title>Ojos</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="boca" aria-label="Boca y dientes" transform="translate(78,58)">
+          <title>Boca / dientes</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="pecho" aria-label="Pecho" transform="translate(100,112)">
+          <title>Pecho</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="abdomen" aria-label="Abdomen" transform="translate(100,166)">
+          <title>Abdomen</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="brazo" aria-label="Brazo" transform="translate(151,150)">
+          <title>Brazo</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="rodilla" aria-label="Rodilla y pierna" transform="translate(82,260)">
+          <title>Rodilla / pierna</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+        <g class="hotspot" tabindex="0" role="button" data-zona="tobillo" aria-label="Pie y tobillo" transform="translate(118,322)">
+          <title>Pie / tobillo</title>
+          <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
+        </g>
+      </svg>
     </div>
-    <div class="float-badge">98% recomiendan</div>
+    <div class="float-badge">Sugerencia al instante</div>
   </div>
 </header>
-
-<section class="block wrap diagnostico-section" id="diagnostico">
-  <div class="head">
-    <h2>¿No sabes qué especialista necesitas?</h2>
-    <p>Cuéntanos qué sientes o señala en el maniquí dónde te duele — te sugerimos la especialidad ideal al instante.</p>
-  </div>
-
-  <div class="diag-card">
-    <div class="diag-tabs" role="tablist">
-      <button class="diag-tab active" type="button" role="tab" aria-selected="true" aria-controls="panel-texto" data-tab="texto">Describir síntoma</button>
-      <button class="diag-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-cuerpo" data-tab="cuerpo">Señalar en el cuerpo</button>
-    </div>
-
-    <div class="diag-panel" id="panel-texto" role="tabpanel">
-      <form id="sintoma-form">
-        <textarea id="sintoma-input" rows="3" maxlength="300" placeholder="Ej: Me duele mucho el pecho y se me acelera el corazón..." aria-label="Describe tu síntoma" required></textarea>
-        <button class="btn btn-primary" type="submit">Analizar síntoma</button>
-      </form>
-    </div>
-
-    <div class="diag-panel" id="panel-cuerpo" role="tabpanel" hidden>
-      <div class="maniqui-wrap">
-        <svg class="maniqui" viewBox="0 0 200 360" role="img" aria-label="Maniquí del cuerpo humano con zonas señalables">
-          <ellipse class="maniqui-shadow" cx="100" cy="350" rx="55" ry="7"/>
-          <circle class="maniqui-silueta" cx="100" cy="40" r="28"/>
-          <rect class="maniqui-silueta" x="92" y="62" width="16" height="16" rx="5"/>
-          <rect class="maniqui-silueta" x="62" y="76" width="76" height="118" rx="30"/>
-          <rect class="maniqui-silueta" x="37" y="92" width="23" height="100" rx="11"/>
-          <rect class="maniqui-silueta" x="140" y="92" width="23" height="100" rx="11"/>
-          <circle class="maniqui-silueta" cx="48" cy="196" r="12"/>
-          <circle class="maniqui-silueta" cx="152" cy="196" r="12"/>
-          <rect class="maniqui-silueta" x="68" y="192" width="28" height="134" rx="13"/>
-          <rect class="maniqui-silueta" x="104" y="192" width="28" height="134" rx="13"/>
-          <ellipse class="maniqui-silueta" cx="82" cy="332" rx="17" ry="10"/>
-          <ellipse class="maniqui-silueta" cx="118" cy="332" rx="17" ry="10"/>
-
-          <g class="hotspot" tabindex="0" role="button" data-zona="cabeza" aria-label="Cabeza" transform="translate(100,26)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="ojos" aria-label="Ojos" transform="translate(100,44)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="boca" aria-label="Boca y dientes" transform="translate(78,58)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="pecho" aria-label="Pecho" transform="translate(100,112)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="abdomen" aria-label="Abdomen" transform="translate(100,166)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="brazo" aria-label="Brazo" transform="translate(151,150)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="rodilla" aria-label="Rodilla y pierna" transform="translate(82,260)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-          <g class="hotspot" tabindex="0" role="button" data-zona="tobillo" aria-label="Pie y tobillo" transform="translate(118,322)">
-            <circle class="hotspot-pulse" r="9"/><circle class="hotspot-dot" r="5"/>
-          </g>
-        </svg>
-
-        <ul class="maniqui-legend">
-          <li><button type="button" data-zona="cabeza">Cabeza</button></li>
-          <li><button type="button" data-zona="ojos">Ojos</button></li>
-          <li><button type="button" data-zona="boca">Boca / dientes</button></li>
-          <li><button type="button" data-zona="pecho">Pecho</button></li>
-          <li><button type="button" data-zona="abdomen">Abdomen</button></li>
-          <li><button type="button" data-zona="brazo">Brazo</button></li>
-          <li><button type="button" data-zona="rodilla">Rodilla / pierna</button></li>
-          <li><button type="button" data-zona="tobillo">Pie / tobillo</button></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="diag-resultado" id="diag-resultado" hidden>
-      <div class="diag-resultado-principal">
-        <span class="diag-badge" id="diag-badge">Especialidad sugerida</span>
-        <h3 id="diag-especialidad"></h3>
-        <div class="diag-confianza">
-          <div class="diag-confianza-bar"><div class="diag-confianza-fill" id="diag-confianza-fill"></div></div>
-          <span id="diag-confianza-texto"></span>
-        </div>
-        <p class="diag-coincidencias" id="diag-coincidencias"></p>
-        <button class="btn btn-primary" type="button" id="diag-ver-doctores">Ver médicos de esta especialidad</button>
-      </div>
-      <div class="diag-alternativas" id="diag-alternativas"></div>
-    </div>
-    <p class="diag-status" id="diag-status" role="status" aria-live="polite"></p>
-  </div>
-</section>
 
 <section class="block wrap results-section" id="resultados" aria-labelledby="results-title" hidden>
   <div class="head">
