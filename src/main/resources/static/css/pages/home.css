@@ -281,7 +281,7 @@
 .aud-patient .btn:hover svg,.aud-doctor .btn:hover svg{transform:translateX(4px)}
 
 /* Aparición suave al hacer scroll (solo si JS está activo; sin JS todo se ve) */
-.reveal-ready .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
+.reveal-ready .reveal{opacity:1;transform:none;transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
 .reveal-ready .reveal.in{opacity:1;transform:none}
 .reveal-ready .feat-grid .reveal:nth-child(3n+2),.reveal-ready .reco-flow .reveal:nth-child(2){transition-delay:.08s}
 .reveal-ready .feat-grid .reveal:nth-child(3n+3),.reveal-ready .reco-flow .reveal:nth-child(3){transition-delay:.16s}

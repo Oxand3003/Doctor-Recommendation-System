@@ -298,7 +298,7 @@
       </ul>
     </div>
 
-    <form class="contact-form" id="contact-form" method="post" th:action="@{/consultas}" novalidate
+    <form class="contact-form" id="contact-form" method="post" action="/consultas" novalidate
           th:with="f=${consultaForm}">
       <p class="contact-flash ok" role="status" th:if="${consultaOk}" th:text="${consultaOk}"></p>
       <p class="contact-flash err" role="alert" th:if="${consultaError}" th:text="${consultaError}"></p>

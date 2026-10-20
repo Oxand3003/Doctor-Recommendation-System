@@ -30,6 +30,17 @@ public class HomeController {
         model.addAttribute("specialties", especialidades.findByActivaTrueOrderByNombreAsc());
         model.addAttribute("searchDistricts", distritosPermitidos);
         model.addAttribute("motivosConsulta", MotivoConsulta.values());
+        // El formulario de contacto también se renderiza en la carga inicial.
+        // En caso de volver desde una validación fallida, se conservan los
+        // valores enviados mediante el flash attribute.
+        if (!model.containsAttribute("consultaForm")) {
+            model.addAttribute("consultaForm", Map.of(
+                    "nombres", "",
+                    "correo", "",
+                    "telefono", "",
+                    "motivo", "",
+                    "mensaje", ""));
+        }
         model.addAttribute("specialtyLabels", Map.of(
                 "Cardiología", "Cardiología",
                 "Odontología", "Odontología",
