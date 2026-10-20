@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mensajes | MediCerca', 'chat')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<!-- Pantalla única de mensajería: la usan paciente y médico (chatRol lo aporta ChatController). -->
+<main class="wrap cx-page" th:with="esMedico=${chatRol == 'MEDICO'}">
+
+  <header class="cx-head">
+    <h1>Mensajes</h1>
+    <p th:text="${esMedico} ? 'Responde las consultas de tus pacientes en un solo lugar.' : 'Conversa con los médicos con los que tienes o has tenido una cita.'">Conversa con tus médicos.</p>
+  </header>
+
+  <!-- Los médicos ven también la navegación de su zona privada (la pestaña "Chat" queda activa). -->
+  <th:block th:if="${esMedico}"><div th:replace="~{fragments/medico-tabs :: tabs('chat')}"></div></th:block>
+
+  <!-- REST sirve conversaciones, historial y lecturas; STOMP distribuye mensajes y eventos privados. -->
+  <section class="cx" id="chat-app" aria-label="Mensajería"
+           th:classappend="${esMedico} ? ' cx--tabs' : ''"
+           th:attr="data-role=${chatRol},data-user-name=${chatNombre},data-api-base=@{/api/mensajeria},data-websocket-url=@{/ws-mensajeria},data-csrf-header=${_csrf?.headerName},data-csrf-token=${_csrf?.token}">
+
+    <div class="sr-only" id="cx-live" aria-live="polite"></div>
+
+    <!-- ================= Columna izquierda: conversaciones ================= -->
+    <aside class="cx-side" id="cx-side" aria-label="Lista de conversaciones">
+      <div class="cx-side-head">
+        <h2>Conversaciones <span class="cx-total" id="cx-total" hidden aria-label="Mensajes sin leer"></span></h2>
+        <div class="cx-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <label class="sr-only" for="cx-search">Buscar conversaciones</label>
+          <input id="cx-search" type="search" autocomplete="off" spellcheck="false"
+                 th:placeholder="${esMedico} ? 'Buscar paciente o mensaje…' : 'Buscar médico o mensaje…'" placeholder="Buscar conversación…">
+          <button class="cx-search-clear" id="cx-search-clear" type="button" aria-label="Borrar búsqueda" hidden>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+
+        <div class="cx-filters" role="tablist" aria-label="Filtrar conversaciones">
+          <button type="button" role="tab" class="cx-chip is-active" data-filter="all" aria-selected="true">Todas</button>
+          <button type="button" role="tab" class="cx-chip" data-filter="unread" aria-selected="false" tabindex="-1">No leídas</button>
+        </div>
+      </div>
+
+      <div class="cx-side-body" id="cx-side-body" aria-busy="true">
+        <!-- Estado de carga: esqueletos (se retiran cuando llegan las conversaciones) -->
+        <ul class="cx-skeleton" id="cx-list-skeleton" aria-hidden="true">
+          <li><span class="sk sk-av"></span><span class="sk-lines"><span class="sk sk-l1"></span><span class="sk sk-l2"></span></span></li>
+          <li><span class="sk sk-av"></span><span class="sk-lines"><span class="sk sk-l1"></span><span class="sk sk-l2"></span></span></li>
+          <li><span class="sk sk-av"></span><span class="sk-lines"><span class="sk sk-l1"></span><span class="sk sk-l2"></span></span></li>
+          <li><span class="sk sk-av"></span><span class="sk-lines"><span class="sk sk-l1"></span><span class="sk sk-l2"></span></span></li>
+        </ul>
+
+        <!-- Sin ninguna conversación -->
+        <div class="cx-empty cx-empty--list" id="cx-list-empty" hidden>
+          <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg></span>
+          <h3>Aún no tienes conversaciones</h3>
+          <p th:text="${esMedico} ? 'Cuando un paciente te escriba, la conversación aparecerá aquí.' : 'Reserva una cita con un médico y podrás escribirle desde aquí.'">Tus conversaciones aparecerán aquí.</p>
+          <a th:unless="${esMedico}" th:href="@{/account}" class="btn btn-primary btn-sm">Buscar un médico</a>
+        </div>
+
+        <!-- Búsqueda o filtro sin resultados -->
+        <div class="cx-empty cx-empty--list" id="cx-list-noresults" hidden>
+          <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6M8.5 11h5"/></svg></span>
+          <h3>Sin resultados</h3>
+          <p id="cx-noresults-text">No encontramos ninguna conversación.</p>
+        </div>
+
+        <!-- No se pudieron cargar las conversaciones -->
+        <div class="cx-empty cx-empty--list is-error" id="cx-list-error" hidden role="alert">
+          <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg></span>
+          <h3>No pudimos cargar tus mensajes</h3>
+          <p>Revisa tu conexión e inténtalo de nuevo.</p>
+          <button type="button" class="btn btn-ghost btn-sm" id="cx-list-retry">Reintentar</button>
+        </div>
+
+        <div id="cx-list-wrap" hidden>
+          <ul class="cx-list" id="cx-list" aria-label="Conversaciones"></ul>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= Columna derecha: conversación ================= -->
+    <section class="cx-thread" id="cx-thread" aria-label="Conversación">
+
+      <!-- Nada seleccionado (escritorio) -->
+      <div class="cx-placeholder" id="cx-placeholder">
+        <span class="cx-placeholder-ico" aria-hidden="true">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 11.5h7M8.5 14.5h4"/></svg>
+        </span>
+        <h2>Tus mensajes</h2>
+        <p>Elige una conversación de la lista para ver el historial y escribir.</p>
+      </div>
+
+      <div class="cx-panel" id="cx-panel" hidden>
+        <header class="cx-panel-head">
+          <button class="cx-back" id="cx-back" type="button" aria-label="Volver a las conversaciones">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="cx-av" id="cx-head-av" aria-hidden="true"></span>
+          <div class="cx-who">
+            <h2 id="cx-head-name">Nombre</h2>
+            <p id="cx-head-status" aria-live="polite">&nbsp;</p>
+          </div>
+        </header>
+
+        <div class="cx-scroll" id="cx-scroll">
+          <!-- Estado de carga del historial -->
+          <div class="cx-msg-skeleton" id="cx-msg-skeleton" aria-hidden="true" hidden>
+            <span class="sk sk-b sk-in"></span><span class="sk sk-b sk-out"></span><span class="sk sk-b sk-in sk-wide"></span><span class="sk sk-b sk-out sk-wide"></span>
+          </div>
+
+          <!-- Conversación sin mensajes -->
+          <div class="cx-empty cx-empty--thread" id="cx-thread-empty" hidden>
+            <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/><path d="M9 11h.01M12 11h.01M15 11h.01"/></svg></span>
+            <h3>Aún no hay mensajes</h3>
+            <p id="cx-thread-empty-text">Escribe el primer mensaje para iniciar la conversación.</p>
+          </div>
+
+          <!-- No se pudo cargar el historial -->
+          <div class="cx-empty cx-empty--thread is-error" id="cx-thread-error" hidden role="alert">
+            <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg></span>
+            <h3>No pudimos cargar la conversación</h3>
+            <button type="button" class="btn btn-ghost btn-sm" id="cx-thread-retry">Reintentar</button>
+          </div>
+
+          <ol class="cx-msgs" id="cx-msgs" role="log" aria-live="polite" aria-relevant="additions" aria-label="Historial de mensajes"></ol>
+
+          <div class="cx-typing" id="cx-typing" hidden aria-live="polite">
+            <span class="cx-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="sr-only" id="cx-typing-text">Está escribiendo…</span>
+          </div>
+        </div>
+
+        <button class="cx-jump" id="cx-jump" type="button" hidden>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+          <span id="cx-jump-text">Mensajes nuevos</span>
+        </button>
+
+        <form class="cx-composer" id="cx-form" autocomplete="off">
+          <label class="sr-only" for="cx-input">Escribe un mensaje</label>
+          <textarea id="cx-input" rows="1" maxlength="1000" placeholder="Escribe un mensaje…"></textarea>
+          <span class="cx-count" id="cx-count" hidden aria-hidden="true"></span>
+          <button class="cx-send" id="cx-send" type="submit" aria-label="Enviar mensaje" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12 20 5l-5 15-3-6-7-2Z"/><path d="m12 14 3-3"/></svg>
+          </button>
+        </form>
+        <p class="cx-note">No uses este chat para emergencias. Si es urgente, llama a tu servicio de emergencias.</p>
+      </div>
+    </section>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+
+<!-- Servicio REST/STOMP -> interfaz -->
+<script th:src="@{/js/pages/chat-service.js}"></script>
+<script th:src="@{/js/pages/chat.js}"></script>
+</body>
+</html>

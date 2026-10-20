@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Tarifas | MediCerca', 'medico-gestion')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Tus tarifas se guardaron correctamente.</div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <div class="mg-head">
+    <h1>Mis tarifas</h1>
+    <p>Define cuánto cobras según la modalidad de atención. Los pacientes lo ven en tu perfil público.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('tarifas')}"></div>
+
+  <div class="mg-grid">
+    <section class="mp-card mg-card">
+      <h2>Precios por modalidad</h2>
+      <p class="lead">Montos en soles (S/), entre 0 y 9999.99. Puedes dejar un campo vacío si no aplica.</p>
+
+      <form class="mg-form" th:action="@{/medico/tarifas}" method="post" id="form-tarifas">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="t-presencial">Consulta presencial</label>
+            <div class="mg-prefix"><span>S/</span><input type="text" id="t-presencial" name="costoConsulta" inputmode="decimal" maxlength="8"
+                   pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="Ej. 120" th:value="${t.datos().costoConsulta()}" value="120"></div>
+            <span class="form-hint">Es también tu precio base: el que se cobra por cita presencial.</span>
+          </div>
+          <div class="form-group">
+            <label for="t-tele">Teleconsulta</label>
+            <div class="mg-prefix"><span>S/</span><input type="text" id="t-tele" name="costoTeleconsulta" inputmode="decimal" maxlength="8"
+                   pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="Igual que la presencial" th:value="${t.datos().costoTeleconsulta()}" value=""></div>
+            <span class="form-hint">Si lo dejas vacío, se cobra lo mismo que la consulta presencial.</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="t-hora">Tarifa por hora (referencial)</label>
+          <div class="mg-prefix"><span>S/</span><input type="text" id="t-hora" name="costoPorHora" inputmode="decimal" maxlength="8"
+                 pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="Ej. 180" th:value="${t.datos().costoPorHora()}" value=""></div>
+          <span class="form-hint">Se muestra en tu perfil como información. Las citas se cobran con el precio de su modalidad.</span>
+        </div>
+        <div class="mg-actions">
+          <button type="submit" class="btn btn-primary">Guardar tarifas</button>
+        </div>
+      </form>
+    </section>
+
+    <aside class="mp-side">
+      <section class="mp-card">
+        <h2>Así lo ven tus pacientes</h2>
+        <div class="mg-price-list">
+          <div class="mg-price"><span>Consulta presencial</span><b th:text="${#strings.isEmpty(t.datos().costoConsulta())} ? '—' : 'S/ ' + ${t.datos().costoConsulta()}">S/ 120</b></div>
+          <div class="mg-price">
+            <span>Teleconsulta<small th:if="${t.teleHereda() and !#strings.isEmpty(t.teleEfectiva())}">igual que la presencial</small></span>
+            <b th:text="${#strings.isEmpty(t.teleEfectiva())} ? '—' : 'S/ ' + ${t.teleEfectiva()}">S/ 120</b>
+          </div>
+          <div class="mg-price" th:if="${!#strings.isEmpty(t.datos().costoPorHora())}"><span>Por hora</span><b th:text="'S/ ' + ${t.datos().costoPorHora()}">S/ 180</b></div>
+        </div>
+        <p class="mp-note">Los procedimientos con precio propio (ECG, Holter, etc.) se mantienen aparte y no cambian.</p>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/pages/medico-gestion.js}"></script>
+</body>
+</html>

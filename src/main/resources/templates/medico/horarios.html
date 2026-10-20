@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Horarios | MediCerca', 'medico-agenda')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Franja agregada.</div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <div class="mg-head">
+    <h1>Días y horarios de atención</h1>
+    <p>Los turnos que ven los pacientes se generan con estas franjas. Una franja desactivada no recibe citas.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('horarios')}"></div>
+
+  <!-- ============ AGREGAR FRANJA ============ -->
+  <section class="mp-card mg-card">
+    <h2>Agregar franja</h2>
+    <p class="lead">Elige uno o varios días y el rango de horas. Cada consulta dura el tiempo que indiques.</p>
+    <form class="mg-form" th:action="@{/medico/horarios}" method="post">
+      <div class="form-group">
+        <label>Días de la semana *</label>
+        <div class="mg-days" role="group" aria-label="Días de la semana">
+          <label class="mg-day-chip" th:each="dia : ${d.dias()}">
+            <input type="checkbox" name="dias" th:value="${dia.numero()}" value="1"><span th:text="${#strings.substring(dia.nombre(), 0, 3)}">Lun</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-row four">
+        <div class="form-group"><label for="h-inicio">Desde *</label><input type="time" id="h-inicio" name="horaInicio" required value="09:00"></div>
+        <div class="form-group"><label for="h-fin">Hasta *</label><input type="time" id="h-fin" name="horaFin" required value="13:00"></div>
+        <div class="form-group"><label for="h-dur">Duración de cada consulta (min) *</label><input type="number" id="h-dur" name="duracionMin" min="5" max="240" step="5" required value="30"></div>
+        <div class="form-group">
+          <label for="h-mod">Modalidad *</label>
+          <select id="h-mod" name="modalidad" required>
+            <option th:each="m : ${d.modalidades()}" th:value="${m.valor()}" th:text="${m.label()}" th:selected="${m.valor() == 'AMBAS'}" value="AMBAS">Presencial y teleconsulta</option>
+          </select>
+        </div>
+      </div>
+      <div class="mg-actions" style="justify-content:space-between;align-items:center">
+        <label class="mg-check"><input type="checkbox" name="activo" checked> Activa (recibe citas)</label>
+        <button type="submit" class="btn btn-primary">Agregar franja</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============ TURNOS RESERVADOS ============ -->
+  <section class="mp-card mg-card" id="turnos-reservados">
+    <div class="mp-card-head">
+      <h2>Turnos reservados</h2>
+      <span class="count" th:text="${d.reservas().size()} + (${d.reservas().size() == 1} ? ' turno ocupado' : ' turnos ocupados') + ' · próximos 14 días'">0 turnos ocupados</span>
+    </div>
+    <p class="lead">Cuando un paciente reserva, ese horario queda ocupado y deja de ofrecerse a otros pacientes. Toca una reserva para ver su detalle.</p>
+    <p class="mp-empty" th:if="${d.reservas().isEmpty()}">Todavía no tienes turnos reservados en los próximos 14 días.</p>
+    <a class="ma-row" th:each="r : ${d.reservas()}" th:href="@{/medico/citas/{id}(id=${r.citaId()})}">
+      <div>
+        <div class="who" th:text="${r.fecha()} + ' · ' + ${r.hora()} + ' · ' + ${r.paciente()}">Lun 19 oct · 09:00–09:40 · Paciente</div>
+        <div class="meta" th:text="${r.modalidad()}">Presencial</div>
+      </div>
+      <span class="ma-badge" th:classappend="${r.estadoClave()}" th:text="${r.estado()}">Pendiente</span>
+    </a>
+  </section>
+
+  <!-- ============ SEMANA ============ -->
+  <section class="mp-card mg-card">
+    <div class="mp-card-head">
+      <h2>Mi semana</h2>
+      <span class="count" th:text="${d.franjasActivas()} + ' activas de ' + ${d.franjasTotal()} + ' franjas'">3 activas de 4 franjas</span>
+    </div>
+    <div class="mg-week">
+      <div class="mg-day" th:each="dia : ${d.dias()}">
+        <h3><span th:text="${dia.nombre()}">Lunes</span><small th:if="${dia.franjas().isEmpty()}">Sin atención</small></h3>
+        <p class="mg-empty-day" th:if="${dia.franjas().isEmpty()}">No atiendes este día.</p>
+        <div class="mg-slot" th:each="f : ${dia.franjas()}" th:classappend="${!f.activo()} ? 'off'">
+          <div>
+            <span class="when" th:text="${f.inicio()} + ' – ' + ${f.fin()}">09:00 – 12:00</span>
+            <span class="mg-badge" th:classappend="${!f.activo()} ? 'off'" th:text="${f.activo()} ? 'Activa' : 'Inactiva'">Activa</span>
+            <div class="meta" th:text="${f.modalidadLabel()} + ' · ' + ${f.duracionMin()} + ' min por consulta · ' + ${f.turnos()} + ' turnos'">Presencial · 40 min</div>
+          </div>
+          <div class="mg-slot-actions">
+            <form th:action="@{/medico/horarios/{id}/estado(id=${f.id()})}" method="post">
+              <button class="btn btn-ghost btn-sm" type="submit" th:text="${f.activo()} ? 'Desactivar' : 'Activar'">Desactivar</button>
+            </form>
+            <button class="btn btn-ghost btn-sm" type="button" data-edit-horario
+                    th:attr="data-id=${f.id()},data-dia=${f.dia()},data-inicio=${f.inicio()},data-fin=${f.fin()},data-duracion=${f.duracionMin()},data-modalidad=${f.modalidad()},data-activo=${f.activo()}">Editar</button>
+            <form th:action="@{/medico/horarios/{id}/eliminar(id=${f.id()})}" method="post" data-confirm="¿Eliminar esta franja?">
+              <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MODAL: EDITAR FRANJA ============ -->
+<div class="modal-overlay" id="horario-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="horario-title">
+    <div class="modal-header">
+      <h3 id="horario-title">Editar franja</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form class="modal-body" id="form-horario" th:action="@{/medico/horarios}" method="post" th:attr="data-base=@{/medico/horarios}">
+      <div class="form-group">
+        <label for="eh-dia">Día *</label>
+        <select id="eh-dia" name="dias" required>
+          <option th:each="dia : ${d.dias()}" th:value="${dia.numero()}" th:text="${dia.nombre()}" value="1">Lunes</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="eh-inicio">Desde *</label><input type="time" id="eh-inicio" name="horaInicio" required></div>
+        <div class="form-group"><label for="eh-fin">Hasta *</label><input type="time" id="eh-fin" name="horaFin" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="eh-dur">Duración (min) *</label><input type="number" id="eh-dur" name="duracionMin" min="5" max="240" step="5" required></div>
+        <div class="form-group">
+          <label for="eh-mod">Modalidad *</label>
+          <select id="eh-mod" name="modalidad" required>
+            <option th:each="m : ${d.modalidades()}" th:value="${m.valor()}" th:text="${m.label()}" value="AMBAS">Presencial y teleconsulta</option>
+          </select>
+        </div>
+      </div>
+      <label class="mg-check"><input type="checkbox" name="activo" id="eh-activo"> Activa (recibe citas)</label>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/pages/medico-gestion.js}"></script>
+</body>
+</html>

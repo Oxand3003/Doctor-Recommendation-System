@@ -1,0 +1,16 @@
+.search{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:10px;display:flex;gap:8px;box-shadow:0 12px 40px -20px rgba(14,107,92,.35)}
+.field{flex:1;display:flex;align-items:center;gap:10px;padding:8px 14px}
+.field svg{flex-shrink:0;color:var(--primary)}
+.field input{border:none;outline:none;font-family:inherit;font-size:1rem;width:100%;color:var(--ink);background:transparent}
+.field input::placeholder{color:#9AAAA4}
+.field.split{border-left:1px solid var(--line)}
+.search .btn{border-radius:12px;padding:12px 22px}
+.search-status{min-height:1.6em;color:var(--muted);font-size:.9rem;margin-top:10px}
+.search-date,.search-time{min-width:145px}
+.search-date input,.search-time input{min-width:0}
+
+@media(max-width:560px){
+  .search{flex-direction:column}
+  .search-date,.search-time{min-width:0}
+  .field.split{border-left:none;border-top:1px solid var(--line)}
+}

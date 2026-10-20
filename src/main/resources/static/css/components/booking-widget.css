@@ -1,0 +1,226 @@
+/* [COMMIT 4] BARRA LATERAL Y WIDGET DE RESERVA */
+.booking-card {
+  position: sticky;
+  top: 90px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 20px 50px -25px rgba(14, 107, 92, 0.25);
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 20px;
+}
+
+.booking-header h3 {
+  font-size: 1.18rem;
+  color: var(--ink);
+}
+
+.booking-price-tag .cur {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.booking-price-tag .amt {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.booking-price-tag .per {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Modalidad */
+.modality-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: var(--bg);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.mod-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  padding: 9px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mod-btn.active {
+  background: var(--surface);
+  color: var(--primary-dark);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.booking-label {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.booking-label b {
+  color: var(--ink);
+}
+
+/* Carrusel de Días */
+.days-selector {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.day-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 10px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.day-slot:hover {
+  border-color: var(--primary);
+}
+
+.day-slot.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+}
+
+.day-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.day-num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 2px 0;
+}
+
+.day-sub {
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+
+/* Grilla de Horas */
+.hours-section {
+  margin-bottom: 22px;
+}
+
+.hours-group-title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.hours-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.hour-btn {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  padding: 8px 4px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all 0.15s;
+}
+
+.hour-btn:hover:not(.disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.hour-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.hour-btn.disabled {
+  background: var(--bg);
+  border-color: var(--line);
+  color: #A0B2AC;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+/* Resumen de Selección */
+.booking-summary-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.summary-line:last-child {
+  margin-bottom: 0;
+}
+
+.summary-line span {
+  color: var(--muted);
+}
+
+.summary-line b {
+  color: var(--ink);
+}
+
+.booking-guarantee {
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+
+.hours-group-title--spaced { margin-top: 12px; }

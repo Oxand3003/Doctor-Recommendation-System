@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Sedes | MediCerca', 'medico-gestion')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Sede agregada.</div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <div class="mg-head">
+    <h1>Mis sedes</h1>
+    <p>Registra tus consultorios o establecimientos. Solo tú puedes verlos, editarlos y eliminarlos.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('sedes')}"></div>
+
+  <section class="mp-card mg-card">
+    <h2>Sede principal</h2>
+    <p class="lead">Es la que aparece como lugar de atención en tu perfil público. Puedes elegir una de tus sedes o un establecimiento del catálogo.</p>
+    <form class="mg-form mg-inline" th:action="@{/medico/sedes/principal}" method="post">
+      <div class="form-group">
+        <label for="s-principal">Sede principal</label>
+        <select id="s-principal" name="establecimientoId">
+          <option value="" th:selected="${s.principalId() == null}">— Por confirmar —</option>
+          <option th:each="o : ${s.opcionesPrincipal()}" th:value="${o.id()}" th:text="${o.label()}"
+                  th:selected="${o.id() == s.principalId()}" value="1">Clínica San Borja — San Borja</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
+  </section>
+
+  <section class="mp-card mg-card">
+    <div class="mp-card-head">
+      <h2>Mis sedes <span class="count" th:text="'(' + ${s.propias().size()} + ' de ' + ${s.maxSedes()} + ')'">(0 de 10)</span></h2>
+      <button class="btn btn-primary btn-sm" type="button" id="btn-nueva-sede" th:disabled="${s.propias().size() >= s.maxSedes()}">+ Agregar sede</button>
+    </div>
+    <p class="mp-empty" th:if="${s.propias().isEmpty()}">Aún no registraste sedes propias. Agrega tu consultorio para que los pacientes sepan dónde atiendes.</p>
+    <div class="mg-sede" th:each="x : ${s.propias()}">
+      <div>
+        <h3><span th:text="${x.nombre()}">Consultorio Central</span> <span class="mg-badge" th:if="${x.principal()}">Principal</span></h3>
+        <p th:text="${x.direccion()} + ' · ' + ${x.distrito()}">Av. Larco 1150 · Miraflores, Lima</p>
+        <p th:if="${x.referencia() != null}" th:text="'Referencia: ' + ${x.referencia()}">Referencia</p>
+      </div>
+      <div class="mg-slot-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-edit-sede
+                th:attr="data-id=${x.id()},data-nombre=${x.nombre()},data-direccion=${x.direccion()},data-referencia=${x.referencia()},data-distrito=${x.distritoId()}">Editar</button>
+        <form th:action="@{/medico/sedes/{id}/eliminar(id=${x.id()})}" method="post"
+              th:attr="data-confirm=${x.principal()} ? '¿Eliminar tu sede principal? Tu perfil quedará con la sede por confirmar.' : '¿Eliminar esta sede?'">
+          <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MODAL: SEDE (agregar / editar) ============ -->
+<div class="modal-overlay" id="sede-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="sede-title">
+    <div class="modal-header">
+      <h3 id="sede-title">Agregar sede</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form class="modal-body" id="form-sede" th:action="@{/medico/sedes}" method="post" th:attr="data-base=@{/medico/sedes}">
+      <div class="form-group"><label for="se-nombre">Nombre *</label><input type="text" id="se-nombre" name="nombre" maxlength="150" required placeholder="Ej. Consultorio San Isidro"></div>
+      <div class="form-group"><label for="se-direccion">Dirección *</label><input type="text" id="se-direccion" name="direccion" maxlength="200" required placeholder="Ej. Av. Javier Prado 1234, Of. 501"></div>
+      <div class="form-group"><label for="se-referencia">Referencia</label><input type="text" id="se-referencia" name="referencia" maxlength="200" placeholder="Ej. Frente al parque"></div>
+      <div class="form-group">
+        <label for="se-distrito">Distrito *</label>
+        <select id="se-distrito" name="distritoId" required>
+          <option value="">— Selecciona —</option>
+          <option th:each="d : ${s.distritos()}" th:value="${d.id()}" th:text="${d.label()}" value="1">San Borja, Lima</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/pages/medico-gestion.js}"></script>
+</body>
+</html>

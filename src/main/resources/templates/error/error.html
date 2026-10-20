@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Error | MediCerca</title><link rel="stylesheet" th:href="@{/css/pages/error.css}"></head>
+<body>
+  <div th:replace="~{error/fragments :: page(${status ?: 'Error'}, 'No pudimos completar tu solicitud', 'La aplicación no puede completar esta acción en este momento. Intenta nuevamente o regresa al inicio.', '!', true, null)}"></div>
+</body>
+</html>

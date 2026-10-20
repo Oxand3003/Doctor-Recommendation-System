@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Todos los navbars saben si hay un médico con sesión: `nav` lo aporta NavbarAdvice (config). -->
+
+<!-- Marca: marca con pulso + nombre. Se reutiliza en todos los navbars. -->
+<a th:fragment="brand" th:href="@{/}" class="logo" aria-label="MediCerca, inicio">
+  <span class="logo-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="M2.5 12.5h4.2l2.3-6 3.4 11.2 2.4-5.2h6.7"/></svg></span>
+  <span class="logo-name">Medi<b>Cerca</b></span>
+</a>
+
+<!-- Enlace "Chat" (paciente y médico). Lleva la condición dentro porque th:replace se resuelve antes que th:if.
+     El contador [data-chat-unread] lo rellena chat.js en la pantalla de mensajes; en el resto del sitio queda oculto
+     hasta que el backend aporte el número de mensajes sin leer (ver CHAT_FRONTEND.md). -->
+<a th:fragment="chat" th:if="${nav != null and (nav.medico() or nav.paciente())}" th:href="@{/chat}" class="nav-chat">Chat<span class="nav-chat-badge" data-chat-unread hidden></span></a>
+
+<!-- Home page navbar -->
+<nav th:fragment="home">
+  <div class="wrap nav-in">
+    <a th:replace="~{fragments/navbar :: brand}"></a>
+    <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-links" th:with="esMedico=${nav != null and nav.medico()},esPaciente=${nav != null and nav.paciente()},esAdmin=${nav != null and nav.admin()}">
+      <a href="#specialties">Especialidades</a>
+      <a href="#features">Funciones</a>
+      <a href="#how-it-works">Cómo funciona</a>
+      <a th:if="${esMedico}" th:href="@{/medico/perfil}">Mi perfil</a>
+      <a th:if="${esPaciente}" th:href="@{/account} + '#my-appointments'">Mis citas</a>
+      <a th:replace="~{fragments/navbar :: chat}"></a>
+      <a th:if="${esPaciente}" th:href="@{/account}" class="btn btn-ghost" aria-label="Ir a mi perfil" title="Mi cuenta">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Mi cuenta
+      </a>
+      <form th:if="${esMedico or esPaciente or esAdmin}" th:action="@{/logout}" method="post">
+        <button class="btn btn-ghost" type="submit">Cerrar sesión</button>
+      </form>
+      <a th:if="${esAdmin}" th:href="@{/admin/doctor-applications}" class="btn btn-primary btn-go">Volver a Admin
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a th:unless="${esMedico or esPaciente or esAdmin}" th:href="@{/login}" class="btn btn-primary btn-go">Iniciar sesión / Crear cuenta
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</nav>
+
+<!-- Doctor profile navbar -->
+<nav th:fragment="profile">
+  <div class="wrap nav-in">
+    <a th:replace="~{fragments/navbar :: brand}"></a>
+    <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-links" th:with="esMedico=${nav != null and nav.medico()},esPaciente=${nav != null and nav.paciente()},esAdmin=${nav != null and nav.admin()}">
+      <a th:href="@{/#specialties}">Especialidades</a>
+      <a th:if="${esAdmin}" th:href="@{/admin/doctor-applications}">Volver a Admin</a>
+      <a th:if="${not esMedico and not esPaciente and not esAdmin}" th:href="@{/login}">Iniciar sesión</a>
+      <a th:if="${esMedico}" th:href="@{/medico/perfil}">Mi perfil</a>
+      <a th:if="${esPaciente}" th:href="@{/account} + '#my-appointments'">Mis citas</a>
+      <a th:replace="~{fragments/navbar :: chat}"></a>
+      <a th:if="${esPaciente}" th:href="@{/account}" class="btn btn-ghost" aria-label="Ir a mi perfil" title="Mi cuenta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Mi cuenta</a>
+      <a th:href="@{/}" class="btn btn-ghost">Volver al inicio</a>
+      <form th:if="${esMedico or esPaciente or esAdmin}" th:action="@{/logout}" method="post">
+        <button class="btn btn-ghost" type="submit">Cerrar sesión</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<!-- Login / register navbar -->
+<nav th:fragment="auth">
+  <div class="wrap nav-in">
+    <a th:replace="~{fragments/navbar :: brand}"></a>
+    <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-links" th:with="esMedico=${nav != null and nav.medico()},esPaciente=${nav != null and nav.paciente()}">
+      <a th:href="@{/}">Volver al inicio</a>
+      <a th:if="${esMedico}" th:href="@{/medico/perfil}">Mi perfil</a>
+      <a th:replace="~{fragments/navbar :: chat}"></a>
+      <a th:if="${esPaciente}" th:href="@{/account}" aria-label="Ir a mi perfil" title="Mi cuenta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Mi cuenta</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Logged-in navbar (account + zona privada del médico). Usage: navbar :: session('Buscar médicos')
+     Para un médico no se muestra "Buscar médicos" (homeLabel): ve "Mi perfil" y "Cerrar sesión". -->
+<nav th:fragment="session(homeLabel)">
+  <div class="wrap nav-in">
+    <a th:replace="~{fragments/navbar :: brand}"></a>
+    <button class="nav-toggle" type="button" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="nav-links" th:with="esMedico=${nav != null and nav.medico()},esPaciente=${nav != null and nav.paciente()}" th:classappend="${esPaciente} ? ' patient-account-nav' : ''">
+      <a th:unless="${esMedico}" th:href="@{/}" th:text="${homeLabel}">Inicio</a>
+      <a th:if="${esMedico}" th:href="@{/medico/perfil}">Mi perfil</a>
+      <a th:if="${esPaciente}" th:href="@{/account} + '#my-appointments'">Mis citas</a>
+      <a th:replace="~{fragments/navbar :: chat}"></a>
+      <a th:if="${esPaciente}" th:href="@{/account}" class="btn btn-ghost" aria-label="Ir a mi perfil" title="Mi cuenta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Mi cuenta</a>
+      <form th:action="@{/logout}" method="post">
+        <button class="btn btn-ghost" type="submit">Cerrar sesión</button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+</body>
+</html>

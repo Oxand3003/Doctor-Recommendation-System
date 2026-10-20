@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Usage: <footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer> -->
+<footer th:fragment="footer(text)" class="site-footer" th:with="esMedico=${nav != null and nav.medico()},esPaciente=${nav != null and nav.paciente()}">
+  <div class="wrap">
+
+    <!-- Aviso de emergencia -->
+    <div class="foot-alert" role="note">
+      <span class="foot-alert-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4M12 17.5v.01"/></svg>
+      </span>
+      <p><b>¿Es una emergencia?</b> MediCerca sirve para reservar consultas y no atiende urgencias. Llama al <b>106</b> (SAMU) o acude a la emergencia más cercana.</p>
+    </div>
+
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a th:replace="~{fragments/navbar :: brand}"></a>
+        <p>Encuentra médicos verificados cerca de ti, compara su experiencia y reserva tu cita en línea, sin llamadas ni filas.</p>
+        <ul class="foot-pills" aria-label="Lo que ofrece MediCerca">
+          <li class="p-teal">Médicos verificados</li>
+          <li class="p-amber">Horarios reales</li>
+          <li class="p-sky">Aviso por correo</li>
+        </ul>
+      </div>
+
+      <nav class="foot-col" aria-label="Para pacientes">
+        <h4>Pacientes</h4>
+        <ul>
+          <li><a th:href="@{/}">Buscar médicos</a></li>
+          <li><a th:href="@{/#specialties}">Especialidades</a></li>
+          <li><a th:href="@{/#how-it-works}">Cómo funciona</a></li>
+          <li th:if="${esPaciente}"><a th:href="@{/account} + '#my-appointments'">Mis citas</a></li>
+          <li th:if="${esPaciente}"><a th:href="@{/account}">Mi cuenta</a></li>
+          <li th:unless="${esPaciente or esMedico}"><a th:href="@{/login}">Iniciar sesión</a></li>
+        </ul>
+      </nav>
+
+      <nav class="foot-col" aria-label="Para médicos">
+        <h4>Médicos</h4>
+        <ul>
+          <li th:unless="${esMedico}"><a th:href="@{/login}">Quiero atender en MediCerca</a></li>
+          <li th:if="${esMedico}"><a th:href="@{/medico/perfil}">Mi perfil</a></li>
+          <li th:if="${esMedico}"><a th:href="@{/medico/agenda}">Mi agenda</a></li>
+          <li th:if="${esMedico}"><a th:href="@{/medico/horarios}">Mis horarios</a></li>
+          <li th:if="${esMedico}"><a th:href="@{/medico/dashboard}">Resumen</a></li>
+        </ul>
+        <p class="foot-note">Un administrador revisa cada solicitud antes de activar la cuenta médica.</p>
+      </nav>
+
+      <div class="foot-col">
+        <h4>Contacto</h4>
+        <ul class="foot-contact">
+          <li>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg>
+            <a href="mailto:contacto@medicerca.pe">contacto@medicerca.pe</a>
+          </li>
+          <li>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/></svg>
+            <a th:href="@{/#contacto}">Enviar una consulta</a>
+          </li>
+          <li>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+            <span>Lima, Perú</span>
+          </li>
+          <li>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span>Reserva en línea las 24 horas</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-bottom">
+      <p th:text="${text}">© 2026 MediCerca</p>
+      <p class="foot-legal">MediCerca no realiza diagnósticos ni reemplaza una consulta médica.</p>
+      <a href="#top" class="foot-top" aria-label="Volver arriba" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">
+        Volver arriba
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

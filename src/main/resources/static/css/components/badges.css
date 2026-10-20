@@ -1,0 +1,2 @@
+.tag{display:inline-flex;align-items:center;gap:8px;background:var(--mint);color:var(--primary-dark);font-size:.85rem;font-weight:600;padding:7px 14px;border-radius:100px;margin-bottom:22px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--primary)}

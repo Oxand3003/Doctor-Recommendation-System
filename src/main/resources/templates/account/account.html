@@ -42,7 +42,7 @@
     <!-- ---------- Asistente IA ---------- -->
     <div id="ai-search-panel" class="finder-panel" role="tabpanel" aria-labelledby="tab-ia"
          th:classappend="${modoBusqueda != 'ia'} ? ' is-hidden' : ''">
-      <div id="asistente" th:attr="data-chat-endpoint=@{/api/chat/recommendations},data-conversation-endpoint=@{/api/chat/conversation},data-doctor-base=@{/doctor/}">
+      <div id="asistente" th:attr="data-chat-endpoint=@{/api/chat/recommendations},data-conversation-endpoint=@{/api/chat/conversation},data-doctor-base=@{/doctor/},data-orientacion-endpoint=@{/api/chat/orientacion},data-patient-name=${cuenta.nombre()}">
         <div class="assistant-chat" aria-label="Conversación con el asistente de recomendaciones">
           <div class="chat-toolbar">
             <span class="chat-toolbar-title"><span aria-hidden="true">✦</span> Asistente MediCerca</span>
@@ -59,6 +59,30 @@
           </form>
           <p class="assistant-disclaimer">El asistente orienta sobre especialidades y médicos; no realiza diagnósticos ni reemplaza una consulta. Entiende textos con errores de ortografía. En una urgencia, llama al 106 (SAMU) o acude a emergencias.</p>
         </div>
+
+        <!-- Maniquí corporal: lo muestra orientacion-corporal.js cuando el asistente orienta por síntomas -->
+        <section class="body-panel" id="body-panel" aria-labelledby="body-title" hidden>
+          <div class="body-head">
+            <div>
+              <h3 id="body-title">Orientación por zona del cuerpo</h3>
+              <p>Toca en el maniquí el punto donde sientes el malestar. Es solo una orientación para elegir especialidad; no es un diagnóstico.</p>
+            </div>
+            <div class="body-tools">
+              <div class="body-sex" role="group" aria-label="Tipo de maniquí">
+                <button type="button" class="body-sex-btn" data-sexo="mujer" aria-pressed="false">Mujer</button>
+                <button type="button" class="body-sex-btn" data-sexo="hombre" aria-pressed="false">Hombre</button>
+              </div>
+              <button type="button" class="btn btn-ghost" id="body-pdf" disabled>Descargar PDF</button>
+            </div>
+          </div>
+          <div class="body-layout">
+            <figure class="body-figure">
+              <div id="body-svg" role="group" aria-label="Maniquí del cuerpo humano"></div>
+              <figcaption id="body-caption">Vista frontal. Toca el punto donde sientes el malestar.</figcaption>
+            </figure>
+            <div class="body-report" id="body-report" aria-live="polite" aria-label="Orientación para la zona elegida"></div>
+          </div>
+        </section>
 
         <div class="filters-row" aria-label="Datos que entendió el asistente">
           <label class="recommendation-filter">Especialidad
@@ -187,6 +211,7 @@
 
 <footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
 <script th:src="@{/js/pages/home.js(v='patient-finder-20261018')}"></script>
+<script th:src="@{/js/pages/orientacion-corporal.js(v='maniqui-20261018')}"></script>
 <script th:src="@{/js/pages/mis-citas.js}"></script>
 </body>
 </html>
