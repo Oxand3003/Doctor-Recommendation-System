@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Agenda | MediCerca', 'medico-agenda')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Operación realizada.</div>
+
+  <div class="mg-head">
+    <h1>Mi agenda</h1>
+    <p>Citas de tus pacientes por día, semana o mes. Toca una cita para ver su detalle.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('agenda')}"></div>
+
+  <section class="mp-card mg-card">
+    <div class="ma-bar">
+      <div class="mg-filter">
+        <a th:href="@{/medico/agenda(vista='dia',fecha=${a.fecha()})}" th:classappend="${a.vista() == 'dia'} ? 'active'">Día</a>
+        <a th:href="@{/medico/agenda(vista='semana',fecha=${a.fecha()})}" th:classappend="${a.vista() == 'semana'} ? 'active'">Semana</a>
+        <a th:href="@{/medico/agenda(vista='mes',fecha=${a.fecha()})}" th:classappend="${a.vista() == 'mes'} ? 'active'">Mes</a>
+      </div>
+      <div class="ma-nav">
+        <a th:href="@{/medico/agenda(vista=${a.vista()},fecha=${a.anterior()})}" aria-label="Anterior">‹ Anterior</a>
+        <a th:href="@{/medico/agenda(vista=${a.vista()},fecha=${a.hoy()})}">Hoy</a>
+        <a th:href="@{/medico/agenda(vista=${a.vista()},fecha=${a.siguiente()})}" aria-label="Siguiente">Siguiente ›</a>
+      </div>
+    </div>
+    <h2 th:text="${a.titulo()}">Octubre de 2026</h2>
+    <p class="lead" th:text="${a.totalCitas() == 0} ? 'No hay citas en este periodo.' : ${a.totalCitas()} + (${a.totalCitas() == 1} ? ' cita en este periodo.' : ' citas en este periodo.')">0 citas</p>
+
+    <!-- ===== DÍA ===== -->
+    <div th:if="${a.vista() == 'dia'}" th:with="dia=${a.dias().get(0)}">
+      <p class="mp-empty" th:if="${dia.citas().isEmpty()}">Sin citas este día.</p>
+      <a class="ma-row" th:each="c : ${dia.citas()}" th:href="@{/medico/citas/{id}(id=${c.id()})}">
+        <div>
+          <div class="who" th:text="${c.hora()} + '–' + ${c.horaFin()} + ' · ' + ${c.paciente()}">09:00–09:30 · Paciente</div>
+          <div class="meta" th:text="${c.modalidad()}">Presencial</div>
+        </div>
+        <span class="ma-badge" th:classappend="${c.estadoClave()}" th:text="${c.estado()}">Confirmada</span>
+      </a>
+    </div>
+
+    <!-- ===== SEMANA ===== -->
+    <div class="ma-week" th:if="${a.vista() == 'semana'}">
+      <div class="ma-col" th:each="d : ${a.dias()}" th:classappend="${d.esHoy()} ? 'today'">
+        <h3><a th:href="@{/medico/agenda(vista='dia',fecha=${d.fecha()})}" th:text="${d.nombre()}">Lun 20 oct</a></h3>
+        <a class="ma-chip" th:each="c : ${d.citas()}" th:classappend="${c.estadoClave()}"
+           th:href="@{/medico/citas/{id}(id=${c.id()})}" th:text="${c.hora()} + ' ' + ${c.paciente()}"
+           th:title="${c.estado()} + ' · ' + ${c.modalidad()}">09:00 Paciente</a>
+        <span class="mg-empty-day" th:if="${d.citas().isEmpty()}">—</span>
+      </div>
+    </div>
+
+    <!-- ===== MES ===== -->
+    <div th:if="${a.vista() == 'mes'}">
+      <div class="ma-dow"><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span></div>
+      <div class="ma-month">
+        <div class="ma-cell" th:each="d : ${a.dias()}" th:classappend="${(d.esHoy() ? 'today ' : '') + (d.delMes() ? '' : 'out')}">
+          <div class="n"><a th:href="@{/medico/agenda(vista='dia',fecha=${d.fecha()})}" th:text="${d.numero()}">1</a></div>
+          <th:block th:each="c, st : ${d.citas()}">
+            <a class="ma-chip" th:if="${st.index < 3}" th:classappend="${c.estadoClave()}"
+               th:href="@{/medico/citas/{id}(id=${c.id()})}" th:text="${c.hora()} + ' ' + ${c.paciente()}"
+               th:title="${c.estado()} + ' · ' + ${c.modalidad()}">09:00 Paciente</a>
+          </th:block>
+          <a class="ma-more" th:if="${d.citas().size() > 3}" th:href="@{/medico/agenda(vista='dia',fecha=${d.fecha()})}"
+             th:text="'+' + ${d.citas().size() - 3} + ' más'">+2 más</a>
+          <a class="ma-dot" th:if="${!d.citas().isEmpty()}" th:href="@{/medico/agenda(vista='dia',fecha=${d.fecha()})}"
+             th:text="${d.citas().size()} + (${d.citas().size() == 1} ? ' cita' : ' citas')">2 citas</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+</body>
+</html>

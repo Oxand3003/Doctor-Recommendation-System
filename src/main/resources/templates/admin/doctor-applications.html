@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Panel de administración | MediCerca', 'admin')}"></head>
+<body class="admin-body">
+
+<input type="hidden" id="csrf" th:value="${_csrf.token}" th:attr="data-header=${_csrf.headerName}">
+
+<div class="adm-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="adm-sidebar" id="adm-sidebar" aria-label="Menú de administración">
+    <a th:href="@{/}" class="adm-brand" aria-label="MediCerca, ir al sitio">
+      <span class="adm-brand-mark">M</span>
+      <span class="adm-brand-name">MediCerca<small>Administración</small></span>
+    </a>
+
+    <nav class="adm-menu" aria-label="Secciones">
+      <span class="adm-menu-title">Principal</span>
+      <button class="adm-link active" type="button" data-view="dashboard" aria-current="page">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+        <span>Dashboard</span>
+      </button>
+      <button class="adm-link" type="button" data-view="applications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+        <span>Solicitudes de médicos</span>
+        <span class="adm-count" id="nav-pending-count">0</span>
+      </button>
+
+      <span class="adm-menu-title">Gestión</span>
+      <button class="adm-link" type="button" data-view="doctors">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Cuentas de médicos</span>
+      </button>
+      <button class="adm-link" type="button" data-view="patients">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        <span>Cuentas de pacientes</span>
+      </button>
+      <button class="adm-link" type="button" data-view="consultas">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/><path d="M8.5 10h7M8.5 13.5h4"/></svg>
+        <span>Consultas</span>
+        <span class="adm-count" id="nav-consultas-count" data-zero="true">0</span>
+      </button>
+      <a class="adm-link" th:href="@{/admin/administrators}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Gestión de administradores</span>
+      </a>
+    </nav>
+
+    <div class="adm-user">
+      <div class="adm-avatar" aria-hidden="true">AD</div>
+      <div class="adm-user-info"><b>Administrador</b><span th:text="${adminEmail}" th:title="${adminEmail}">admin@medicerca.local</span></div>
+      <form th:action="@{/logout}" method="post">
+        <button class="adm-logout" type="submit" title="Cerrar sesión" aria-label="Cerrar sesión">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+        </button>
+      </form>
+    </div>
+  </aside>
+  <div class="adm-backdrop" id="adm-backdrop"></div>
+
+  <!-- ============ CONTENT ============ -->
+  <div class="adm-content">
+    <header class="adm-topbar">
+      <button class="adm-burger" id="adm-burger" type="button" aria-label="Abrir menú" aria-controls="adm-sidebar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <div class="adm-topbar-title">
+        <h1 id="view-title">Dashboard</h1>
+        <p id="view-subtitle">Resumen general de la plataforma.</p>
+      </div>
+      <div class="adm-topbar-end">
+        <span class="adm-date" id="adm-date" aria-hidden="true"></span>
+        <a th:href="@{/}" class="btn btn-ghost btn-sm adm-site-link">Ver sitio</a>
+      </div>
+    </header>
+
+    <!-- Bienvenida: solo existe cuando el servidor la envía (una vez, justo después de verificar el código). -->
+    <div class="welcome" id="welcome" th:if="${welcome}" role="status" aria-live="polite">
+      <span class="welcome-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5h4.2l2.3-6 3.4 11.2 2.4-5.2h6.7"/></svg>
+      </span>
+      <div class="welcome-text">
+        <b>¡Bienvenido al panel de administración!</b>
+        <span>Revisa solicitudes, gestiona cuentas médicas y mantén la plataforma al día.</span>
+      </div>
+      <button class="welcome-close" id="welcome-close" type="button" aria-label="Cerrar mensaje de bienvenida">&times;</button>
+    </div>
+
+    <main class="adm-main">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <section class="adm-view" id="view-dashboard">
+        <div class="kpi-grid">
+          <article class="kpi">
+            <span class="kpi-icon kpi-amber" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <div><span class="kpi-label">Solicitudes pendientes</span><b id="kpi-pending">0</b></div>
+          </article>
+          <article class="kpi">
+            <span class="kpi-icon kpi-green" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg></span>
+            <div><span class="kpi-label">Médicos activos</span><b id="kpi-active">0</b></div>
+          </article>
+          <article class="kpi">
+            <span class="kpi-icon kpi-blue" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+            <div><span class="kpi-label">Pacientes registrados</span><b id="kpi-patients">0</b></div>
+          </article>
+          <article class="kpi">
+            <span class="kpi-icon kpi-violet" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m5.6 5.6 12.8 12.8"/></svg></span>
+            <div><span class="kpi-label">Médicos suspendidos</span><b id="kpi-suspended">0</b></div>
+          </article>
+        </div>
+
+        <div class="dash-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Solicitudes recientes</h2>
+              <button class="link-btn" type="button" data-goto="applications">Ver todas <span aria-hidden="true">→</span></button>
+            </div>
+            <ul class="mini-list" id="dash-recent"></ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head"><h2>Médicos por especialidad</h2></div>
+            <div class="bars" id="dash-specialties"></div>
+          </article>
+
+          <article class="panel dash-wide">
+            <div class="panel-head"><h2>Actividad reciente</h2></div>
+            <ul class="activity" id="dash-activity"></ul>
+          </article>
+        </div>
+      </section>
+
+      <!-- ---------- SOLICITUDES ---------- -->
+      <section class="adm-view" id="view-applications" hidden>
+        <div class="toolbar">
+          <div class="seg" id="app-filter" role="tablist" aria-label="Filtrar solicitudes">
+            <button type="button" class="seg-btn active" data-filter="PENDIENTE">Pendientes <span id="seg-pending">0</span></button>
+            <button type="button" class="seg-btn" data-filter="APROBADA">Aprobadas <span id="seg-approved">0</span></button>
+            <button type="button" class="seg-btn" data-filter="RECHAZADA">Rechazadas <span id="seg-rejected">0</span></button>
+          </div>
+          <label class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="app-search" type="search" placeholder="Buscar por nombre, CMP o DNI" aria-label="Buscar solicitudes">
+          </label>
+        </div>
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="adm-table">
+              <thead>
+                <tr><th>Médico</th><th>CMP</th><th>Especialidad</th><th>Enviada</th><th>Estado</th><th class="t-right">Acciones</th></tr>
+              </thead>
+              <tbody id="app-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="app-empty" hidden><b>Sin resultados</b>No hay solicitudes en esta categoría.</p>
+        </div>
+      </section>
+
+      <!-- ---------- MÉDICOS ---------- -->
+      <section class="adm-view" id="view-doctors" hidden>
+        <div class="toolbar">
+          <div class="seg" id="doc-filter" role="tablist" aria-label="Filtrar médicos">
+            <button type="button" class="seg-btn active" data-filter="ALL">Todos</button>
+            <button type="button" class="seg-btn" data-filter="ACTIVO">Activos</button>
+            <button type="button" class="seg-btn" data-filter="SUSPENDIDO">Suspendidos</button>
+          </div>
+          <label class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="doc-search" type="search" placeholder="Buscar por nombre, correo o especialidad" aria-label="Buscar médicos">
+          </label>
+        </div>
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="adm-table">
+              <thead>
+                <tr><th>Médico</th><th>Especialidad</th><th>Establecimiento</th><th>Valoración</th><th>Estado</th><th class="t-right">Acciones</th></tr>
+              </thead>
+              <tbody id="doc-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="doc-empty" hidden><b>Sin resultados</b>No se encontraron médicos.</p>
+        </div>
+      </section>
+
+      <!-- ---------- PACIENTES ---------- -->
+      <section class="adm-view" id="view-patients" hidden>
+        <div class="toolbar">
+          <div class="seg" id="pat-filter" role="tablist" aria-label="Filtrar pacientes">
+            <button type="button" class="seg-btn active" data-filter="ALL">Todos <span id="seg-pat-all">0</span></button>
+            <button type="button" class="seg-btn" data-filter="ACTIVO">Activos <span id="seg-pat-active">0</span></button>
+            <button type="button" class="seg-btn" data-filter="SUSPENDIDO">Suspendidos <span id="seg-pat-suspended">0</span></button>
+          </div>
+          <label class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="pat-search" type="search" placeholder="Buscar por nombre, correo o DNI" aria-label="Buscar pacientes">
+          </label>
+        </div>
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="adm-table">
+              <thead>
+                <tr><th>Paciente</th><th>DNI</th><th>Teléfono</th><th>Registro</th><th>Último acceso</th><th>Estado</th><th class="t-right">Acciones</th></tr>
+              </thead>
+              <tbody id="pat-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="pat-empty" hidden><b>Sin resultados</b>No se encontraron pacientes.</p>
+        </div>
+      </section>
+
+      <!-- ---------- CONSULTAS ---------- -->
+      <section class="adm-view" id="view-consultas" hidden>
+        <div class="toolbar">
+          <div class="seg" id="con-filter" role="tablist" aria-label="Filtrar consultas">
+            <button type="button" class="seg-btn active" data-filter="PENDIENTE">Pendientes <span id="seg-con-pending">0</span></button>
+            <button type="button" class="seg-btn" data-filter="HISTORIAL">Historial <span id="seg-con-history">0</span></button>
+          </div>
+          <label class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="con-search" type="search" placeholder="Buscar por nombre, correo, teléfono o motivo" aria-label="Buscar consultas">
+          </label>
+        </div>
+
+        <!-- Pendientes: aquí se contacta al usuario -->
+        <div class="table-card" id="con-pending-card">
+          <div class="table-scroll">
+            <table class="adm-table con-table">
+              <thead>
+                <tr><th>Usuario</th><th>Teléfono y contacto</th><th>Motivo</th><th>Consulta</th><th>Recibida</th><th class="t-right">Acciones</th></tr>
+              </thead>
+              <tbody id="con-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="con-empty" hidden><b>Sin consultas pendientes</b>Cuando alguien escriba desde el formulario del inicio, aparecerá aquí.</p>
+        </div>
+
+        <!-- Historial: consultas ya atendidas -->
+        <div class="table-card" id="con-history-card" hidden>
+          <div class="table-scroll">
+            <table class="adm-table con-table">
+              <thead>
+                <tr><th>Usuario</th><th>Motivo</th><th>Recibida</th><th>Atendida</th><th>Medio</th><th>Atendida por</th><th class="t-right">Acciones</th></tr>
+              </thead>
+              <tbody id="con-hist-body"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="con-hist-empty" hidden><b>El historial está vacío</b>Las consultas atendidas se archivan aquí.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ DETAIL MODAL ============ -->
+<div class="adm-modal" id="detail-modal" aria-hidden="true">
+  <div class="adm-modal-box adm-detail-box" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <div class="adm-modal-head">
+      <h2 id="detail-title">Detalle de la solicitud</h2>
+      <button type="button" class="adm-modal-close" data-close aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="adm-modal-body">
+      <!-- Cabecera del solicitante (la rellena admin.js) -->
+      <div class="detail-hero" id="detail-hero"></div>
+      <!-- Sustento profesional: enlace que entregó el médico -->
+      <div class="proof-card" id="proof-card">
+        <div class="proof-text">
+          <span class="proof-label">Sustento profesional</span>
+          <small id="detail-proof-url">Enlace proporcionado por el médico</small>
+        </div>
+        <a class="btn btn-ghost btn-sm proof-link" id="detail-proof" href="#" target="_blank" rel="noopener noreferrer">
+          Ver más información
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+      </div>
+
+      <!-- Secciones con los datos (la rellena admin.js) -->
+      <div class="detail-sections" id="detail-grid"></div>
+
+      <div class="form-group" id="reject-box" hidden>
+        <label for="reject-reason">Motivo del rechazo *</label>
+        <textarea id="reject-reason" rows="3" maxlength="300" placeholder="Ej. No se pudo verificar el número CMP."></textarea>
+      </div>
+    </div>
+    <div class="adm-modal-foot" id="detail-actions"></div>
+  </div>
+</div>
+
+<!-- ============ CONSULTA: DETALLE Y ATENCIÓN ============ -->
+<div class="adm-modal" id="con-modal" aria-hidden="true">
+  <div class="adm-modal-box adm-detail-box" role="dialog" aria-modal="true" aria-labelledby="con-modal-title">
+    <div class="adm-modal-head">
+      <h2 id="con-modal-title">Consulta</h2>
+      <button type="button" class="adm-modal-close" data-close aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="adm-modal-body">
+      <div class="detail-hero" id="con-hero"></div>
+      <div class="detail-sections" id="con-sections"></div>
+    </div>
+    <div class="adm-modal-foot con-foot" id="con-actions"></div>
+  </div>
+</div>
+
+<!-- ============ CONSULTA: ESCRIBIR CORREO ============ -->
+<div class="adm-modal" id="mail-modal" aria-hidden="true">
+  <div class="adm-modal-box" role="dialog" aria-modal="true" aria-labelledby="mail-title">
+    <div class="adm-modal-head">
+      <h2 id="mail-title">Escribir por correo</h2>
+      <button type="button" class="adm-modal-close" data-close aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="adm-modal-body">
+      <p class="mail-to">Para: <b id="mail-to"></b></p>
+      <div class="form-group">
+        <label for="mail-subject">Asunto</label>
+        <input id="mail-subject" type="text" maxlength="150" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="mail-message">Mensaje</label>
+        <textarea id="mail-message" rows="8" maxlength="3000" placeholder="Escribe aquí tu respuesta…"></textarea>
+        <small class="mail-count"><span id="mail-count">0</span> / 3000</small>
+      </div>
+      <label class="mail-check"><input type="checkbox" id="mail-archive" checked> Marcar como atendida y pasar al historial al enviar</label>
+    </div>
+    <div class="adm-modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+      <button type="button" class="btn btn-primary" id="mail-send">Enviar correo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM MODAL ============ -->
+<div class="adm-modal" id="confirm-modal" aria-hidden="true">
+  <div class="adm-modal-box adm-modal-sm" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="adm-modal-head">
+      <h2 id="confirm-title">Confirmar acción</h2>
+      <button type="button" class="adm-modal-close" data-close aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="adm-modal-body"><p id="confirm-text"></p></div>
+    <div class="adm-modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
+      <button type="button" class="btn btn-primary" id="confirm-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script th:src="@{/js/pages/admin.js}"></script>
+</body>
+</html>

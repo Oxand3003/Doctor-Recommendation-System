@@ -1,0 +1,5 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Error interno | MediCerca</title><link rel="stylesheet" th:href="@{/css/pages/error.css}"></head>
+<body><div th:replace="~{error/fragments :: page('500', 'Tuvimos un inconveniente', 'Ocurrió un problema inesperado. Tu información sigue protegida; intenta nuevamente en unos momentos.', '!', true, 'Si el problema continúa, vuelve al inicio y repite la acción.')}"></div></body>
+</html>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('MediCerca — Encuentra a tu doctor ideal', 'home')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: home}"></nav>
+
+<header class="hero-band" id="top">
+  <div class="wrap hero">
+    <div class="hero-copy">
+      <span class="tag"><span class="dot"></span> Recomendaciones según valoración y experiencia</span>
+      <h1>Encuentra al doctor indicado, sin dar vueltas.</h1>
+      <p class="lead">Busca por especialidad y distrito. Compara la valoración y experiencia de especialistas disponibles y solicita una cita.</p>
+
+      <form class="finder-bar" id="search-form" th:attr="data-search-endpoint=@{/api/doctors/search},data-doctor-base=@{/doctor/}">
+        <label class="fb-field"><span>Especialidad</span>
+          <select id="specialty-input" name="specialty">
+            <option value="">Todas</option>
+            <option th:each="specialty : ${specialties}" th:value="${specialty.nombre}" th:text="${specialty.nombre}">Especialidad</option>
+          </select>
+        </label>
+          <label class="fb-field"><span>Distrito</span>
+            <select id="district-input" name="district">
+              <option value="">Todos los distritos</option>
+              <option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option>
+            </select>
+        </label>
+        <label class="fb-field"><span>Fecha</span>
+          <input id="date-input" name="date" type="date">
+        </label>
+        <button class="btn btn-primary fb-submit" type="submit">Buscar</button>
+      </form>
+      <div class="fb-foot">
+        <button class="fb-clear" id="clear-search" type="button" onclick="document.getElementById('search-form').reset()">Limpiar filtros</button>
+        <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <!-- Pieza visual: arco con línea de pulso y panel informativo (sin perfiles de ejemplo) -->
+    <div class="hero-visual">
+      <div class="hero-art" aria-hidden="true">
+        <svg class="pulse-line" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet" focusable="false">
+          <path class="pulse-ghost" pathLength="1" d="M0 70H96l14-34 24 78 20-56 12 12H400"/>
+          <path pathLength="1" d="M0 70H96l14-34 24 78 20-56 12 12H400"/>
+          <circle class="pulse-dot" cx="400" cy="70" r="5"/>
+        </svg>
+      </div>
+      <span class="float-chip c-amber"><i aria-hidden="true">★</i> Valoración y experiencia</span>
+      <span class="float-chip c-sky"><i aria-hidden="true">✓</i> Horarios reales</span>
+      <div class="doc-card">
+        <div class="doc-top">
+          <div class="avatar" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.3-9.5C1.6 8 3.6 4.5 7 4.5c2 0 3.5 1.1 5 3 1.5-1.9 3-3 5-3 3.4 0 5.4 3.5 4.3 7C19.5 16.4 12 21 12 21Z"/></svg>
+          </div>
+          <div><h3>Médicos de tu zona</h3><div class="spec">Resultados de tu búsqueda</div></div>
+        </div>
+        <p>Compara especialidad, ubicación, calificaciones y horarios confirmados por el sistema.</p>
+        <div class="doc-foot">
+          <div class="when">Datos de médicos registrados</div>
+          <a href="#search-form" class="btn btn-primary btn-sm">Buscar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Resultados reales de la búsqueda -->
+<section class="block wrap results-section" id="results" aria-labelledby="results-title" hidden>
+  <div class="head">
+    <h2 id="results-title">Doctores recomendados</h2>
+    <p id="results-summary" aria-live="polite"></p>
+  </div>
+  <div class="results-grid" id="results-list" aria-live="polite"></div>
+</section>
+
+<section class="block wrap trust-block" aria-label="Por qué reservar en MediCerca">
+  <div class="trust">
+    <div class="trust-item tone-teal">
+      <span class="trust-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <div><h3>Médicos verificados</h3><p>Un administrador revisa cada solicitud antes de activar una cuenta médica.</p></div>
+    </div>
+    <div class="trust-item tone-amber">
+      <span class="trust-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
+      <div><h3>Horarios reales</h3><p>Ves solo los turnos libres de cada médico. Al reservar, el horario queda tuyo.</p></div>
+    </div>
+    <div class="trust-item tone-sky">
+      <span class="trust-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
+      <div><h3>Confirmación por correo</h3><p>Te avisamos cuando tu reserva se registra o si el médico la cancela.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Qué es MediCerca ============ -->
+<section class="block wrap about-block" id="about" aria-labelledby="about-title">
+  <div class="about reveal">
+    <div class="about-copy">
+      <span class="tag"><span class="dot"></span> Sobre MediCerca</span>
+      <h2 id="about-title">Una forma más simple de llegar al médico correcto.</h2>
+      <p>MediCerca es una plataforma que conecta pacientes con médicos registrados. Buscas por especialidad, distrito o fecha, comparas la valoración y la experiencia de cada profesional y reservas tu cita en línea, sin llamadas ni filas.</p>
+      <p>Los médicos crean su perfil, definen sus horarios y atienden a quienes los reservan. Antes de activar cada cuenta médica, un administrador revisa las credenciales enviadas.</p>
+      <ul class="about-list">
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Resultados ordenados de mejor a menor valoración</li>
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Solo se muestran médicos con cuenta activa</li>
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Reserva sobre horarios libres de cada médico</li>
+      </ul>
+    </div>
+    <div class="about-panel" aria-hidden="true">
+      <div class="ap-row ap-teal"><span class="ap-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span><div><b>Buscas</b><small>Especialidad, distrito y fecha</small></div></div>
+      <div class="ap-row ap-amber"><span class="ap-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3Z"/></svg></span><div><b>Comparas</b><small>Valoración y experiencia</small></div></div>
+      <div class="ap-row ap-sky"><span class="ap-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span><div><b>Reservas</b><small>Turnos libres en línea</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="block wrap" id="specialties">
+  <div class="head">
+    <h2>Especialidades más buscadas</h2>
+    <p>Elige por dónde empezar. Te mostramos los mejores especialistas cerca de ti.</p>
+  </div>
+  <div class="spec-grid">
+    <a class="spec-card" th:each="specialty : ${specialties}"
+       th:href="@{/especialidades/{id}(id=${specialty.id})}">
+      <span class="spec-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5h4.2l2.3-6 3.4 11.2 2.4-5.2h6.7"/></svg></span>
+      <h3 th:text="${specialtyLabels[specialty.nombre] != null ? specialtyLabels[specialty.nombre] : specialty.nombre}">Especialidad</h3>
+      <p th:text="${specialtyDescriptions[specialty.nombre] != null ? specialtyDescriptions[specialty.nombre] : (specialty.descripcion != null and !specialty.descripcion.isBlank() ? specialty.descripcion : 'Ver médicos de esta especialidad')}">Descripción</p>
+      <span class="spec-go">Ver médicos <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+    <p class="empty-state" th:if="${#lists.isEmpty(specialties)}">No hay especialidades activas registradas.</p>
+  </div>
+</section>
+
+<!-- ============ Funcionalidades ============ -->
+<section class="block wrap" id="features" aria-labelledby="features-title">
+  <div class="head reveal">
+    <h2 id="features-title">Todo lo que puedes hacer en MediCerca</h2>
+    <p>Herramientas pensadas para pacientes y médicos, en un solo lugar.</p>
+  </div>
+  <div class="feat-grid">
+    <article class="feat-card tone-teal reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+      <h3>Búsqueda de médicos</h3>
+      <p>Encuentra especialistas registrados desde el buscador del inicio o explorando cada especialidad.</p>
+    </article>
+    <article class="feat-card tone-amber reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg></span>
+      <h3>Filtros útiles</h3>
+      <p>Afina tu búsqueda por especialidad, distrito y fecha para ver solo lo que te sirve.</p>
+    </article>
+    <article class="feat-card tone-lavender reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+      <h3>Perfiles completos</h3>
+      <p>Consulta formación, experiencia, sedes, fotos y las reseñas de otros pacientes antes de decidir.</p>
+    </article>
+    <article class="feat-card tone-sky reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
+      <h3>Citas en línea</h3>
+      <p>Elige un horario libre, reserva y gestiona tus citas desde tu cuenta. Recibes aviso por correo.</p>
+    </article>
+    <article class="feat-card tone-aqua reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="m15.5 10 6-3v10l-6-3"/></svg></span>
+      <h3>Teleconsultas</h3>
+      <p>Algunos médicos atienden también de forma virtual: elige la modalidad al reservar tu cita.</p>
+    </article>
+    <article class="feat-card tone-coral reveal">
+      <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1.1-4.6A8 8 0 1 1 21 12Z"/></svg></span>
+      <h3>Chat con tu médico</h3>
+      <p>Pacientes y médicos con cuenta pueden intercambiar mensajes desde la sección Chat.</p>
+    </article>
+  </div>
+</section>
+
+<section class="block wrap" id="how-it-works">
+  <div class="how">
+    <div class="head">
+      <h2>Cómo funciona</h2>
+      <p>De la búsqueda a la cita en tres pasos.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Cuéntanos qué necesitas</h3>
+        <p>Escribe la especialidad y tu ubicación. Nosotros filtramos por ti.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Compara recomendaciones</h3>
+        <p>Mira valoración, experiencia y disponibilidad de cada doctor.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Reserva tu cita</h3>
+        <p>Agenda en línea el horario que te acomode.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Proceso de recomendación ============ -->
+<section class="block wrap" id="recommendation" aria-labelledby="reco-title">
+  <div class="head reveal">
+    <h2 id="reco-title">¿Cómo te recomendamos médicos?</h2>
+    <p>Un proceso claro, de tu búsqueda a la mejor opción disponible.</p>
+  </div>
+  <ol class="reco-flow">
+    <li class="reco-node tone-teal reveal">
+      <span class="reco-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8L3 5Z"/></svg></span>
+      <span class="reco-n">Paso 1</span>
+      <h3>Tú indicas qué buscas</h3>
+      <p>Especialidad, distrito y, si quieres, la fecha de tu cita.</p>
+    </li>
+    <li class="reco-node tone-sky reveal">
+      <span class="reco-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <span class="reco-n">Paso 2</span>
+      <h3>Solo médicos activos</h3>
+      <p>Se consideran médicos con cuenta aprobada. Con una fecha, solo ves los que tienen turnos libres.</p>
+    </li>
+    <li class="reco-node tone-amber reveal">
+      <span class="reco-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9L12 3Z"/></svg></span>
+      <span class="reco-n">Paso 3</span>
+      <h3>Ordenados por valoración</h3>
+      <p>Los resultados aparecen de mejor a menor calificación de pacientes, junto con su experiencia.</p>
+    </li>
+    <li class="reco-node tone-lavender reveal">
+      <span class="reco-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
+      <span class="reco-n">Paso 4</span>
+      <h3>Revisas y reservas</h3>
+      <p>Abres el perfil, eliges un horario libre y reservas tu cita en línea.</p>
+    </li>
+  </ol>
+  <p class="reco-foot reveal" th:if="${nav != null and nav.paciente()}">Como paciente, también puedes usar el asistente de recomendaciones desde <a th:href="@{/account}">Mi cuenta</a>.</p>
+  <p class="reco-foot reveal" th:unless="${nav != null and nav.paciente()}">Con una cuenta de paciente también tienes un asistente de recomendaciones. <a th:href="@{/login} + '#register'">Crear mi cuenta</a></p>
+</section>
+
+<!-- ============ Para pacientes y médicos ============ -->
+<section class="block wrap" id="audience" aria-labelledby="aud-title">
+  <div class="head reveal">
+    <h2 id="aud-title">Pensado para pacientes y médicos</h2>
+    <p>Elige tu camino y empieza hoy.</p>
+  </div>
+  <div class="aud-grid">
+    <article class="aud-card aud-patient reveal">
+      <span class="aud-tag">Para pacientes</span>
+      <h3>Encuentra y reserva con confianza</h3>
+      <ul>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Compara valoración, experiencia y reseñas</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Ve solo horarios realmente disponibles</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Atención presencial o teleconsulta, según el médico</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Confirmación por correo y chat con tu médico</li>
+      </ul>
+      <div class="aud-actions">
+        <a class="btn btn-primary" href="#search-form" onclick="var f=document.getElementById('specialty-input');if(f){setTimeout(function(){f.focus()},350)}">Buscar un médico <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" th:unless="${nav != null and (nav.medico() or nav.paciente() or nav.admin())}" th:href="@{/login} + '#register'">Crear cuenta de paciente</a>
+        <a class="btn btn-ghost" th:if="${nav != null and nav.paciente()}" th:href="@{/account} + '#my-appointments'">Ver mis citas</a>
+      </div>
+    </article>
+
+    <article class="aud-card aud-doctor reveal">
+      <span class="aud-tag">Para médicos</span>
+      <h3>Haz crecer tu consulta en línea</h3>
+      <ul>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Perfil profesional con formación, sedes y fotos</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Gestiona tu agenda, horarios y tarifas</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Recibe reservas y reseñas de pacientes</li>
+        <li><span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Cuenta activada tras la revisión de un administrador</li>
+      </ul>
+      <div class="aud-actions">
+        <a class="btn btn-light" th:unless="${nav != null and (nav.medico() or nav.paciente() or nav.admin())}" th:href="@{/login} + '#register-doctor'">Registrarme como médico <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-light" th:if="${nav != null and nav.medico()}" th:href="@{/medico/perfil}">Ir a mi perfil <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-outline" th:if="${nav != null and nav.medico()}" th:href="@{/medico/agenda}">Ver mi agenda</a>
+        <a class="btn btn-outline" th:unless="${nav != null and (nav.medico() or nav.paciente() or nav.admin())}" th:href="@{/login}">Ya tengo cuenta</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="block wrap">
+  <div class="cta">
+    <h2>¿Listo para encontrar a tu doctor?</h2>
+    <p>Explora especialistas disponibles y solicita tu cita en línea.</p>
+    <div class="cta-actions">
+      <button class="btn btn-light btn-lg" id="cta-search" type="button">Buscar un doctor ahora</button>
+      <a class="btn btn-outline btn-lg" th:unless="${nav != null and (nav.medico() or nav.paciente() or nav.admin())}" th:href="@{/login}">Crear mi cuenta</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Contacto / consultas ============ -->
+<section class="block wrap" id="contacto" aria-labelledby="contact-title">
+  <div class="contact">
+    <div class="contact-copy">
+      <span class="tag"><span class="dot"></span> Contacto</span>
+      <h2 id="contact-title">¿Necesitas ayuda con tu cuenta?</h2>
+      <p>Escríbenos para solicitar la eliminación de tu cuenta, hacer una denuncia o resolver cualquier duda. Revisamos cada mensaje y te respondemos por correo o teléfono.</p>
+      <ul class="about-list">
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Elige el motivo y cuéntanos los detalles</li>
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Tu consulta queda registrada en el sistema</li>
+        <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4 10-10"/></svg></span>Usamos tus datos solo para responderte</li>
+      </ul>
+    </div>
+
+    <form class="contact-form" id="contact-form" method="post" action="/consultas" novalidate
+          th:with="f=${consultaForm}">
+      <p class="contact-flash ok" role="status" th:if="${consultaOk}" th:text="${consultaOk}"></p>
+      <p class="contact-flash err" role="alert" th:if="${consultaError}" th:text="${consultaError}"></p>
+
+      <div class="form-group">
+        <label for="c-nombres">Nombres</label>
+        <input id="c-nombres" name="nombres" type="text" maxlength="120" required autocomplete="name"
+               placeholder="Tus nombres y apellidos" th:value="${f != null ? f['nombres'] : null}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="c-correo">Correo electrónico</label>
+          <input id="c-correo" name="correo" type="email" maxlength="150" required autocomplete="email"
+                 placeholder="tucorreo@ejemplo.com" th:value="${f != null ? f['correo'] : null}">
+        </div>
+        <div class="form-group">
+          <label for="c-telefono">Número de teléfono</label>
+          <input id="c-telefono" name="telefono" type="tel" maxlength="30" required autocomplete="tel"
+                 inputmode="tel" placeholder="987 654 321" th:value="${f != null ? f['telefono'] : null}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="c-motivo">Motivo</label>
+        <select id="c-motivo" name="motivo" required>
+          <option value="" disabled th:selected="${f == null or f['motivo'] == null or f['motivo'].isEmpty()}">Selecciona un motivo</option>
+          <option th:each="m : ${motivosConsulta}" th:value="${m.name()}" th:text="${m.etiqueta}"
+                  th:selected="${f != null and m.name() == f['motivo']}">Motivo</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="c-mensaje">Cuéntanos más (explícalo con tus propias palabras)</label>
+        <textarea id="c-mensaje" name="mensaje" rows="5" minlength="10" maxlength="2000" required
+                  placeholder="Escribe aquí los detalles de tu solicitud o denuncia…"
+                  th:text="${f != null ? f['mensaje'] : null}"></textarea>
+        <small class="contact-count"><span id="c-count">0</span> / 2000</small>
+      </div>
+
+      <!-- Campo trampa anti-bots: debe quedar vacío -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="c-web">No llenar este campo</label>
+        <input id="c-web" name="sitioWeb" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <button class="btn btn-primary btn-block" id="contact-submit" type="submit">Enviar consulta</button>
+    </form>
+  </div>
+</section>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca · Encuentra salud de confianza cerca de ti.')}"></footer>
+
+<script th:src="@{/js/pages/home.js(v='home-contact-20261018')}"></script>
+</body>
+</html>

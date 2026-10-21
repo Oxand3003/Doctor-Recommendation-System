@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Navegación de la zona privada del médico. Uso: <div th:replace="~{fragments/medico-tabs :: tabs('tarifas')}"></div> -->
+<nav th:fragment="tabs(activa)" class="mp-tabs" aria-label="Gestión de mi perfil">
+  <a th:href="@{/medico/dashboard}" th:classappend="${activa == 'dashboard'} ? 'active'" th:attr="aria-current=${activa == 'dashboard'} ? 'page'">Resumen</a>
+  <a th:href="@{/medico/agenda}" th:classappend="${activa == 'agenda'} ? 'active'" th:attr="aria-current=${activa == 'agenda'} ? 'page'">Agenda</a>
+  <a th:href="@{/medico/perfil}" th:classappend="${activa == 'perfil'} ? 'active'" th:attr="aria-current=${activa == 'perfil'} ? 'page'">Perfil</a>
+  <a th:href="@{/medico/tarifas}" th:classappend="${activa == 'tarifas'} ? 'active'" th:attr="aria-current=${activa == 'tarifas'} ? 'page'">Tarifas</a>
+  <a th:href="@{/medico/horarios}" th:classappend="${activa == 'horarios'} ? 'active'" th:attr="aria-current=${activa == 'horarios'} ? 'page'">Horarios</a>
+  <a th:href="@{/medico/sedes}" th:classappend="${activa == 'sedes'} ? 'active'" th:attr="aria-current=${activa == 'sedes'} ? 'page'">Sedes</a>
+  <a th:href="@{/medico/resenas}" th:classappend="${activa == 'resenas'} ? 'active'" th:attr="aria-current=${activa == 'resenas'} ? 'page'">Opiniones</a>
+  <a th:href="@{/chat}" th:classappend="${activa == 'chat'} ? 'active'" th:attr="aria-current=${activa == 'chat'} ? 'page'">Chat</a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,34 @@
+/* Design tokens — change colors and fonts here only */
+:root {
+  --bg: #F7F9F8;
+  --surface: #FFFFFF;
+  --mint: #E4F0EB;
+  --ink: #132B27;
+  --muted: #5C726C;
+  --primary: #0E6B5C;
+  --primary-dark: #0A4E43;
+  --accent: #F4A259;
+  --line: #DDE7E3;
+
+  /* Paleta ampliada: colores de apoyo (cada uno con su tono suave) */
+  --pine: #0A3D36;
+  --aqua: #19A58E;
+  --aqua-soft: #DDF3EE;
+  --sky: #3F7FD0;
+  --sky-soft: #E6EFFB;
+  --lavender: #765BD1;
+  --lavender-soft: #EEE9FB;
+  --amber-soft: #FDF0DD;
+  --coral: #E4665A;
+  --coral-soft: #FCEAE7;
+
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --shadow-soft: 0 14px 36px -26px rgba(10,61,54,.45);
+  --shadow-lift: 0 22px 44px -26px rgba(10,61,54,.55);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Fraunces', Georgia, serif;
+}

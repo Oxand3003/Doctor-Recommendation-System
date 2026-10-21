@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi perfil | MediCerca', 'medico-perfil')}"></head>
+<body th:attr="data-reabrir=${reabrir} ?: ''">
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+
+  <!-- Mensajes -->
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Tu perfil se actualizó correctamente.</div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <div th:replace="~{fragments/medico-tabs :: tabs('perfil')}"></div>
+
+  <!-- ============ CABECERA (portada + foto) ============ -->
+  <section class="mp-head">
+    <div class="mp-cover" aria-hidden="true"></div>
+    <div class="mp-head-body">
+      <div class="mp-avatar">
+        <img th:if="${p.fotoPerfilId() != null}" th:src="@{/doctor/foto/{id}(id=${p.fotoPerfilId()})}" alt="Tu foto de perfil" src="">
+        <span th:unless="${p.fotoPerfilId() != null}" th:text="${p.iniciales()}">RM</span>
+        <label class="mp-camera" for="input-foto" title="Cambiar foto de perfil" aria-label="Cambiar foto de perfil">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </label>
+      </div>
+
+      <div class="mp-identity">
+        <h1 th:text="${p.nombreCompleto()}">Dra. Rosa Medina</h1>
+        <p class="mp-sub" th:text="${p.subtitulo()}">Cardiología — Médico cirujano</p>
+        <div class="mp-chips">
+          <span class="mp-chip"><b>CMP</b> <span th:text="${p.cmp()}">58210</span></span>
+          <span class="mp-chip"><b>RNE</b> <span th:text="${p.rne()}">24119</span></span>
+          <span class="mp-chip"><b>Sede</b> <span th:text="${p.sede()}">Clínica San Borja</span></span>
+          <span class="mp-chip"><b>★</b> <span th:text="${p.rating()}">4.9</span> · <span th:text="${p.totalValoraciones()} + ' opiniones'">128 opiniones</span></span>
+        </div>
+      </div>
+
+      <div class="mp-actions">
+        <button class="btn btn-primary" type="button" data-modal-open="edit-modal">Editar perfil</button>
+        <a class="btn btn-ghost" th:href="@{/doctor/{id}(id=${p.medicoId()})}">Ver perfil público</a>
+      </div>
+    </div>
+
+    <!-- Formularios de la foto de perfil (se envían solos al elegir un archivo) -->
+    <form id="form-foto" th:action="@{/medico/perfil/foto}" method="post" enctype="multipart/form-data" hidden>
+      <input type="file" id="input-foto" name="foto" accept="image/jpeg,image/png,image/webp" data-auto-submit>
+    </form>
+    <form id="form-foto-eliminar" th:action="@{/medico/perfil/foto/eliminar}" method="post" hidden></form>
+  </section>
+
+  <div class="mp-grid">
+
+    <!-- ============ COLUMNA PRINCIPAL ============ -->
+    <div class="mp-main-col">
+
+      <!-- Sobre mí -->
+      <section class="mp-card">
+        <div class="mp-card-head">
+          <h2>Sobre mí</h2>
+          <div class="mp-actions">
+            <button class="btn btn-ghost btn-sm" type="button" data-modal-open="edit-modal">Editar</button>
+            <button class="btn btn-danger btn-sm" type="submit" form="form-foto-eliminar"
+                    th:if="${p.fotoPerfilId() != null}" data-confirm="¿Eliminar tu foto de perfil?">Quitar foto de perfil</button>
+          </div>
+        </div>
+        <p class="mp-bio" th:if="${p.datos().biografia() != null and !p.datos().biografia().isBlank()}"
+           th:text="${p.datos().biografia()}">Descripción profesional.</p>
+        <p class="mp-empty" th:unless="${p.datos().biografia() != null and !p.datos().biografia().isBlank()}">
+          Aún no escribiste tu descripción. Cuéntales a tus pacientes sobre tu enfoque, tu experiencia y cómo atiendes.
+        </p>
+        <div class="mp-facts">
+          <div><b>Especialidad</b><span th:text="${p.especialidad()}">Cardiología</span></div>
+          <div><b>Título profesional</b><span th:text="${p.datos().tituloProfesional()}">Médico cirujano</span></div>
+          <div><b>Universidad</b><span th:text="${p.datos().universidad()} + ' (' + ${p.datos().anioEgreso()} + ')'">UNMSM (2005)</span></div>
+          <div><b>Años de experiencia</b><span th:text="${p.datos().aniosExperiencia()}">15</span></div>
+          <div><b>Costo de consulta</b><span><span th:text="${p.costoConsulta().isBlank()} ? 'Sin definir' : ('S/ ' + ${p.costoConsulta()})">S/ 120</span> · <a th:href="@{/medico/tarifas}">Gestionar tarifas</a></span></div>
+          <div><b>Sede de atención</b><span><span th:text="${p.sede()}">Clínica San Borja</span> · <a th:href="@{/medico/sedes}">Gestionar sedes</a></span></div>
+        </div>
+      </section>
+
+      <!-- Formación -->
+      <section class="mp-card">
+        <div class="mp-card-head">
+          <h2>Formación académica</h2>
+          <button class="btn btn-ghost btn-sm" type="button" id="btn-nueva-formacion">+ Agregar</button>
+        </div>
+        <p class="mp-empty" th:if="${p.formaciones().isEmpty()}">Agrega tus títulos, especialidades, membresías y pasantías.</p>
+        <ul class="mp-edu" th:unless="${p.formaciones().isEmpty()}">
+          <li th:each="f : ${p.formaciones()}">
+            <div>
+              <span class="kind" th:text="${f.tipoLabel()}">Título profesional</span>
+              <h3 th:text="${f.titulo()}">Médico cirujano</h3>
+              <p th:text="${f.institucion()} + (${f.anio() != null} ? ' · ' + ${f.anio()} : '')">UNMSM · 2005</p>
+            </div>
+            <div class="mp-edu-actions">
+              <button class="btn btn-ghost btn-sm" type="button" data-edit-formacion
+                      th:attr="data-id=${f.id()},data-tipo=${f.tipo()},data-titulo=${f.titulo()},data-institucion=${f.institucion()},data-anio=${f.anio()}">Editar</button>
+              <form th:action="@{/medico/perfil/formacion/{id}/eliminar(id=${f.id()})}" method="post" data-confirm="¿Eliminar esta formación?">
+                <button class="btn btn-danger btn-sm" type="submit">Eliminar</button>
+              </form>
+            </div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Galería -->
+      <section class="mp-card">
+        <div class="mp-card-head">
+          <h2>Mis fotografías <span class="count" th:text="'(' + ${p.galeria().size()} + ' de ' + ${p.maxGaleria()} + ')'">(0 de 12)</span></h2>
+          <form id="form-galeria" th:action="@{/medico/perfil/galeria}" method="post" enctype="multipart/form-data">
+            <input type="file" id="input-galeria" name="fotos" accept="image/jpeg,image/png,image/webp" multiple hidden data-auto-submit>
+            <label class="btn btn-ghost btn-sm" for="input-galeria"
+                   th:classappend="${p.galeria().size() >= p.maxGaleria()} ? 'disabled'"
+                   th:attr="aria-disabled=${p.galeria().size() >= p.maxGaleria()}">+ Subir fotos</label>
+          </form>
+        </div>
+        <p class="mp-empty" th:if="${p.galeria().isEmpty()}">Muestra tu consultorio, tu equipo o tus certificaciones. Formatos JPG, PNG o WEBP de hasta 5 MB.</p>
+        <div class="photo-grid" th:unless="${p.galeria().isEmpty()}">
+          <div class="photo-item" th:each="fid : ${p.galeria()}">
+            <button class="photo-open" type="button" data-lightbox th:attr="data-src=@{/doctor/foto/{id}(id=${fid})}" aria-label="Ver foto ampliada">
+              <img th:src="@{/doctor/foto/{id}(id=${fid})}" alt="Fotografía del consultorio" loading="lazy" src="">
+            </button>
+            <form class="photo-del" th:action="@{/medico/perfil/galeria/{id}/eliminar(id=${fid})}" method="post" data-confirm="¿Eliminar esta foto?">
+              <button type="submit" aria-label="Eliminar foto" title="Eliminar foto">&times;</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ BARRA LATERAL ============ -->
+    <aside class="mp-side">
+      <section class="mp-card">
+        <h2>Completa tu perfil</h2>
+        <ul class="mp-check">
+          <li th:classappend="${p.fotoPerfilId() != null} ? 'done'">Foto de perfil</li>
+          <li th:classappend="${p.datos().biografia() != null and !p.datos().biografia().isBlank()} ? 'done'">Descripción profesional</li>
+          <li th:classappend="${!p.formaciones().isEmpty()} ? 'done'">Formación académica</li>
+          <li th:classappend="${!p.galeria().isEmpty()} ? 'done'">Fotografías</li>
+          <li th:classappend="${!p.costoConsulta().isBlank()} ? 'done'">Costo de consulta</li>
+        </ul>
+      </section>
+
+      <section class="mp-card">
+        <h2>Datos de tu cuenta</h2>
+        <div class="mp-data">
+          <div><b>Correo (inicio de sesión)</b><span th:text="${p.email()}">correo@medicerca.local</span></div>
+          <div><b>DNI</b><span th:text="${p.dni()}">40123456</span></div>
+          <div><b>Teléfono</b><span th:text="${p.telefono()}">999 000 111</span></div>
+          <div><b>CMP</b><span th:text="${p.cmp()}">58210</span></div>
+        </div>
+        <p class="mp-note">Estos datos son privados y no se muestran a los pacientes. El CMP fue verificado por un administrador y no se puede editar.</p>
+      </section>
+
+      <!-- Seguridad de la cuenta: cambio de contraseña y de correo con código por correo -->
+      <section class="mp-card" id="seguridad">
+        <h2>Seguridad de la cuenta</h2>
+        <p class="mp-sec-text">Para cambiar tus credenciales de acceso te enviamos un código de seguridad a tu correo registrado
+          (<b th:text="${cred.correoActualEnmascarado()}">r***@medicerca.local</b>).</p>
+        <div class="mp-sec-actions">
+          <button class="btn btn-ghost btn-sm" type="button" data-modal-open="password-modal">Cambiar contraseña</button>
+          <button class="btn btn-ghost btn-sm" type="button" data-modal-open="email-modal">Cambiar correo de acceso</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+</main>
+
+<!-- ============ MODAL: EDITAR PERFIL ============ -->
+<div class="modal-overlay" id="edit-modal" aria-hidden="true">
+  <div class="modal-content modal-wide" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+    <div class="modal-header">
+      <h3 id="edit-title">Editar información profesional</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form class="modal-body" th:action="@{/medico/perfil}" method="post" id="form-perfil">
+      <div class="form-row">
+        <div class="form-group"><label for="f-nombres">Nombres *</label><input type="text" id="f-nombres" name="nombres" maxlength="100" required th:value="${p.datos().nombres()}" value="Rosa"></div>
+        <div class="form-group"><label for="f-apellidos">Apellidos *</label><input type="text" id="f-apellidos" name="apellidos" maxlength="100" required th:value="${p.datos().apellidos()}" value="Medina Cárdenas"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="f-especialidad">Especialidad *</label>
+          <select id="f-especialidad" name="especialidadId" required>
+            <option th:each="e : ${p.especialidades()}" th:value="${e.id()}" th:text="${e.label()}"
+                    th:selected="${e.id() == p.datos().especialidadId()}" value="1">Cardiología</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-establecimiento">Sede de atención</label>
+          <select id="f-establecimiento" name="establecimientoId">
+            <option value="" th:selected="${p.datos().establecimientoId() == null}">— Por confirmar —</option>
+            <option th:each="e : ${p.establecimientos()}" th:value="${e.id()}" th:text="${e.label()}"
+                    th:selected="${e.id() == p.datos().establecimientoId()}" value="1">Clínica San Borja — San Borja</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="f-titulo">Título profesional *</label><input type="text" id="f-titulo" name="tituloProfesional" maxlength="150" required th:value="${p.datos().tituloProfesional()}" value="Médico cirujano"></div>
+        <div class="form-group"><label for="f-universidad">Universidad *</label><input type="text" id="f-universidad" name="universidad" maxlength="180" required th:value="${p.datos().universidad()}" value="UNMSM"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label for="f-egreso">Año de egreso *</label><input type="number" id="f-egreso" name="anioEgreso" min="1950" max="2100" required th:value="${p.datos().anioEgreso()}" value="2005"></div>
+        <div class="form-group"><label for="f-exp">Años de experiencia *</label><input type="number" id="f-exp" name="aniosExperiencia" min="0" max="80" required th:value="${p.datos().aniosExperiencia()}" value="15"></div>
+      </div>
+      <div class="form-group">
+        <label for="f-bio">Descripción profesional</label>
+        <textarea id="f-bio" name="biografia" rows="7" maxlength="2000" placeholder="Cuenta a tus pacientes sobre tu enfoque, experiencia y áreas de interés." th:text="${p.datos().biografia()}" data-counter="bio-counter">Descripción.</textarea>
+        <span class="form-hint" id="bio-counter">0 / 2000</span>
+      </div>
+      <div class="form-group">
+        <label for="f-mensaje-chat">Mensaje inicial del chat</label>
+        <textarea id="f-mensaje-chat" name="mensajePredeterminadoChat" rows="3" maxlength="1000"
+                  placeholder="Se enviará automáticamente cuando un paciente reserve una cita contigo."
+                  th:text="${p.datos().mensajePredeterminadoChat()}"></textarea>
+        <span class="form-hint">Opcional. Si lo dejas vacío, enviaremos un saludo inicial neutro.</span>
+      </div>
+      <p class="form-hint">El CMP, el RNE, el DNI y el correo no se editan aquí porque fueron verificados al registrarte. Tus precios se configuran en <a th:href="@{/medico/tarifas}">Tarifas</a>, tus horarios en <a th:href="@{/medico/horarios}">Horarios</a> y tus sedes en <a th:href="@{/medico/sedes}">Sedes</a>.</p>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: FORMACIÓN (agregar / editar) ============ -->
+<div class="modal-overlay" id="formacion-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="formacion-title">
+    <div class="modal-header">
+      <h3 id="formacion-title">Agregar formación</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form class="modal-body" id="form-formacion" th:action="@{/medico/perfil/formacion}" method="post"
+          th:attr="data-base=@{/medico/perfil/formacion}">
+      <div class="form-group">
+        <label for="fm-tipo">Tipo *</label>
+        <select id="fm-tipo" name="tipo" required>
+          <option th:each="t : ${p.tiposFormacion()}" th:value="${t.valor()}" th:text="${t.label()}" value="TITULO">Título profesional</option>
+        </select>
+      </div>
+      <div class="form-group"><label for="fm-titulo">Título o certificación *</label><input type="text" id="fm-titulo" name="titulo" maxlength="200" required placeholder="Ej. Especialista en Cardiología"></div>
+      <div class="form-group"><label for="fm-institucion">Institución *</label><input type="text" id="fm-institucion" name="institucion" maxlength="200" required placeholder="Ej. Instituto Nacional Cardiovascular (INCOR)"></div>
+      <div class="form-group"><label for="fm-anio">Año</label><input type="number" id="fm-anio" name="anio" min="1950" max="2100" placeholder="Ej. 2011"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ MODAL: CAMBIAR CONTRASEÑA ============ -->
+<div class="modal-overlay" id="password-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="password-title">
+    <div class="modal-header">
+      <h3 id="password-title">Cambiar contraseña</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Paso 1: pedir el código -->
+      <form th:unless="${cred.passwordCodigoPendiente()}" th:action="@{/medico/credenciales/password/codigo}" method="post">
+        <p class="mp-sec-text">Paso 1 de 2. Te enviaremos un código de 6 dígitos a <b th:text="${cred.correoActualEnmascarado()}">r***@medicerca.local</b>.
+          Vence en <span th:text="${cred.vigenciaMinutos()}">10</span> minutos.</p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary">Enviar código</button>
+        </div>
+      </form>
+
+      <!-- Paso 2: código + nueva contraseña -->
+      <form th:if="${cred.passwordCodigoPendiente()}" th:action="@{/medico/credenciales/password}" method="post" autocomplete="off">
+        <p class="mp-sec-text">Paso 2 de 2. Escribe el código que enviamos a <b th:text="${cred.correoActualEnmascarado()}">r***@medicerca.local</b>
+          y elige tu nueva contraseña. Al terminar tendrás que iniciar sesión de nuevo.</p>
+        <div class="form-group"><label for="pw-codigo">Código de seguridad *</label>
+          <input type="text" id="pw-codigo" name="codigo" class="code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000"></div>
+        <div class="form-group"><label for="pw-nueva">Nueva contraseña * <span class="form-hint">Mínimo 8 caracteres</span></label>
+          <input type="password" id="pw-nueva" name="nuevaPassword" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        <div class="form-group"><label for="pw-confirmar">Repite la nueva contraseña *</label>
+          <input type="password" id="pw-confirmar" name="confirmarPassword" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+        </div>
+      </form>
+      <form th:if="${cred.passwordCodigoPendiente()}" th:action="@{/medico/credenciales/password/codigo}" method="post" class="mp-resend">
+        <span class="form-hint">¿No te llegó o venció?</span>
+        <button type="submit" class="btn btn-ghost btn-sm">Enviar un código nuevo</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: CAMBIAR CORREO DE ACCESO ============ -->
+<div class="modal-overlay" id="email-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="email-title">
+    <div class="modal-header">
+      <h3 id="email-title">Cambiar correo de acceso</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Paso 2: confirmar identidad con el código (cuando ya se pidió) -->
+      <form th:if="${cred.emailCodigoPendiente()}" th:action="@{/medico/credenciales/email}" method="post" autocomplete="off">
+        <p class="mp-sec-text">Paso 2 de 2. Cambiarás tu correo de acceso a <b th:text="${cred.nuevoEmailPendiente()}">nuevo@correo.com</b>.
+          Escribe el código que enviamos a tu correo actual (<b th:text="${cred.correoActualEnmascarado()}">r***@medicerca.local</b>).
+          Al terminar tendrás que iniciar sesión con el correo nuevo.</p>
+        <div class="form-group"><label for="em-codigo">Código de seguridad *</label>
+          <input type="text" id="em-codigo" name="codigo" class="code-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required placeholder="000000"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+          <button type="submit" class="btn btn-primary">Cambiar correo</button>
+        </div>
+      </form>
+
+      <!-- Paso 1: indicar el correo nuevo y pedir el código -->
+      <details th:open="${!cred.emailCodigoPendiente()}" class="mp-details">
+        <summary th:text="${cred.emailCodigoPendiente()} ? 'Usar otro correo o pedir un código nuevo' : 'Paso 1 de 2: indica tu correo nuevo'">Paso 1 de 2</summary>
+        <form th:action="@{/medico/credenciales/email/codigo}" method="post" autocomplete="off">
+          <p class="mp-sec-text">Para confirmar que eres tú, enviaremos un código a tu correo actual
+            (<b th:text="${cred.correoActualEnmascarado()}">r***@medicerca.local</b>). Vence en
+            <span th:text="${cred.vigenciaMinutos()}">10</span> minutos.</p>
+          <div class="form-group"><label for="em-nuevo">Correo nuevo *</label>
+            <input type="email" id="em-nuevo" name="nuevoEmail" maxlength="190" autocomplete="email" required></div>
+          <div class="form-group"><label for="em-confirmar">Repite el correo nuevo *</label>
+            <input type="email" id="em-confirmar" name="confirmarEmail" maxlength="190" autocomplete="email" required>
+            <span class="form-hint">Revísalo bien: con este correo vas a iniciar sesión.</span></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+            <button type="submit" class="btn btn-primary">Enviar código</button>
+          </div>
+        </form>
+      </details>
+    </div>
+  </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/components/lightbox.js}"></script>
+<script th:src="@{/js/pages/medico-perfil.js}"></script>
+</body>
+</html>

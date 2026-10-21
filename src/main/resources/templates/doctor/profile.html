@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Perfil de ' + ${doc.nombreCompleto()} + ' | MediCerca', 'doctor-profile')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: profile}"></nav>
+
+<div class="wrap breadcrumb-wrap">
+  <nav class="breadcrumb" aria-label="Migas de pan">
+    <a th:href="@{/}">Inicio</a><span>›</span>
+    <a th:href="@{/#results}">Especialistas</a><span>›</span>
+    <a th:href="@{/#results}" th:text="${doc.especialidad()}">Cardiología</a><span>›</span>
+    <span class="current" th:text="${doc.nombreCompleto()}">Dra. Rosa Medina</span>
+  </nav>
+</div>
+
+<main class="wrap profile-container">
+  <div class="profile-grid">
+
+    <!-- ============ MAIN COLUMN ============ -->
+    <section class="profile-main">
+
+      <!-- Doctor card -->
+      <article class="doc-profile-card">
+        <div class="doc-header">
+          <div class="doc-avatar-large">
+            <img th:if="${doc.fotoPerfilId() != null}" th:src="@{/doctor/foto/{id}(id=${doc.fotoPerfilId()})}" th:alt="'Foto de ' + ${doc.nombreCompleto()}" alt="" src="">
+            <span th:unless="${doc.fotoPerfilId() != null}" th:text="${doc.iniciales()}">RM</span>
+          </div>
+          <div class="doc-header-info">
+            <div class="badge-row">
+              <span class="verified-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Médico verificado
+              </span>
+              <span class="score-badge" th:text="'★ ' + ${doc.score()} + '% Algoritmo MediCerca'">★ 98% Algoritmo MediCerca</span>
+            </div>
+            <h1 class="doc-name" th:text="${doc.nombreCompleto()}">Dra. Rosa Medina</h1>
+            <p class="doc-specialty" th:text="${doc.subtitulo()}">Cardiología — Médico cirujano</p>
+            <div class="doc-meta-bar">
+              <span class="meta-item"><b>CMP:</b> <span th:text="${doc.cmp()}">58210</span></span>
+              <span class="meta-separator">•</span>
+              <span class="meta-item"><b>RNE:</b> <span th:text="${doc.rne()}">24119</span></span>
+              <span class="meta-separator">•</span>
+              <span class="meta-item"><b>Sede:</b> <span th:text="${doc.sede()}">Clínica San Borja</span></span>
+              <th:block th:if="${doc.universidad() != null}">
+                <span class="meta-separator">•</span>
+                <span class="meta-item"><b>Universidad:</b> <span th:text="${doc.universidad()}">UNMSM (2005)</span></span>
+              </th:block>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-quick-stats">
+          <div class="q-stat"><span class="q-val" th:text="${doc.totalValoraciones() == 0} ? 'Nuevo' : ${doc.rating()} + ' ★'">4.9 ★</span><span class="q-lbl" th:text="${doc.totalValoraciones()} + ' opiniones'">128 opiniones</span></div>
+          <div class="q-stat"><span class="q-val" th:text="${doc.aniosExperiencia()}">15</span><span class="q-lbl">Años de experiencia</span></div>
+          <div class="q-stat"><span class="q-val" th:text="${doc.pacientesAtendidos()}">0</span><span class="q-lbl">Pacientes atendidos</span></div>
+          <div class="q-stat"><span class="q-val" th:text="'S/ ' + ${doc.precio()}">S/ 120</span><span class="q-lbl">Costo de consulta</span></div>
+        </div>
+
+        <div class="doc-pill-tags">
+          <span class="pill" th:if="${doc.duracionConsulta() != null}" th:text="'Consultas de ' + ${doc.duracionConsulta()}">Consultas de 40 min</span>
+          <span class="pill" th:if="${doc.disponibleHoy()}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Disponible hoy
+          </span>
+          <span class="pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span th:text="${doc.modalidadesTexto()}">Teleconsulta y presencial</span>
+          </span>
+        </div>
+      </article>
+
+      <!-- About, education, services, office -->
+      <section class="section-card">
+        <h2 class="sec-title" th:text="'Sobre ' + (${doc.nombreCompleto().startsWith('Dra.')} ? 'la especialista' : 'el especialista')">Sobre la especialista</h2>
+        <p class="sec-text bio-text" th:text="${doc.biografia()}">Biografía.</p>
+
+        <h3 class="sub-title" th:if="${!doc.formaciones().isEmpty()}">Formación académica y certificaciones</h3>
+        <ul class="resume-list" th:if="${!doc.formaciones().isEmpty()}">
+          <li th:each="f : ${doc.formaciones()}"><b th:text="${f.titulo()}">Médico cirujano</b> — <span th:text="${f.detalle()}">UNMSM</span></li>
+        </ul>
+
+        <h3 class="sub-title">Tarifas de consulta</h3>
+        <div class="services-grid" id="tarifas">
+          <div class="srv-item" th:if="${doc.presencial() or !doc.teleconsulta()}">
+            <div class="srv-header"><span class="srv-name">Consulta presencial</span><span class="srv-price" th:text="${doc.precioPresencial() == '—'} ? '—' : 'S/ ' + ${doc.precioPresencial()}">S/ 120</span></div>
+          </div>
+          <div class="srv-item" th:if="${doc.teleconsulta() or !doc.presencial()}">
+            <div class="srv-header"><span class="srv-name">Teleconsulta</span><span class="srv-price" th:text="${doc.precioTeleconsulta() == '—'} ? '—' : 'S/ ' + ${doc.precioTeleconsulta()}">S/ 120</span></div>
+          </div>
+          <div class="srv-item" th:if="${doc.precioHora() != null}">
+            <div class="srv-header"><span class="srv-name">Tarifa por hora</span><span class="srv-price" th:text="'S/ ' + ${doc.precioHora()}">S/ 180</span></div>
+            <p class="srv-desc">Referencial. Cada cita se cobra con el precio de su modalidad.</p>
+          </div>
+        </div>
+
+        <h3 class="sub-title" th:if="${!doc.servicios().isEmpty()}">Servicios y procedimientos médicos</h3>
+        <div class="services-grid" th:if="${!doc.servicios().isEmpty()}">
+          <div class="srv-item" th:each="s : ${doc.servicios()}">
+            <div class="srv-header"><span class="srv-name" th:text="${s.nombre()}">Servicio</span><span class="srv-price" th:text="'S/ ' + ${s.precio()}">S/ 120</span></div>
+            <p class="srv-desc" th:text="${s.descripcion()}">Descripción.</p>
+          </div>
+        </div>
+
+        <h3 class="sub-title" th:if="${doc.consultorio() == null and !doc.horarios().isEmpty()}">Horarios de atención</h3>
+        <div class="office-box" th:if="${doc.consultorio() == null and !doc.horarios().isEmpty()}">
+          <div class="office-info">
+            <p th:each="h : ${doc.horarios()}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span th:text="${h}">Lun: 09:00 – 12:00</span>
+            </p>
+          </div>
+        </div>
+
+        <h3 class="sub-title" th:if="${doc.consultorio() != null}">Lugar de atención y consultorio</h3>
+        <div class="office-box" th:if="${doc.consultorio() != null}">
+          <div class="office-info">
+            <h4 th:text="${doc.consultorio().nombre()}">Clínica San Borja</h4>
+            <p>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span th:text="${doc.consultorio().direccion()} + ', ' + ${doc.consultorio().distrito()}">Dirección</span>
+            </p>
+            <p th:if="${doc.consultorio().referencia() != null}">
+              <span th:text="'Referencia: ' + ${doc.consultorio().referencia()}">Referencia</span>
+            </p>
+            <p th:each="h : ${doc.horarios()}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span th:text="${h}">Lun: 09:00 – 12:00</span>
+            </p>
+          </div>
+          <div class="office-map-preview">
+            <div class="map-pin">📍</div>
+            <span th:text="${doc.consultorio().distrito()}">San Borja, Lima</span>
+          </div>
+        </div>
+
+        <h3 class="sub-title" th:if="${!doc.otrasSedes().isEmpty()}">Otras sedes de atención</h3>
+        <div class="office-box" th:each="o : ${doc.otrasSedes()}">
+          <div class="office-info">
+            <h4 th:text="${o.nombre()}">Consultorio</h4>
+            <p>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span th:text="${o.direccion()} + ', ' + ${o.distrito()}">Dirección</span>
+            </p>
+            <p th:if="${o.referencia() != null}"><span th:text="'Referencia: ' + ${o.referencia()}">Referencia</span></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Galería de fotos -->
+      <section class="section-card" id="gallery" th:if="${!doc.galeria().isEmpty()}">
+        <h2 class="sec-title">Fotografías</h2>
+        <div class="photo-grid">
+          <div class="photo-item" th:each="fid : ${doc.galeria()}">
+            <a th:href="@{/doctor/foto/{id}(id=${fid})}" data-lightbox aria-label="Ver foto ampliada">
+              <img th:src="@{/doctor/foto/{id}(id=${fid})}" th:alt="'Fotografía de ' + ${doc.nombreCompleto()}" alt="" loading="lazy" src="">
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reviews -->
+      <section class="section-card" id="reviews">
+        <div class="reviews-head">
+          <div>
+            <h2 class="sec-title">Experiencias de nuestros pacientes</h2>
+            <p class="sec-text">Valoraciones de citas reservadas a través de MediCerca</p>
+          </div>
+          <button class="btn btn-ghost" type="button" data-modal-open="review-modal">Escribir opinión</button>
+        </div>
+
+        <div class="rating-overview" th:if="${doc.totalValoraciones() > 0}">
+          <div class="rating-big-score">
+            <span class="num" th:text="${doc.rating()}">4.9</span>
+            <div class="stars" th:text="${doc.estrellas()}">★★★★★</div>
+            <span class="total" th:text="${doc.totalValoraciones()} + ' valoraciones'">128 valoraciones</span>
+          </div>
+          <div class="rating-breakdown">
+            <div class="breakdown-bar" th:each="c : ${doc.desglose()}">
+              <span th:text="${c.nombre()}">Criterio</span>
+              <div class="bar-track"><div class="bar-fill" th:style="'width:' + ${c.porcentaje()} + '%'"></div></div>
+              <b th:text="${c.valor()}">5.0</b>
+            </div>
+          </div>
+        </div>
+
+        <p class="sec-text" th:if="${doc.reviews().isEmpty()}" th:text="${doc.totalValoraciones() == 0} ? 'Este especialista aún no tiene opiniones.' : 'No hay comentarios para mostrar por ahora.'">Este especialista aún no tiene opiniones.</p>
+
+        <div class="reviews-list">
+          <div class="review-item" th:each="r : ${doc.reviews()}">
+            <div class="rev-top">
+              <div class="rev-avatar" th:text="${r.iniciales()}">CM</div>
+              <div>
+                <h4 class="rev-author" th:text="${r.autor()}">Carlos M.</h4>
+                <span class="rev-date" th:text="'Atendido el ' + ${r.fecha()} + ' • ' + ${r.modalidad()}">Atendido el ...</span>
+              </div>
+              <div class="rev-stars" th:text="${r.estrellas()}">★★★★★</div>
+            </div>
+            <p class="rev-text" th:if="${r.comentario() != null}" th:text="'&quot;' + ${r.comentario()} + '&quot;'">"Comentario"</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ============ BOOKING SIDEBAR ============ -->
+    <aside class="profile-sidebar">
+      <div class="booking-card" id="booking-card"
+           th:attr="data-doctor-id=${doc.id()},data-slots-url=@{/doctor/{id}/slots(id=${doc.id()})},data-doctor-name=${doc.nombreCompleto()},data-specialty=${doc.especialidad()},data-price=${doc.precio()},data-price-presencial=${doc.precioPresencial()},data-price-tele=${doc.precioTeleconsulta()}">
+        <div class="booking-header">
+          <h3>Reservar cita médica</h3>
+          <div class="booking-price-tag"><span class="cur">S/</span><span class="amt" id="booking-price-amt" th:text="${doc.modalidadInicial() == 'TELECONSULTA'} ? ${doc.precioTeleconsulta()} : ${doc.precioPresencial()}">120</span><span class="per">/ sesión</span></div>
+        </div>
+
+        <div class="modality-picker">
+          <button class="mod-btn" type="button" data-modality="PRESENCIAL" data-label="Presencial"
+                  th:classappend="${doc.modalidadInicial() == 'PRESENCIAL'} ? 'active'"
+                  th:disabled="${!doc.presencial()}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            Presencial
+          </button>
+          <button class="mod-btn" type="button" data-modality="TELECONSULTA" data-label="Teleconsulta"
+                  th:classappend="${doc.modalidadInicial() == 'TELECONSULTA'} ? 'active'"
+                  th:disabled="${!doc.teleconsulta()}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+            Teleconsulta
+          </button>
+        </div>
+
+        <label class="booking-label">Selecciona el día:</label>
+        <div class="days-selector" id="days-selector" aria-label="Días disponibles">
+          <button class="day-slot" type="button" th:each="d : ${doc.dias()}"
+                  th:classappend="${d.activo()} ? 'active'"
+                  th:disabled="${!d.disponible()}"
+                  th:attr="data-date=${d.fecha()},data-label=${d.etiqueta()}">
+            <span class="day-name" th:text="${d.nombre()}">LUN</span>
+            <span class="day-num" th:text="${d.numero()}">15</span>
+            <span class="day-sub" th:text="${d.sub()}">Hoy</span>
+          </button>
+        </div>
+
+        <label class="booking-label">Horarios disponibles para <b id="selected-date-label">—</b>:</label>
+        <div class="hours-section" id="hours-container" aria-live="polite">
+          <span class="sec-text">Cargando horarios…</span>
+        </div>
+
+        <div class="booking-summary-box">
+          <div class="summary-line"><span>Especialista:</span><b th:text="${doc.nombreCompleto()}">Dra. Rosa Medina</b></div>
+          <div class="summary-line"><span>Horario:</span><b id="summary-datetime">—</b></div>
+          <div class="summary-line"><span>Modalidad:</span><b id="summary-modality">—</b></div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btn-reservar" type="button" data-modal-open="booking-modal" disabled>Confirmar horario y reservar</button>
+        <p class="booking-guarantee">🔒 Reserva segura y cancelación sin costo hasta 2 horas antes de la cita.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<!-- Botón oculto para abrir el modal de éxito desde JS (compatible con modal.js) -->
+<button type="button" id="open-success" data-modal-open="success-modal" hidden aria-hidden="true" tabindex="-1"></button>
+
+<!-- ============ BOOKING MODAL ============ -->
+<div class="modal-overlay" id="booking-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+    <div class="modal-header">
+      <h3 id="booking-title">Confirmar cita médica</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form id="booking-form" class="modal-body" th:action="@{/appointments}" method="post"
+          th:attr="data-auth=${reserva.estado()}" novalidate>
+      <div class="modal-doctor-brief">
+        <div class="avatar-small" th:text="${doc.iniciales()}">RM</div>
+        <div>
+          <b th:text="${doc.nombreCompleto()}">Dra. Rosa Medina</b>
+          <p id="modal-summary-text" th:text="${doc.especialidad()}">Cardiología</p>
+        </div>
+      </div>
+
+      <!-- Sin sesión de paciente no se puede reservar: se explica en lugar de mostrar el formulario -->
+      <div class="booking-notice" th:if="${reserva.estado() == 'ANONIMO'}">
+        <b>Inicia sesión para reservar</b>
+        <p>Necesitas una cuenta de paciente para agendar tu cita. Tu horario elegido no se reserva hasta que confirmes con tu sesión iniciada.</p>
+        <a class="btn btn-primary" th:href="@{/login}">Iniciar sesión / Crear cuenta</a>
+      </div>
+      <div class="booking-notice" th:if="${reserva.estado() == 'OTRO'}">
+        <b>Esta cuenta no puede reservar citas</b>
+        <p>Solo las cuentas de paciente pueden agendar. Cierra sesión e ingresa con una cuenta de paciente para reservar.</p>
+      </div>
+
+      <th:block th:if="${reserva.paciente()}">
+        <div class="form-group"><label for="patient-name">Paciente</label><input type="text" id="patient-name" th:value="${reserva.nombre()}" readonly></div>
+        <div class="form-row">
+          <div class="form-group"><label for="patient-document">DNI / documento</label><input type="text" id="patient-document" th:value="${reserva.dni()}" readonly></div>
+          <div class="form-group"><label for="patient-phone">Teléfono / WhatsApp</label><input type="tel" id="patient-phone" th:value="${reserva.telefono()}" readonly></div>
+        </div>
+        <div class="form-group"><label for="patient-reason">Motivo de consulta o síntomas principales</label><textarea id="patient-reason" name="motivo" rows="2" maxlength="500" placeholder="Ej. Chequeo de rutina, presión arterial alta..."></textarea></div>
+        <p class="booking-status" id="booking-status" role="alert" aria-live="polite"></p>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-modal-close>Volver</button>
+          <button type="submit" class="btn btn-primary" id="btn-confirmar-reserva" th:text="'Confirmar reserva (S/ ' + (${doc.modalidadInicial() == 'TELECONSULTA'} ? ${doc.precioTeleconsulta()} : ${doc.precioPresencial()}) + ')'">Confirmar reserva</button>
+        </div>
+      </th:block>
+      <div class="modal-footer" th:unless="${reserva.paciente()}">
+        <button type="button" class="btn btn-ghost" data-modal-close>Volver</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ REVIEW MODAL ============ -->
+<div class="modal-overlay" id="review-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="review-title">
+    <div class="modal-header">
+      <h3 id="review-title">Escribir una opinión</h3>
+      <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
+    </div>
+    <form id="review-form" class="modal-body" data-demo>
+      <div class="form-group">
+        <label>Tu valoración *</label>
+        <div class="star-input" id="star-input" role="radiogroup" aria-label="Valoración">
+          <button type="button" data-value="1" aria-label="1 estrella">★</button><button type="button" data-value="2" aria-label="2 estrellas">★</button><button type="button" data-value="3" aria-label="3 estrellas">★</button><button type="button" data-value="4" aria-label="4 estrellas">★</button><button type="button" data-value="5" aria-label="5 estrellas">★</button>
+        </div>
+      </div>
+      <div class="form-group"><label for="review-text">Cuéntanos tu experiencia *</label><textarea id="review-text" rows="4" maxlength="500" required></textarea></div>
+      <p class="search-status" id="review-status" role="status" aria-live="polite"></p>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>
+        <button type="submit" class="btn btn-primary">Publicar opinión</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ SUCCESS MODAL ============ -->
+<div class="modal-overlay" id="success-modal" aria-hidden="true">
+  <div class="modal-content modal-success-box" role="dialog" aria-modal="true" aria-labelledby="success-title">
+    <div class="success-icon">✓</div>
+    <h3 id="success-title">¡Cita agendada con éxito!</h3>
+    <p th:text="'Tu cita con ' + ${doc.nombreCompleto()} + ' ha sido registrada.'">Tu cita ha sido registrada.</p>
+    <div class="ticket-code">Código de cita: <b id="ticket-code">MED-000123</b></div>
+    <p class="ticket-note" id="ticket-detail">Fecha y hora de tu cita.</p>
+    <p class="ticket-note">Estado: <b>Pendiente</b>. El horario ya quedó reservado para ti; puedes seguirlo en «Mis citas».</p>
+    <p class="ticket-note" id="ticket-mail" hidden>Te enviamos un correo con la confirmación de tu reserva.</p>
+    <a class="btn btn-ghost btn-block" th:href="@{/account}+'#my-appointments'">Ver mis citas</a>
+    <button class="btn btn-primary btn-block" type="button" data-modal-close>Entendido</button>
+  </div>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca · Plataforma de recomendación de citas médicas')}"></footer>
+
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/components/lightbox.js}"></script>
+<script th:src="@{/js/pages/doctor-profile.js}"></script>
+</body>
+</html>

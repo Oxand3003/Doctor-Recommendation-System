@@ -1,12 +1,11 @@
 package utp.edu.pe.recomendaciones.repository;
 
-
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import utp.edu.pe.recomendaciones.domain.Especialidad;
+import utp.edu.pe.recomendaciones.model.Especialidad;
 
-/**
- * MODULO DE DOMINIO (Integrante 1)
- * Acceso a datos de Especialidad.
- */
 public interface EspecialidadRepository extends JpaRepository<Especialidad, Long> {
+    Optional<Especialidad> findByNombre(String nombre);
+    List<Especialidad> findByActivaTrueOrderByNombreAsc();
 }

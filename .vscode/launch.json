@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-RecomendacionCitasApplication<recomendacion_citas>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "utp.edu.pe.recomendaciones.RecomendacionCitasApplication",
+            "projectName": "recomendacion_citas",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

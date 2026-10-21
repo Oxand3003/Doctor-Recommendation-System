@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Opiniones | MediCerca', 'medico-gestion')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mp-alert ok" role="status" th:if="${ok}" th:text="${ok}">Listo.</div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <div class="mg-head">
+    <h1>Mis calificaciones y opiniones</h1>
+    <p>Elige qué opiniones se muestran en tu perfil público. Ocultar no borra ni modifica la reseña ni cambia tu promedio.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('resenas')}"></div>
+
+  <section class="mp-card mg-card">
+    <div class="rating-overview" th:if="${r.total() > 0}">
+      <div class="rating-big-score">
+        <span class="num" th:text="${r.promedio()}">4.9</span>
+        <div class="stars" th:text="${r.estrellas()}">★★★★★</div>
+        <span class="total" th:text="${r.total()} + ' valoraciones'">128 valoraciones</span>
+      </div>
+      <div class="rating-breakdown">
+        <div class="breakdown-bar" th:each="c : ${r.desglose()}">
+          <span th:text="${c.nombre()}">Criterio</span>
+          <div class="bar-track"><div class="bar-fill" th:style="'width:' + ${c.porcentaje()} + '%'"></div></div>
+          <b th:text="${c.valor()}">5.0</b>
+        </div>
+      </div>
+    </div>
+    <p class="mp-empty" th:if="${r.total() == 0}">Todavía no tienes valoraciones. Aparecerán aquí cuando tus pacientes califiquen sus citas completadas.</p>
+
+    <div class="mg-stats" th:if="${r.total() > 0}">
+      <div class="mg-stat"><b th:text="${r.total()}">0</b><span>Valoraciones en total</span></div>
+      <div class="mg-stat"><b th:text="${r.visibles()}">0</b><span>Visibles en tu perfil</span></div>
+      <div class="mg-stat"><b th:text="${r.ocultas()}">0</b><span>Ocultas al público</span></div>
+    </div>
+  </section>
+
+  <section class="mp-card mg-card" th:if="${r.total() > 0}">
+    <h2>Opiniones de pacientes</h2>
+    <div class="mg-filter">
+      <a th:href="@{/medico/resenas(filtro='todas')}" th:classappend="${r.filtro() == 'todas'} ? 'active'">Todas</a>
+      <a th:href="@{/medico/resenas(filtro='visibles')}" th:classappend="${r.filtro() == 'visibles'} ? 'active'">Visibles</a>
+      <a th:href="@{/medico/resenas(filtro='ocultas')}" th:classappend="${r.filtro() == 'ocultas'} ? 'active'">Ocultas</a>
+    </div>
+    <p class="mp-empty" th:if="${r.items().isEmpty()}">No hay opiniones en esta vista.</p>
+
+    <article class="mg-review" th:each="x : ${r.items()}" th:classappend="${!x.visible()} ? 'hidden-rev'">
+      <div class="rev-top">
+        <div class="rev-avatar" th:text="${x.iniciales()}">CM</div>
+        <div>
+          <h4 class="rev-author" th:text="${x.autor()}">Carlos M.</h4>
+          <span class="rev-date" th:text="'Atendido el ' + ${x.fecha()} + ' • ' + ${x.modalidad()}">Atendido el ...</span>
+        </div>
+        <div class="rev-stars" th:text="${x.estrellas()}">★★★★★</div>
+      </div>
+      <p class="rev-text" th:if="${x.comentario() != null}" th:text="'&quot;' + ${x.comentario()} + '&quot;'">"Comentario"</p>
+      <p class="mg-no-comment" th:if="${x.comentario() == null}">El paciente no dejó comentario.</p>
+      <div class="rev-foot">
+        <div class="crit">
+          <span th:each="c : ${x.criterios()}" th:text="${c.nombre()} + ' ' + ${c.valor()} + '/5'">Calidez 5/5</span>
+        </div>
+        <div class="mg-slot-actions">
+          <span class="mg-badge" th:classappend="${!x.visible()} ? 'hidden'" th:text="${x.visible()} ? 'Visible en tu perfil' : 'Oculta al público'">Visible</span>
+          <form th:action="@{/medico/resenas/{id}/visibilidad(id=${x.id()})}" method="post">
+            <input type="hidden" name="visible" th:value="${!x.visible()}" value="false">
+            <input type="hidden" name="filtro" th:value="${r.filtro()}" value="todas">
+            <button class="btn btn-ghost btn-sm" type="submit" th:text="${x.visible()} ? 'Ocultar del perfil' : 'Mostrar en el perfil'">Ocultar del perfil</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/components/modal.js}"></script>
+<script th:src="@{/js/pages/medico-gestion.js}"></script>
+</body>
+</html>
