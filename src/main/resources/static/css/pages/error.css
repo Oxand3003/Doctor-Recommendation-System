@@ -1,0 +1,168 @@
+:root {
+  --error-primary: #0e6b5c;
+  --error-primary-dark: #0a4e43;
+  --error-ink: #132b27;
+  --error-muted: #5c726c;
+  --error-surface: #ffffff;
+  --error-bg: #f7f9f8;
+  --error-line: #dde7e3;
+  --error-soft: #e4f0eb;
+  --error-warning: #f4a259;
+}
+
+.error-page,
+.error-page * {
+  box-sizing: border-box;
+}
+
+.error-page {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem;
+  color: var(--error-ink);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(25, 165, 142, .11), transparent 26rem),
+    radial-gradient(circle at 88% 88%, rgba(63, 127, 208, .09), transparent 24rem),
+    var(--error-bg);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.error-page__card {
+  width: min(100%, 680px);
+  padding: clamp(2rem, 6vw, 4.25rem);
+  text-align: center;
+  background: rgba(255, 255, 255, .94);
+  border: 1px solid rgba(221, 231, 227, .9);
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(10, 61, 54, .12);
+  animation: error-card-in .45s ease-out both;
+}
+
+.error-page__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  margin-bottom: 2rem;
+  color: var(--error-primary-dark);
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.error-page__brand-mark {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  color: #fff;
+  background: var(--error-primary);
+  border-radius: 10px 10px 10px 3px;
+}
+
+.error-page__visual {
+  display: grid;
+  width: 7.5rem;
+  height: 7.5rem;
+  margin: 0 auto 1.5rem;
+  place-items: center;
+  color: var(--error-primary);
+  background: var(--error-soft);
+  border: 10px solid #f1f8f5;
+  border-radius: 50%;
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+.error-page__code {
+  display: block;
+  margin-bottom: .5rem;
+  color: var(--error-primary);
+  font-size: clamp(3.6rem, 12vw, 6rem);
+  font-weight: 800;
+  line-height: .9;
+  letter-spacing: -.07em;
+}
+
+.error-page__title {
+  margin: 0 0 .85rem;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  font-weight: 600;
+}
+
+.error-page__message {
+  max-width: 48ch;
+  margin: 0 auto;
+  color: var(--error-muted);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: 2rem;
+}
+
+.error-page__button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  padding: .75rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: #fff;
+  background: var(--error-primary);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.error-page__button:hover,
+.error-page__button:focus-visible {
+  background: var(--error-primary-dark);
+  box-shadow: 0 8px 18px rgba(14, 107, 92, .2);
+  transform: translateY(-1px);
+}
+
+.error-page__button--secondary {
+  color: var(--error-primary-dark);
+  background: transparent;
+  border-color: var(--error-line);
+}
+
+.error-page__button--secondary:hover,
+.error-page__button--secondary:focus-visible {
+  color: var(--error-primary-dark);
+  background: var(--error-soft);
+  box-shadow: none;
+}
+
+.error-page__note {
+  margin: 1.5rem 0 0;
+  color: var(--error-muted);
+  font-size: .82rem;
+}
+
+@keyframes error-card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .error-page__card { animation: none; }
+  .error-page__button { transition: none; }
+}
+
+@media (max-width: 480px) {
+  .error-page { padding: 1rem; }
+  .error-page__card { border-radius: 22px; }
+  .error-page__actions,
+  .error-page__button { width: 100%; }
+}

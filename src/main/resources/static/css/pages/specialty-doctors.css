@@ -1,0 +1,40 @@
+.specialty-list-page{padding:26px 0 72px}
+.specialty-list-heading{padding:34px 0 28px}
+.specialty-list-heading h1{font-size:clamp(2rem,4vw,3rem);margin:12px 0 8px}
+.specialty-list-heading p{color:var(--muted);margin:7px 0;max-width:68ch}
+.specialty-doctors-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.specialty-doctor-card{display:flex;flex-direction:column;gap:15px;min-width:0;padding:22px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 32px -28px rgba(19,43,39,.5)}
+.specialty-doctor-heading{display:flex;align-items:center;gap:13px;min-width:0}
+.specialty-doctor-photo{flex:0 0 58px;width:58px;height:58px;display:grid;place-items:center;overflow:hidden;border-radius:16px;background:linear-gradient(135deg,#e6ddff,#e5f2ed);color:#514187;font-weight:700}
+.specialty-doctor-photo img{width:100%;height:100%;object-fit:cover}
+.specialty-doctor-identity{min-width:0}
+.specialty-doctor-identity h2{font-size:1.08rem;line-height:1.35;overflow-wrap:anywhere}
+.specialty-doctor-identity p{color:var(--primary);font-size:.88rem;font-weight:600}
+.specialty-doctor-facts{display:flex;flex-wrap:wrap;gap:8px}
+.specialty-doctor-facts span{padding:6px 9px;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.8rem}
+.specialty-doctor-bio{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:3;color:var(--muted);font-size:.9rem;line-height:1.55}
+.specialty-schedule{padding-top:12px;border-top:1px solid var(--line);font-size:.85rem}
+.specialty-schedule ul{display:grid;gap:4px;margin:7px 0 0;padding-left:19px;color:var(--muted)}
+.specialty-no-schedule{margin-top:6px;color:#9b4c3e}
+.specialty-slot-check{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:9px;padding:14px;border-radius:13px;background:var(--bg)}
+.specialty-slot-check label{display:grid;gap:5px;color:var(--muted);font-size:.78rem;font-weight:600}
+.specialty-slot-check input,.specialty-slot-check select{width:100%;min-width:0;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font:inherit}
+.specialty-slot-check [data-check-slots]{grid-column:1/-1;justify-self:start}
+.specialty-slot-status{grid-column:1/-1;min-height:1.3em;color:var(--muted);font-size:.82rem}
+.specialty-slot-results{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px}
+.specialty-time-option{padding:7px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--ink);font:inherit;cursor:pointer}
+.specialty-time-option:hover,.specialty-time-option.active{border-color:var(--primary);background:#eaf4f1;color:var(--primary-dark)}
+.specialty-doctor-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:auto;padding-top:4px}
+.specialty-doctor-actions .is-disabled{opacity:.5;pointer-events:none;cursor:not-allowed}
+.specialty-empty{grid-column:1/-1}
+.specialty-pagination{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:28px;color:var(--muted)}
+.specialty-pagination .btn{padding:9px 14px}
+@media(max-width:900px){.specialty-doctors-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+  .specialty-list-page{padding:20px 0 52px}
+  .specialty-doctors-grid{grid-template-columns:1fr}
+  .specialty-doctor-card{padding:18px}
+  .specialty-slot-check{grid-template-columns:1fr}
+  .specialty-slot-check [data-check-slots],.specialty-slot-status,.specialty-slot-results{grid-column:1}
+  .specialty-pagination{gap:10px;flex-wrap:wrap}
+}

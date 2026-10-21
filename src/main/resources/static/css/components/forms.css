@@ -1,0 +1,49 @@
+/* Form fields (booking modal and auth forms) */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+
+.form-group select{width:100%;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font:inherit;color:var(--ink);background:var(--bg)}
+.form-group input:invalid:not(:placeholder-shown):not(:focus){border-color:#C4553B}
+.form-group textarea{resize:vertical}
+
+/* Star rating input */
+.star-input{display:flex;gap:4px}
+.star-input button{background:none;border:0;font-size:1.8rem;line-height:1;color:var(--line);cursor:pointer;transition:color .12s,transform .12s}
+.star-input button:hover{transform:scale(1.12)}
+.star-input button.on{color:var(--accent)}

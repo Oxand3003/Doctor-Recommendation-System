@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Acceso | MediCerca', 'auth')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: auth}"></nav>
+
+<main class="wrap auth-main">
+  <div class="auth-layout">
+
+  <!-- Panel de marca (solo decorativo) -->
+  <aside class="auth-aside" aria-hidden="true">
+    <svg class="aside-pulse" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet" focusable="false">
+      <path class="pulse-ghost" pathLength="1" d="M0 70H96l14-34 24 78 20-56 12 12H400"/>
+      <path pathLength="1" d="M0 70H96l14-34 24 78 20-56 12 12H400"/>
+    </svg>
+    <h2>Tu salud, más cerca.</h2>
+    <p>Busca especialistas, compara su valoración y experiencia, y reserva tu cita en línea.</p>
+    <ul>
+      <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>Médicos revisados por un administrador</li>
+      <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>Horarios reales y reserva en línea</li>
+      <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>Consulta presencial o teleconsulta</li>
+      <li><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4 10-10"/></svg></span>Chat entre paciente y médico</li>
+    </ul>
+  </aside>
+
+  <section class="auth-card">
+    <span class="tag"><span class="dot"></span> Acceso a MediCerca</span>
+    <h1>Tu cuenta de salud</h1>
+    <p class="auth-intro">Inicia sesión o crea una cuenta. Los perfiles médicos quedan pendientes hasta que un administrador revise sus credenciales.</p>
+
+    <p class="search-status" id="flash-ok" role="status" th:if="${success}" th:text="${success}" style="color:#067647;font-weight:600"></p>
+    <p class="search-status" id="flash-error" role="alert" th:if="${error}" th:text="${error}" style="color:#b42318;font-weight:600"></p>
+
+    <div class="auth-tabs" role="tablist" aria-label="Opciones de cuenta">
+      <button class="auth-tab active" id="tab-login" type="button">Iniciar sesión</button>
+      <button class="auth-tab" id="tab-register" type="button">Crear cuenta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <form id="login-form" class="auth-form" th:action="@{/login}" method="post">
+      <div class="form-group"><label for="login-email">Correo electrónico</label><input id="login-email" name="email" type="email" autocomplete="email" required></div>
+      <div class="form-group"><label for="login-password">Contraseña</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+      <p class="search-status" id="login-status" role="status" aria-live="polite"></p>
+      <button class="btn btn-primary" type="submit">Ingresar</button>
+    </form>
+
+    <!-- REGISTER -->
+    <div id="register-panel" hidden>
+      <div class="auth-tabs auth-tabs-small" role="tablist" aria-label="Tipo de cuenta">
+        <button class="auth-tab active" id="tab-patient" type="button">Soy paciente</button>
+        <button class="auth-tab" id="tab-doctor" type="button">Soy médico</button>
+      </div>
+
+      <!-- Patient -->
+      <form id="patient-form" class="auth-form" th:action="@{/register/patient}" method="post">
+        <div class="auth-grid">
+          <div class="form-group"><label for="patient-first-name">Nombres *</label><input id="patient-first-name" name="nombres" th:value="${f?.get('nombres')}" maxlength="100" autocomplete="given-name" required></div>
+          <div class="form-group"><label for="patient-last-name">Apellidos *</label><input id="patient-last-name" name="apellidos" th:value="${f?.get('apellidos')}" maxlength="100" autocomplete="family-name" required></div>
+          <div class="form-group"><label for="patient-dni">DNI *</label><input id="patient-dni" name="dni" th:value="${f?.get('dni')}" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
+          <div class="form-group"><label for="patient-phone">Teléfono *</label><input id="patient-phone" name="telefono" th:value="${f?.get('telefono')}" type="tel" maxlength="30" autocomplete="tel" required></div>
+          <div class="form-group auth-span"><label for="patient-email">Correo electrónico *</label><input id="patient-email" name="email" th:value="${f?.get('email')}" type="email" maxlength="190" autocomplete="email" required></div>
+          <div class="form-group auth-span"><label for="patient-password">Contraseña (mínimo 8 caracteres) *</label><input id="patient-password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        </div>
+        <p class="search-status" id="patient-status" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Crear cuenta de paciente</button>
+      </form>
+
+      <!-- Doctor -->
+      <form id="doctor-form" class="auth-form" th:action="@{/register/doctor}" method="post" hidden>
+        <h2>Datos de identificación</h2>
+        <div class="auth-grid">
+          <div class="form-group"><label for="doctor-first-name">Nombres *</label><input id="doctor-first-name" name="nombres" th:value="${f?.get('nombres')}" maxlength="100" required></div>
+          <div class="form-group"><label for="doctor-last-name">Apellidos *</label><input id="doctor-last-name" name="apellidos" th:value="${f?.get('apellidos')}" maxlength="100" required></div>
+          <div class="form-group"><label for="doctor-dni">DNI *</label><input id="doctor-dni" name="dni" th:value="${f?.get('dni')}" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
+          <div class="form-group"><label for="doctor-phone">Teléfono *</label><input id="doctor-phone" name="telefono" th:value="${f?.get('telefono')}" type="tel" maxlength="30" required></div>
+          <div class="form-group"><label for="doctor-email">Correo electrónico *</label><input id="doctor-email" name="email" th:value="${f?.get('email')}" type="email" maxlength="190" required></div>
+          <div class="form-group"><label for="doctor-password">Contraseña (mínimo 8 caracteres) *</label><input id="doctor-password" name="password" type="password" minlength="8" maxlength="72" required></div>
+        </div>
+
+        <h2>Datos profesionales para verificación</h2>
+        <div class="auth-grid">
+          <div class="form-group"><label for="doctor-cmp">Número CMP *</label><input id="doctor-cmp" name="cmp" th:value="${f?.get('cmp')}" pattern="[A-Za-z0-9-]{4,20}" maxlength="20" required></div>
+          <div class="form-group"><label for="doctor-rne">Número RNE (si corresponde)</label><input id="doctor-rne" name="rne" th:value="${f?.get('rne')}" maxlength="20"></div>
+          <div class="form-group"><label for="doctor-title">Título profesional *</label><input id="doctor-title" name="tituloProfesional" th:value="${f?.get('tituloProfesional')}" maxlength="150" placeholder="Médico cirujano" required></div>
+          <div class="form-group"><label for="doctor-university">Universidad *</label><input id="doctor-university" name="universidad" th:value="${f?.get('universidad')}" maxlength="180" required></div>
+          <div class="form-group"><label for="doctor-graduation-year">Año de egreso *</label><input id="doctor-graduation-year" name="anioEgreso" th:value="${f?.get('anioEgreso')}" type="number" min="1950" max="2100" required></div>
+          <div class="form-group"><label for="doctor-experience">Años de experiencia *</label><input id="doctor-experience" name="aniosExperiencia" th:value="${f?.get('aniosExperiencia')}" type="number" min="0" max="80" required></div>
+          <div class="form-group">
+            <label for="doctor-specialty">Especialidad *</label>
+            <select id="doctor-specialty" name="especialidadId" required>
+              <option value="">Selecciona una especialidad</option>
+              <option th:each="item : ${specialties}" th:value="${item.id()}" th:text="${item.label()}"
+                      th:selected="${f?.get('especialidadId') == item.id().toString()}">Especialidad</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="doctor-establishment">Establecimiento (opcional)</label>
+            <select id="doctor-establishment" name="establecimientoId">
+              <option value="">Aún no tengo uno</option>
+              <option th:each="item : ${establishments}" th:value="${item.id()}" th:text="${item.label()}"
+                      th:selected="${f?.get('establecimientoId') == item.id().toString()}">Establecimiento</option>
+            </select>
+          </div>
+          <div class="form-group auth-span"><label for="doctor-proof">Enlace a constancia CMP, RNE o título *</label><input id="doctor-proof" name="sustentoUrl" th:value="${f?.get('sustentoUrl')}" type="url" maxlength="500" placeholder="https://..." required><small>Comparte un enlace que el administrador pueda abrir y corroborar.</small></div>
+        </div>
+        <p class="auth-note">Tu cuenta permanecerá pendiente. No podrás iniciar sesión ni aparecer en las recomendaciones hasta su aprobación.</p>
+        <p class="search-status" id="doctor-status" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Enviar solicitud de verificación</button>
+      </form>
+    </div>
+  </section>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca · Plataforma de recomendación de citas médicas')}"></footer>
+
+<script th:src="@{/js/pages/auth.js}"></script>
+</body>
+</html>

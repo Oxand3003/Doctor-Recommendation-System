@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Verificación administrativa | MediCerca', 'admin')}"></head>
+<body class="admin-body">
+  <main class="adm-page">
+    <div class="adm-page-brand">
+      <span class="adm-brand-mark" aria-hidden="true">M</span>
+      <span>MediCerca<small>Administración</small></span>
+    </div>
+    <section class="adm-card">
+      <h1>Verificación administrativa</h1>
+      <p class="lead">Enviamos un código de 8 dígitos a <strong th:text="${adminEmail}">administrador</strong>.</p>
+      <p th:if="${error}" class="adm-alert error" role="alert" th:text="${error}"></p>
+      <p th:if="${ok}" class="adm-alert ok" role="status" th:text="${ok}"></p>
+      <form method="post" th:action="@{/admin/verify}">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <div class="form-group"><label for="code">Código de verificación</label><input id="code" class="code-input" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{8}" maxlength="8" placeholder="········" required autofocus></div>
+        <button class="btn btn-primary btn-block" type="submit">Validar código</button>
+      </form>
+      <hr>
+      <div class="adm-actions">
+        <form method="post" th:action="@{/admin/verify/resend}">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button class="btn btn-ghost" type="submit">Reenviar código</button>
+        </form>
+        <form method="post" th:action="@{/logout}"><button class="btn btn-ghost" type="submit">Cancelar y salir</button></form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

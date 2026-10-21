@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle de cita | MediCerca', 'medico-agenda')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mg-head">
+    <h1>Detalle de la cita</h1>
+    <p><a th:href="@{/medico/agenda(vista='dia',fecha=${c.fechaIso()})}">‹ Volver a la agenda</a></p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('agenda')}"></div>
+  <div class="mp-alert err" role="alert" th:if="${error}" th:text="${error}">Mensaje de error.</div>
+
+  <section class="mp-card mg-card">
+    <div class="ma-bar">
+      <h2 th:text="${c.paciente()}">Paciente</h2>
+      <span class="ma-badge" th:classappend="${c.estadoClave()}" th:text="${c.estado()}">Confirmada</span>
+    </div>
+    <dl class="ma-detail">
+      <div><dt>Fecha</dt><dd th:text="${c.fecha()}">Lunes 20 de octubre de 2026</dd></div>
+      <div><dt>Hora</dt><dd th:text="${c.hora()} + ' – ' + ${c.horaFin()} + ' (' + ${c.duracionMin()} + ' min)'">09:00 – 09:30</dd></div>
+      <div><dt>Modalidad</dt><dd th:text="${c.modalidad()}">Presencial</dd></div>
+      <div>
+        <dt>Sede</dt>
+        <dd>
+          <span th:text="${c.sedeNombre()}">Clínica</span>
+          <span th:if="${c.sedeDireccion() != null}"><br><span th:text="${c.sedeDireccion()}">Dirección</span></span>
+          <span th:if="${c.sedeReferencia() != null}"><br><small th:text="${c.sedeReferencia()}">Referencia</small></span>
+        </dd>
+      </div>
+      <div><dt>Teléfono del paciente</dt><dd th:text="${c.telefono()}">999 999 999</dd></div>
+      <div><dt>Correo del paciente</dt><dd th:text="${c.email()}">correo@ejemplo.com</dd></div>
+      <div class="full"><dt>Motivo de la consulta</dt><dd th:text="${c.motivo() != null} ? ${c.motivo()} : 'El paciente no indicó un motivo.'">Motivo</dd></div>
+      <div class="full" th:if="${c.motivoCancelacion() != null}"><dt>Motivo de cancelación</dt><dd th:text="${c.motivoCancelacion()}">Motivo</dd></div>
+      <div><dt>Precio</dt><dd th:text="${c.precio()}">S/ 120.00</dd></div>
+      <div><dt>Reservada el</dt><dd th:text="${c.reservadaEl()}">15/10/2026 10:00</dd></div>
+    </dl>
+
+    <!-- Contactar y gestionar -->
+    <div class="ma-actions">
+      <div class="ma-action">
+        <a class="btn btn-whatsapp" th:if="${c.whatsappUrl() != null}" th:href="${c.whatsappUrl()}"
+           target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.2-1.5A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.2-1.15l-.3-.18-3.1.9.92-3-.2-.31a8.2 8.2 0 1 1 6.88 3.74Zm4.5-6.1c-.25-.12-1.46-.72-1.69-.8-.23-.09-.39-.12-.56.12-.16.25-.64.8-.78.97-.14.16-.29.18-.54.06a6.7 6.7 0 0 1-3.3-2.88c-.25-.43.25-.4.72-1.33.08-.16.04-.3-.02-.42-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.16 0-.43.06-.65.3-.23.25-.86.84-.86 2.05s.88 2.38 1 2.55c.12.16 1.73 2.64 4.2 3.7.59.26 1.05.41 1.4.52.59.19 1.13.16 1.55.1.47-.07 1.46-.6 1.66-1.17.2-.58.2-1.07.14-1.18-.06-.1-.23-.16-.48-.29Z"/></svg>
+          Contactar por WhatsApp
+        </a>
+        <p class="ma-hint" th:if="${c.whatsappUrl() != null}">Se abre un chat con <span th:text="${c.telefono()}">999 999 999</span> para coordinar el pago.</p>
+        <p class="ma-hint warn" th:if="${c.whatsappUrl() == null}">El número del paciente no es válido para WhatsApp. Escríbele al correo indicado arriba.</p>
+      </div>
+
+      <form class="ma-action ma-delete" th:if="${c.eliminable()}" method="post"
+            th:action="@{/medico/citas/{id}/eliminar(id=${c.id()})}"
+            onsubmit="return confirm('¿Eliminar esta reserva? Se avisará al paciente por correo y el horario quedará libre.');">
+        <label for="motivo-eliminar">Motivo (opcional, se incluye en el correo al paciente)</label>
+        <textarea id="motivo-eliminar" name="motivo" rows="2" maxlength="300" placeholder="Ej.: Tuve una emergencia y no podré atender ese día."></textarea>
+        <button type="submit" class="btn btn-danger">Eliminar reserva</button>
+        <p class="ma-hint">Si no la eliminas, la cita se mantiene hasta la fecha y hora de atención.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+</body>
+</html>

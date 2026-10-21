@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Resumen | MediCerca', 'medico-agenda')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap mp-main">
+  <div class="mg-head">
+    <h1 th:text="'Hola, ' + ${d.nombre()}">Hola, Carlos</h1>
+    <p>Resumen de tu actividad con datos reales de tus citas y valoraciones.</p>
+  </div>
+  <div th:replace="~{fragments/medico-tabs :: tabs('dashboard')}"></div>
+
+  <section class="ma-kpis" aria-label="Indicadores">
+    <div class="ma-kpi"><b th:text="${d.pacientesAtendidos()}">0</b><span>Pacientes atendidos</span><small>Pacientes distintos con consulta completada</small></div>
+    <div class="ma-kpi"><b th:text="${d.citasProgramadas()}">0</b><span>Citas programadas</span><small>Confirmadas desde ahora</small></div>
+    <div class="ma-kpi"><b th:text="${d.citasPendientes()}">0</b><span>Citas pendientes</span><small>Por confirmar desde ahora</small></div>
+    <div class="ma-kpi">
+      <b th:text="${d.calificacion()}">4.9</b><span>Calificación promedio</span>
+      <small th:text="${d.totalValoraciones() > 0} ? ${d.estrellas()} + ' · ' + ${d.totalValoraciones()} + ' valoraciones' : 'Aún sin valoraciones'">★★★★★</small>
+    </div>
+  </section>
+
+  <section class="mp-card mg-card">
+    <div class="ma-bar">
+      <h2>Próximas citas</h2>
+      <div class="ma-nav"><a th:href="@{/medico/agenda}">Ver agenda completa</a></div>
+    </div>
+    <p class="mp-empty" th:if="${d.proximas().isEmpty()}">No tienes citas próximas pendientes ni confirmadas.</p>
+    <a class="ma-row" th:each="c : ${d.proximas()}" th:href="@{/medico/citas/{id}(id=${c.id()})}">
+      <div>
+        <div class="who" th:text="${c.paciente()}">Paciente</div>
+        <div class="meta" th:text="${c.fecha()} + ' · ' + ${c.hora()} + '–' + ${c.horaFin()} + ' · ' + ${c.modalidad()}">lun 20 oct · 09:00–09:30 · Presencial</div>
+      </div>
+      <span class="ma-badge" th:classappend="${c.estadoClave()}" th:text="${c.estado()}">Confirmada</span>
+    </a>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+</body>
+</html>

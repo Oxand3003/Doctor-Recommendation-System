@@ -1,0 +1,6 @@
+/* Navegación entre las secciones privadas del médico */
+.mp-tabs{display:flex;gap:6px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:6px;margin-bottom:22px;box-shadow:0 10px 28px -24px rgba(19,43,39,.35)}
+.mp-tabs a{padding:9px 20px;border-radius:100px;font-weight:600;font-size:.92rem;color:var(--muted);transition:background .15s,color .15s}
+.mp-tabs a:hover{color:var(--primary);background:var(--bg)}
+.mp-tabs a.active{background:var(--primary);color:#fff}
+@media(max-width:640px){.mp-tabs{border-radius:18px}.mp-tabs a{padding:8px 14px;flex:1 1 auto;text-align:center}}

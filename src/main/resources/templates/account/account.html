@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi cuenta | MediCerca', 'account')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<main class="wrap portal-main account-page">
+
+  <div class="flash flash-ok" th:if="${ok != null}" th:text="${ok}"></div>
+  <div class="flash flash-error" th:if="${error != null}" th:text="${error}"></div>
+
+  <!-- ===== Banner del perfil ===== -->
+  <section class="profile-hero" aria-labelledby="profile-name"
+           th:with="partes=${#strings.arraySplit(cuenta.nombre().trim(), ' ')},
+                    iniciales=${#strings.toUpperCase(partes[0].substring(0,1) + (partes.length > 1 ? partes[partes.length - 1].substring(0,1) : ''))}">
+    <div class="profile-avatar" aria-hidden="true" th:text="${iniciales}">AP</div>
+    <div class="profile-id">
+      <span class="profile-role"><span class="dot"></span> <span th:text="${cuenta.rol()}">Paciente</span></span>
+      <h1 id="profile-name" th:text="${cuenta.nombre()}">Nombre</h1>
+      <p th:text="${cuenta.email()}">correo@ejemplo.com</p>
+    </div>
+    <ul class="profile-stats" th:if="${cuenta.paciente()}" aria-label="Resumen de tus citas">
+      <li class="st-amber"><b th:text="${cuenta.pendientes().size()}">0</b><span>Citas pendientes</span></li>
+      <li class="st-sky"><b th:text="${cuenta.historial().size()}">0</b><span>Historial clínico</span></li>
+      <li class="st-aqua"><b class="st-text" th:text="${cuenta.estado() == 'ACTIVO'} ? 'Activa' : ${cuenta.estado()}">Activa</b><span>Estado de la cuenta</span></li>
+    </ul>
+  </section>
+
+  <!-- ===== Buscador de médicos (solo pacientes) ===== -->
+  <!-- El buscador de médicos se encuentra ahora en el inicio para pacientes autenticados. -->
+  <section class="finder" id="patient-search" th:if="${false}" aria-labelledby="finder-title">
+    <header class="finder-head">
+      <div>
+        <h2 id="finder-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></span>Encuentra a tu médico</h2>
+        <p>Los resultados salen de los médicos registrados en MediCerca, con su sede, calificación y horarios reales.</p>
+      </div>
+      <div class="mode-tabs" role="tablist" aria-label="Forma de búsqueda">
+        <button type="button" role="tab" class="mode-tab" id="tab-ia" data-mode="ia" aria-controls="ai-search-panel"
+                th:classappend="${modoBusqueda == 'ia'} ? ' is-active' : ''" th:attr="aria-selected=${modoBusqueda == 'ia'}">✦ Asistente IA</button>
+        <button type="button" role="tab" class="mode-tab" id="tab-manual" data-mode="manual" aria-controls="manual-search-panel"
+                th:classappend="${modoBusqueda == 'manual'} ? ' is-active' : ''" th:attr="aria-selected=${modoBusqueda == 'manual'}">Búsqueda manual</button>
+      </div>
+    </header>
+
+    <!-- ---------- Asistente IA ---------- -->
+    <div id="ai-search-panel" class="finder-panel" role="tabpanel" aria-labelledby="tab-ia"
+         th:classappend="${modoBusqueda != 'ia'} ? ' is-hidden' : ''">
+      <div id="asistente" th:attr="data-chat-endpoint=@{/api/chat/recommendations},data-conversation-endpoint=@{/api/chat/conversation},data-doctor-base=@{/doctor/},data-orientacion-endpoint=@{/api/chat/orientacion},data-patient-name=${cuenta.nombre()}">
+        <div class="assistant-chat" aria-label="Conversación con el asistente de recomendaciones">
+          <div class="chat-toolbar">
+            <span class="chat-toolbar-title"><span aria-hidden="true">✦</span> Asistente MediCerca</span>
+            <button type="button" class="chat-new" id="chat-new" title="Borra esta conversación y empieza otra">↻ Nueva conversación</button>
+          </div>
+          <div class="chat-messages" id="chat-messages" role="log" aria-live="polite" aria-relevant="additions">
+            <div class="chat-message assistant-message"><span class="chat-avatar" aria-hidden="true">M</span><p>Cargando conversación…</p></div>
+          </div>
+          <div class="chat-options" id="chat-options" aria-label="Opciones rápidas" hidden></div>
+          <form class="chat-composer" id="chat-form">
+            <label class="sr-only" for="chat-input">Escribe tu mensaje</label>
+            <textarea id="chat-input" rows="1" maxlength="500" placeholder="Escribe tus síntomas o tu consulta. Ej.: me duele la cabeza, mañana a las 4 pm" required></textarea>
+            <button class="chat-send" type="submit" aria-label="Enviar mensaje"><span aria-hidden="true">↑</span></button>
+          </form>
+          <p class="assistant-disclaimer">El asistente orienta sobre especialidades y médicos; no realiza diagnósticos ni reemplaza una consulta. Entiende textos con errores de ortografía. En una urgencia, llama al 106 (SAMU) o acude a emergencias.</p>
+        </div>
+
+        <!-- Maniquí corporal: lo muestra orientacion-corporal.js cuando el asistente orienta por síntomas -->
+        <section class="body-panel" id="body-panel" aria-labelledby="body-title" hidden>
+          <div class="body-head">
+            <div>
+              <h3 id="body-title">Orientación por zona del cuerpo</h3>
+              <p>Toca en el maniquí el punto donde sientes el malestar. Es solo una orientación para elegir especialidad; no es un diagnóstico.</p>
+            </div>
+            <div class="body-tools">
+              <div class="body-sex" role="group" aria-label="Tipo de maniquí">
+                <button type="button" class="body-sex-btn" data-sexo="mujer" aria-pressed="false">Mujer</button>
+                <button type="button" class="body-sex-btn" data-sexo="hombre" aria-pressed="false">Hombre</button>
+              </div>
+              <button type="button" class="btn btn-ghost" id="body-pdf" disabled>Descargar PDF</button>
+            </div>
+          </div>
+          <div class="body-layout">
+            <figure class="body-figure">
+              <div id="body-svg" role="group" aria-label="Maniquí del cuerpo humano"></div>
+              <figcaption id="body-caption">Vista frontal. Toca el punto donde sientes el malestar.</figcaption>
+            </figure>
+            <div class="body-report" id="body-report" aria-live="polite" aria-label="Orientación para la zona elegida"></div>
+          </div>
+        </section>
+
+        <div class="filters-row" aria-label="Datos que entendió el asistente">
+          <label class="recommendation-filter">Especialidad
+            <select id="chat-specialty-filter"><option value="">Todas</option></select>
+          </label>
+          <label class="recommendation-filter">Distrito
+            <select id="chat-district-filter">
+              <option value="">Todos</option>
+              <option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option>
+            </select>
+          </label>
+          <label class="recommendation-filter">Ordenar por
+            <select id="chat-sort-filter">
+              <option value="rating">Mejor calificados</option>
+              <option value="price">Menor precio</option>
+            </select>
+          </label>
+        </div>
+        <p class="results-summary" id="chat-results-summary" role="status" aria-live="polite">Cargando médicos…</p>
+        <div class="recommendations-grid" id="chat-doctor-cards" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <!-- ---------- Búsqueda manual ---------- -->
+    <div id="manual-search-panel" class="finder-panel" role="tabpanel" aria-labelledby="tab-manual"
+         th:classappend="${modoBusqueda != 'manual'} ? ' is-hidden' : ''">
+      <form class="manual-form" id="search-form" data-autoload="true"
+            th:attr="data-search-endpoint=@{/api/doctors/search},data-doctor-base=@{/doctor/}">
+        <label class="recommendation-filter">Especialidad
+          <select id="specialty-input" name="specialty">
+            <option value="">Todas las especialidades</option>
+            <option th:each="specialty : ${searchSpecialties}" th:value="${specialty.nombre}" th:text="${specialty.nombre}">Especialidad</option>
+          </select>
+        </label>
+        <label class="recommendation-filter">Distrito
+          <select id="district-input" name="district">
+            <option value="">Todos los distritos</option>
+            <option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option>
+          </select>
+        </label>
+        <label class="recommendation-filter">Sede
+          <select id="clinic-input" name="clinic">
+            <option value="">Todas las sedes</option>
+            <option th:each="clinic : ${searchClinics}" th:value="${clinic}" th:text="${clinic}">Sede</option>
+          </select>
+        </label>
+        <div class="manual-actions">
+          <button class="btn btn-primary" type="submit">Buscar</button>
+          <button class="btn btn-ghost" id="clear-search" type="reset">Limpiar</button>
+        </div>
+      </form>
+      <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
+      <section class="results-block" id="results" aria-labelledby="results-title" hidden>
+        <div class="results-head"><h3 id="results-title">Médicos encontrados</h3><p id="results-summary" aria-live="polite"></p></div>
+        <div class="results-grid" id="results-list" aria-live="polite"></div>
+      </section>
+    </div>
+  </section>
+
+  <nav class="account-view-tabs" th:if="${cuenta.paciente()}" aria-label="Secciones de tu cuenta">
+    <button type="button" class="account-view-tab is-active" data-account-view="appointments" aria-selected="true">Mis citas</button>
+    <button type="button" class="account-view-tab" data-account-view="history" aria-selected="false">Historial clínico</button>
+  </nav>
+
+  <!-- ===== Datos de la cuenta y citas ===== -->
+  <div class="account-columns">
+    <section class="account-card" id="my-account" aria-labelledby="my-account-title">
+      <h2 id="my-account-title">Mis datos</h2>
+      <ul class="account-grid">
+        <li class="tone-sky">
+          <span class="ag-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg></span>
+          <span class="ag-text"><strong>Correo</strong><span th:text="${cuenta.email()}">correo</span></span>
+        </li>
+        <li class="tone-lavender">
+          <span class="ag-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.6-1.6 1.7-2.2 3-2.2s2.4.6 3 2.2M15 10h3M15 14h3"/></svg></span>
+          <span class="ag-text"><strong>DNI</strong><span th:text="${cuenta.dni()}">12345678</span></span>
+        </li>
+        <li class="tone-aqua">
+          <span class="ag-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg></span>
+          <span class="ag-text"><strong>Teléfono</strong><span th:text="${cuenta.telefono()}">999 999 999</span></span>
+        </li>
+        <li class="tone-amber">
+          <span class="ag-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <span class="ag-text"><strong>Estado</strong><span class="state-pill" th:classappend="${cuenta.estado() == 'ACTIVO'} ? 'ok'" th:text="${cuenta.estado() == 'ACTIVO'} ? 'Activa' : ${cuenta.estado()}">Activa</span></span>
+        </li>
+      </ul>
+      <a class="btn btn-primary" th:if="${cuenta.medicoId() != null}" th:href="@{/doctor/{id}(id=${cuenta.medicoId()})}">Ver perfil público</a>
+      <a class="btn btn-primary" th:if="${cuenta.admin()}" th:href="@{/admin/doctor-applications}">Revisar solicitudes</a>
+      <a class="btn btn-primary" th:if="${cuenta.paciente()}" th:href="@{/chat}">Abrir chat con mis médicos</a>
+    </section>
+
+    <section class="appointments my-appts account-panel" id="my-appointments" data-account-panel="appointments" th:if="${cuenta.paciente()}" aria-labelledby="my-appointments-title">
+      <header class="my-appts-head">
+        <h2 id="my-appointments-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>Mis citas</h2>
+        <span class="section-count" th:text="${cuenta.pendientes().size()} + ' pendientes'">0 pendientes</span>
+      </header>
+
+      <div class="appt-panel" id="appt-panel-pendientes" role="region" aria-labelledby="my-appointments-title">
+        <p class="appt-empty" th:if="${cuenta.pendientes().isEmpty()}">No tienes citas pendientes. Usa la búsqueda de arriba para encontrar un médico y reservar.</p>
+        <ul class="appt-list" th:unless="${cuenta.pendientes().isEmpty()}">
+          <th:block th:each="c : ${cuenta.pendientes()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
+        </ul>
+      </div>
+
+    </section>
+
+    <section class="clinical-history account-panel" id="clinical-history" data-account-panel="history" th:if="${cuenta.paciente()}" aria-labelledby="clinical-history-title" hidden>
+      <header class="clinical-history-head">
+        <div>
+          <h2 id="clinical-history-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>Historial clínico</h2>
+          <p>Consulta el registro de tus atenciones anteriores.</p>
+        </div>
+        <span class="section-count" th:text="${cuenta.historial().size()} + ' registros'">0 registros</span>
+      </header>
+      <p class="appt-empty" th:if="${cuenta.historial().isEmpty()}">Aún no tienes atenciones registradas.</p>
+      <ul class="appt-list" th:unless="${cuenta.historial().isEmpty()}">
+        <th:block th:each="c : ${cuenta.historial()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/pages/account.js(v='account-tabs-20261021')}"></script>
+</body>
+</html>

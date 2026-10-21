@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<main th:fragment="page(code, title, message, icon, showBack, note)" class="error-page">
+  <section class="error-page__card" role="alert" aria-labelledby="error-title">
+    <div class="error-page__brand" aria-label="MediCerca">
+      <span class="error-page__brand-mark" aria-hidden="true">+</span>
+      <span>MediCerca</span>
+    </div>
+    <div class="error-page__visual" aria-hidden="true" th:text="${icon}">!</div>
+    <span class="error-page__code" th:text="${code}">500</span>
+    <h1 id="error-title" class="error-page__title" th:text="${title}">Algo salió mal</h1>
+    <p class="error-page__message" th:text="${message}">No pudimos completar tu solicitud.</p>
+    <div class="error-page__actions">
+      <a class="error-page__button" th:href="@{/}">Volver al inicio</a>
+      <button th:if="${showBack}" class="error-page__button error-page__button--secondary" type="button"
+              onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href='/'; }">
+        Regresar
+      </button>
+    </div>
+    <p th:if="${note != null and !#strings.isEmpty(note)}" class="error-page__note" th:text="${note}"></p>
+  </section>
+</main>
+</body>
+</html>

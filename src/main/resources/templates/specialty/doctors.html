@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Médicos de ' + ${specialty.nombre} + ' | MediCerca', 'specialty-doctors')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: profile}"></nav>
+
+<main class="wrap specialty-list-page">
+  <nav class="breadcrumb" aria-label="Migas de pan">
+    <a th:href="@{/}">Inicio</a><span>›</span><a th:href="@{/#specialties}">Especialidades</a>
+    <span>›</span><span class="current" th:text="${specialty.nombre}">Especialidad</span>
+  </nav>
+
+  <header class="specialty-list-heading">
+    <span class="tag">Directorio médico</span>
+    <h1>Médicos de <span th:text="${specialty.nombre}">la especialidad</span></h1>
+    <p th:if="${specialty.descripcion != null and !specialty.descripcion.isBlank()}" th:text="${specialty.descripcion}">Descripción de la especialidad.</p>
+    <p th:text="${doctorPage.totalElements} + ' médicos registrados'">Médicos registrados</p>
+  </header>
+
+  <section class="specialty-doctors-grid" aria-label="Médicos de la especialidad">
+    <article class="specialty-doctor-card" th:each="doc : ${doctors}"
+             th:attr="data-doctor-id=${doc.id()},data-slots-url=@{/doctor/{id}/slots(id=${doc.id()})},data-default-modality=${doc.modalidadInicial()}">
+      <div class="specialty-doctor-heading">
+        <div class="specialty-doctor-photo">
+          <img th:if="${doc.fotoPerfilId() != null}" th:src="@{/doctor/foto/{id}(id=${doc.fotoPerfilId()})}"
+               th:alt="'Foto de ' + ${doc.nombreCompleto()}" loading="lazy">
+          <span th:unless="${doc.fotoPerfilId() != null}" th:text="${doc.iniciales()}" aria-hidden="true">MD</span>
+        </div>
+        <div class="specialty-doctor-identity">
+          <h2 th:text="${doc.nombreCompleto()}">Nombre del médico</h2>
+          <p th:text="${doc.especialidad()}">Especialidad</p>
+        </div>
+      </div>
+
+      <div class="specialty-doctor-facts">
+        <span th:text="${doc.totalValoraciones() == 0 ? 'Sin calificaciones' : '★ ' + doc.rating() + ' · ' + doc.totalValoraciones() + ' opiniones'}">Calificación</span>
+        <span th:text="${doc.consultorio() == null} ? 'Distrito no registrado' : ${doc.consultorio().distrito()}">Distrito</span>
+        <span th:text="${doc.precio() == '—' ? 'Precio no registrado' : 'Desde S/ ' + doc.precio()}">Precio</span>
+      </div>
+      <p class="specialty-doctor-bio" th:text="${doc.biografia()}">Descripción del médico</p>
+
+      <div class="specialty-schedule">
+        <b>Horario habitual</b>
+        <ul th:if="${!doc.horarios().isEmpty()}"><li th:each="schedule : ${doc.horarios()}" th:text="${schedule}">Horario</li></ul>
+        <p th:if="${doc.horarios().isEmpty()}" class="specialty-no-schedule">No registra horarios activos.</p>
+      </div>
+
+      <div class="specialty-slot-check" th:if="${!doc.horarios().isEmpty()}">
+        <label>Consulta disponibilidad real
+          <input type="date" data-slot-date aria-label="Fecha para consultar horarios">
+        </label>
+        <label>Modalidad
+          <select data-slot-modality aria-label="Modalidad de atención">
+            <option value="PRESENCIAL" th:if="${doc.presencial()}">Presencial</option>
+            <option value="TELECONSULTA" th:if="${doc.teleconsulta()}">Teleconsulta</option>
+          </select>
+        </label>
+        <button class="btn btn-ghost btn-sm" type="button" data-check-slots>Ver horarios disponibles</button>
+        <p class="specialty-slot-status" data-slot-status aria-live="polite">Elige una fecha para comprobar turnos libres.</p>
+        <div class="specialty-slot-results" data-slot-results></div>
+      </div>
+
+      <div class="specialty-doctor-actions">
+        <a class="btn btn-ghost" th:href="@{/doctor/{id}(id=${doc.id()})}">Ver perfil</a>
+        <a class="btn btn-primary is-disabled" data-booking-link aria-disabled="true" tabindex="-1"
+           th:href="@{|/doctor/${doc.id()}#booking-card|}">Reservar cita</a>
+      </div>
+    </article>
+
+    <p class="empty-state specialty-empty" th:if="${doctorPage.totalElements == 0}">Aún no hay médicos activos registrados en esta especialidad.</p>
+  </section>
+
+  <nav class="specialty-pagination" th:if="${doctorPage.totalPages > 1}" aria-label="Paginación de médicos">
+    <a class="btn btn-ghost" th:if="${doctorPage.hasPrevious()}" th:href="@{/especialidades/{id}(id=${specialty.id},page=${pageNumber - 1})}">Anterior</a>
+    <span th:text="'Página ' + (${pageNumber + 1}) + ' de ' + ${doctorPage.totalPages}">Página 1 de 1</span>
+    <a class="btn btn-ghost" th:if="${doctorPage.hasNext()}" th:href="@{/especialidades/{id}(id=${specialty.id},page=${pageNumber + 1})}">Siguiente</a>
+  </nav>
+</main>
+
+<script th:src="@{/js/pages/specialty-doctors.js}" defer></script>
+</body>
+</html>

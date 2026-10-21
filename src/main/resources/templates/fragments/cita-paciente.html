@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Una cita en "Mis citas" del paciente. Uso: th:replace="~{fragments/cita-paciente :: item(${c})}" -->
+<li class="appt-item appt-link" th:fragment="item(c)" th:classappend="'st-' + ${c.estadoClave()}">
+  <div class="appt-top">
+    <div>
+      <h3 class="appt-doctor"><a class="appt-doctor-link" th:href="@{/doctor/{id}(id=${c.medicoId()})}"
+                                 th:attr="aria-label='Ver el perfil de ' + ${c.medico()}"
+                                 th:text="${c.medico()}">Dra. Rosa Medina</a></h3>
+      <p class="appt-specialty" th:text="${c.especialidad()}">Cardiología</p>
+    </div>
+    <span class="appt-badge" th:classappend="${c.estadoClave()}" th:text="${c.estado()}">Pendiente</span>
+  </div>
+  <dl class="appt-meta">
+    <div><dt>Fecha</dt><dd th:text="${c.fecha()}">Lun 19 de oct de 2026</dd></div>
+    <div><dt>Hora</dt><dd th:text="${c.hora()}">09:00 – 09:40</dd></div>
+    <div><dt>Modalidad</dt><dd th:text="${c.modalidad()} + ' · ' + ${c.lugar()}">Presencial · Clínica</dd></div>
+  </dl>
+  <p class="appt-reason" th:if="${c.motivo() != null}" th:text="'Motivo: ' + ${c.motivo()}">Motivo: Chequeo</p>
+  <p class="appt-reason cancel" th:if="${c.motivoCancelacion() != null}" th:text="'Motivo de la cancelación: ' + ${c.motivoCancelacion()}">Motivo</p>
+  <div class="appt-foot">
+    <p class="appt-code" th:text="'Código ' + ${c.codigo()}">Código MED-000123</p>
+    <span class="appt-go" aria-hidden="true">Ver perfil del médico
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+  </div>
+  <div class="patient-review-existing" th:if="${c.comentarioValoracion() != null}">
+    <strong>Tu comentario</strong>
+    <p th:text="${c.comentarioValoracion()}">Comentario del paciente</p>
+    <form th:if="${c.valoracionId() != null}" th:action="@{/valoraciones/{id}/eliminar(id=${c.valoracionId()})}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('¿Eliminar tu comentario?')">Eliminar comentario</button>
+    </form>
+  </div>
+  <form class="patient-review-form" th:if="${c.puedeValorar()}" th:action="@{/valoraciones}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <input type="hidden" name="citaId" th:value="${c.id()}">
+    <label>Tu valoración
+      <select name="puntaje" required>
+        <option value="">Selecciona una puntuación</option>
+        <option value="5">★★★★★ Excelente</option>
+        <option value="4">★★★★ Muy buena</option>
+        <option value="3">★★★ Buena</option>
+        <option value="2">★★ Regular</option>
+        <option value="1">★ Necesita mejorar</option>
+      </select>
+    </label>
+    <label>Comenta tu experiencia
+      <textarea name="comentario" rows="3" maxlength="500" required placeholder="¿Cómo fue tu atención?"></textarea>
+    </label>
+    <button class="btn btn-primary" type="submit">Publicar comentario</button>
+  </form>
+</li>
+
+</body>
+</html>

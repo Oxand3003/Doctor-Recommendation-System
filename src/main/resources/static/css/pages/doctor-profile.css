@@ -1,0 +1,466 @@
+/* DOCTOR PROFILE PAGE */
+@import url("../components/booking-widget.css");
+@import url("../components/reviews.css");
+@import url("../components/modal.css");
+@import url("../components/gallery.css");
+
+/* Breadcrumb */
+.breadcrumb-wrap {
+  padding: 20px 0 10px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.breadcrumb a {
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.breadcrumb a:hover {
+  color: var(--primary);
+}
+
+.breadcrumb span {
+  color: #9AAAA4;
+}
+
+.breadcrumb .current {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* Layout Principal */
+.profile-container {
+  padding-bottom: 72px;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* [COMMIT 2] TARJETA PRINCIPAL DEL DOCTOR */
+.doc-profile-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 14px 40px -20px rgba(19, 43, 39, 0.08);
+}
+
+.doc-header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.doc-avatar-large {
+  width: 96px;
+  height: 96px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--primary), #189882);
+  color: #FFFFFF;
+  display: grid;
+  place-items: center;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 2.4rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  box-shadow: 0 10px 24px -10px rgba(14, 107, 92, 0.5);
+}
+
+.doc-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.doc-header-info {
+  flex: 1;
+}
+
+.badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--mint);
+  color: var(--primary-dark);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.verified-badge.unavailable-badge {
+  background: #fce9e7;
+  color: #9c342a;
+}
+
+.score-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFF3E6;
+  color: #A35200;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.doc-name {
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.doc-specialty {
+  color: var(--primary);
+  font-size: 1.05rem;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.doc-meta-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.meta-separator {
+  color: var(--line);
+}
+
+/* Métricas Rápidas */
+.doc-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  padding: 20px 0;
+  margin: 24px 0 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.q-stat {
+  text-align: center;
+}
+
+.q-val {
+  display: block;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.45rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.q-lbl {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.doc-pill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  border-radius: 10px;
+}
+
+/* [COMMIT 3] SECCIONES INFORMATIVAS (BIOGRAFÍA, SERVICIOS, CONSULTORIO) */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 14px 40px -20px rgba(19, 43, 39, 0.08);
+}
+
+.sec-title {
+  font-size: 1.55rem;
+  color: var(--ink);
+  margin-bottom: 14px;
+}
+
+.sec-text {
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.sub-title {
+  font-size: 1.15rem;
+  color: var(--ink);
+  margin: 28px 0 14px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.resume-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resume-list li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.resume-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.resume-list li b {
+  color: var(--ink);
+}
+
+/* Grilla de Servicios */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.srv-item {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.srv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.srv-name {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.srv-price {
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.srv-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* Consultorio / Lugar de Atención */
+.office-box {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1.3fr 0.9fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.office-info h4 {
+  font-size: 1.05rem;
+  color: var(--ink);
+  margin-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+}
+
+.office-info p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.office-info p svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--primary);
+}
+
+.office-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.office-features span {
+  font-size: 0.78rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.office-map-preview {
+  background: linear-gradient(135deg, #d8e9e3, #c5ded5);
+  border: 1px solid #b7d6cb;
+  border-radius: 16px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+.map-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--primary-dark);
+}
+
+.map-pin {
+  font-size: 1.8rem;
+  margin-bottom: 2px;
+}
+
+.office-map-preview span {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+/* Responsividad */
+@media (max-width: 992px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .booking-card {
+    position: static;
+  }
+  .rating-overview {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+  .breakdown-bar {
+    grid-template-columns: 140px 1fr 30px;
+  }
+}
+
+@media (max-width: 600px) {
+  .doc-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .badge-row {
+    justify-content: center;
+  }
+  .doc-meta-bar {
+    justify-content: center;
+  }
+  .doc-quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  .office-box {
+    grid-template-columns: 1fr;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Descripción del médico: respeta los saltos de línea que escribió */
+.bio-text {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Reserva de cita (ventana de confirmación) ---------- */
+/* Aviso cuando no hay sesión de paciente */
+.booking-notice {
+  background: var(--mint);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 4px 0 14px;
+}
+.booking-notice b { display: block; color: var(--primary-dark); margin-bottom: 4px; }
+.booking-notice p { color: var(--muted); font-size: 0.9rem; margin: 0 0 12px; }
+.booking-notice .btn { display: inline-flex; }
+
+/* Datos de la cuenta (solo lectura) dentro del formulario */
+#booking-form input[readonly] {
+  background: var(--bg);
+  color: var(--muted);
+  cursor: default;
+}
+
+/* Mensaje de error/estado de la reserva */
+.booking-status { min-height: 1.3em; margin: 6px 0 0; font-size: 0.88rem; color: var(--muted); }
+.booking-status.is-error {
+  color: #8E3A26;
+  background: #FBEDE9;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+/* Un segundo botón en la ventana de éxito */
+.modal-success-box .btn-ghost.btn-block { display: flex; justify-content: center; }

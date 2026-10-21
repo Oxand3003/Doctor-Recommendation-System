@@ -1,0 +1,143 @@
+/* [COMMIT 5] OPINIONES Y RESEÑAS */
+.reviews-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.rating-overview {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 32px;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 28px;
+}
+
+.rating-big-score {
+  text-align: center;
+}
+
+.rating-big-score .num {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 3.4rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+  display: block;
+}
+
+.rating-big-score .stars {
+  color: var(--accent);
+  font-size: 1.3rem;
+  margin: 6px 0;
+}
+
+.rating-big-score .total {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.rating-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.breakdown-bar {
+  display: grid;
+  grid-template-columns: 180px 1fr 30px;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.breakdown-bar span {
+  color: var(--muted);
+}
+
+.bar-track {
+  background: var(--line);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  background: var(--primary);
+  height: 100%;
+  border-radius: 4px;
+}
+
+.breakdown-bar b {
+  color: var(--ink);
+  text-align: right;
+}
+
+/* Lista de Reseñas */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.review-item {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rev-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.rev-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--mint);
+  color: var(--primary-dark);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.rev-author {
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.rev-date {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.rev-stars {
+  margin-left: auto;
+  color: var(--accent);
+  font-size: 1rem;
+}
+
+.rev-text {
+  font-size: 0.93rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+
+.reviews-head .sec-title { margin-bottom: 4px; }
+.reviews-head .sec-text { margin-bottom: 0; }
