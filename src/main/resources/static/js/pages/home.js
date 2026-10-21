@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var times = doctor.availableTimes || [];
       var availability = date
         ? (times.length ? 'Libre: ' + times.slice(0, 4).join(', ') + (times.length > 4 ? ' y ' + (times.length - 4) + ' más' : '') : 'Sin horarios disponibles')
-        : 'Elige una fecha para ver horarios';
+        : (times.length ? 'Horarios disponibles al reservar' : 'Horarios por confirmar');
       var profileUrl = (form.dataset.doctorBase || '/doctor/') + encodeURIComponent(doctor.id);
       var bookingUrl = bookingLink(profileUrl, date, times, timeInput ? timeInput.value : '');
       var avatar = doctor.photoUrl

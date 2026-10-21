@@ -117,6 +117,31 @@ public class DataInitializer {
         }
       }
 
+            String email = adminEmail.trim().toLowerCase();
+            Rol rolAdmin = roles.findByNombre("ADMIN").orElseThrow();
+            if (!adminPassword.isBlank() && !usuarios.existsByEmail(email)) {
+                Usuario admin = new Usuario();
+                admin.setNombres("Administrador");
+                admin.setApellidos("MediCerca");
+                admin.setDni("25000045");
+                admin.setEmail(email);
+                admin.setTelefono("900900900");
+                admin.setPasswordHash(encoder.encode(adminPassword));
+                admin.setEstado(EstadoUsuario.ACTIVO);
+                admin.setRol(rolAdmin);
+                admin.setPuedeGestionarAdministradores(true);
+                usuarios.save(admin);
+            } else if (!adminPassword.isBlank()) {
+                usuarios.findByEmail(email).ifPresent(admin -> {
+                    admin.setRol(rolAdmin);
+                    admin.setEstado(EstadoUsuario.ACTIVO);
+                    admin.setPasswordHash(encoder.encode(adminPassword));
+                    admin.setPuedeGestionarAdministradores(true);
+                    usuarios.save(admin);
+                });
+            }
+        };
+    }
       if (distritosPermitidos.isEmpty() && distritosPermitidos.size() > 0) {
         for (String nombre : List.of("San Borja", "Surco", "Miraflores", "San Isidro", "La Molina")) {
           Distrito d = new Distrito();

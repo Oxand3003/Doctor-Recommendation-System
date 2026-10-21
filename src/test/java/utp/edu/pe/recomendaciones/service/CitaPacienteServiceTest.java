@@ -130,7 +130,7 @@ class CitaPacienteServiceTest extends BaseMedicosTest {
         MedicoConAgenda m = medicoConAgenda();
         reservar(pacienteNuevo(), m, "10:00");
 
-        AgendaView a = agenda.agenda(m.email(), "dia", manana);
+        AgendaView a = agenda.agenda(m.email(), "dia", manana, false);
         assertThat(a.dias().get(0).citas()).hasSize(1);
         assertThat(a.dias().get(0).citas().get(0).estado()).isEqualTo("Pendiente");
         assertThat(a.dias().get(0).citas().get(0).hora()).isEqualTo("10:00");

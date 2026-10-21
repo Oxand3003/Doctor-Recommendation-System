@@ -167,7 +167,8 @@
             <h2 class="sec-title">Experiencias de nuestros pacientes</h2>
             <p class="sec-text">Valoraciones de citas reservadas a través de MediCerca</p>
           </div>
-          <button class="btn btn-ghost" type="button" data-modal-open="review-modal">Escribir opinión</button>
+          <button class="btn btn-ghost" type="button" data-modal-open="review-modal" th:if="${reviewCitaId != null}">Escribir opinión</button>
+          <a class="btn btn-ghost" th:if="${reserva.paciente() and reviewCitaId == null}" th:href="@{/account} + '#clinical-history'">Ver historial para comentar</a>
         </div>
 
         <div class="rating-overview" th:if="${doc.totalValoraciones() > 0}">
@@ -315,14 +316,17 @@
       <h3 id="review-title">Escribir una opinión</h3>
       <button class="modal-close" type="button" data-modal-close aria-label="Cerrar ventana">&times;</button>
     </div>
-    <form id="review-form" class="modal-body" data-demo>
+    <form id="review-form" class="modal-body" th:action="@{/valoraciones}" method="post" th:if="${reviewCitaId != null}">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <input type="hidden" name="citaId" th:value="${reviewCitaId}">
+      <input type="hidden" name="puntaje" id="review-score" value="" required>
       <div class="form-group">
         <label>Tu valoración *</label>
         <div class="star-input" id="star-input" role="radiogroup" aria-label="Valoración">
           <button type="button" data-value="1" aria-label="1 estrella">★</button><button type="button" data-value="2" aria-label="2 estrellas">★</button><button type="button" data-value="3" aria-label="3 estrellas">★</button><button type="button" data-value="4" aria-label="4 estrellas">★</button><button type="button" data-value="5" aria-label="5 estrellas">★</button>
         </div>
       </div>
-      <div class="form-group"><label for="review-text">Cuéntanos tu experiencia *</label><textarea id="review-text" rows="4" maxlength="500" required></textarea></div>
+      <div class="form-group"><label for="review-text">Cuéntanos tu experiencia *</label><textarea id="review-text" name="comentario" rows="4" maxlength="500" required></textarea></div>
       <p class="search-status" id="review-status" role="status" aria-live="polite"></p>
       <div class="modal-footer">
         <button type="button" class="btn btn-ghost" data-modal-close>Cancelar</button>

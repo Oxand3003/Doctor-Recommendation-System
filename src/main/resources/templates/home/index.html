@@ -10,30 +10,12 @@
     <div class="hero-copy">
       <span class="tag"><span class="dot"></span> Recomendaciones según valoración y experiencia</span>
       <h1>Encuentra al doctor indicado, sin dar vueltas.</h1>
+      <div class="hero-search-cta">
+        <a class="btn btn-primary" th:if="${nav != null and nav.paciente()}" href="#patient-search">Buscar médicos</a>
+        <a class="btn btn-primary" th:unless="${nav != null and nav.paciente()}" th:href="@{/login}">Inicia sesión para buscar</a>
+      </div>
       <p class="lead">Busca por especialidad y distrito. Compara la valoración y experiencia de especialistas disponibles y solicita una cita.</p>
 
-      <form class="finder-bar" id="search-form" th:attr="data-search-endpoint=@{/api/doctors/search},data-doctor-base=@{/doctor/}">
-        <label class="fb-field"><span>Especialidad</span>
-          <select id="specialty-input" name="specialty">
-            <option value="">Todas</option>
-            <option th:each="specialty : ${specialties}" th:value="${specialty.nombre}" th:text="${specialty.nombre}">Especialidad</option>
-          </select>
-        </label>
-          <label class="fb-field"><span>Distrito</span>
-            <select id="district-input" name="district">
-              <option value="">Todos los distritos</option>
-              <option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option>
-            </select>
-        </label>
-        <label class="fb-field"><span>Fecha</span>
-          <input id="date-input" name="date" type="date">
-        </label>
-        <button class="btn btn-primary fb-submit" type="submit">Buscar</button>
-      </form>
-      <div class="fb-foot">
-        <button class="fb-clear" id="clear-search" type="button" onclick="document.getElementById('search-form').reset()">Limpiar filtros</button>
-        <p class="search-status" id="search-status" role="status" aria-live="polite"></p>
-      </div>
     </div>
 
     <!-- Pieza visual: arco con línea de pulso y panel informativo (sin perfiles de ejemplo) -->
@@ -57,20 +39,35 @@
         <p>Compara especialidad, ubicación, calificaciones y horarios confirmados por el sistema.</p>
         <div class="doc-foot">
           <div class="when">Datos de médicos registrados</div>
-          <a href="#search-form" class="btn btn-primary btn-sm">Buscar</a>
+          <a href="#patient-search" class="btn btn-primary btn-sm" th:if="${nav != null and nav.paciente()}">Buscar</a>
+          <a th:href="@{/login}" class="btn btn-primary btn-sm" th:unless="${nav != null and nav.paciente()}">Iniciar sesión</a>
         </div>
       </div>
     </div>
   </div>
 </header>
 
-<!-- Resultados reales de la búsqueda -->
-<section class="block wrap results-section" id="results" aria-labelledby="results-title" hidden>
-  <div class="head">
-    <h2 id="results-title">Doctores recomendados</h2>
-    <p id="results-summary" aria-live="polite"></p>
+<!-- Buscador completo: solo se renderiza para pacientes autenticados. -->
+<section class="finder wrap" id="patient-search" th:if="${nav != null and nav.paciente()}" aria-labelledby="finder-title">
+  <header class="finder-head">
+    <div><h2 id="finder-title">Encuentra a tu médico</h2><p>Busca médicos registrados, revisa sus horarios y consulta sus recomendaciones.</p></div>
+    <div class="mode-tabs" role="tablist" aria-label="Forma de búsqueda">
+      <button type="button" role="tab" class="mode-tab" id="tab-ia" data-mode="ia" aria-controls="ai-search-panel" th:classappend="${modoBusqueda == 'ia'} ? ' is-active' : ''" th:attr="aria-selected=${modoBusqueda == 'ia'}">✦ Asistente IA</button>
+      <button type="button" role="tab" class="mode-tab" id="tab-manual" data-mode="manual" aria-controls="manual-search-panel" th:classappend="${modoBusqueda == 'manual'} ? ' is-active' : ''" th:attr="aria-selected=${modoBusqueda == 'manual'}">Búsqueda manual</button>
+    </div>
+  </header>
+  <div id="ai-search-panel" class="finder-panel" role="tabpanel" aria-labelledby="tab-ia" th:classappend="${modoBusqueda != 'ia'} ? ' is-hidden' : ''">
+    <div id="asistente" th:attr="data-chat-endpoint=@{/api/chat/recommendations},data-conversation-endpoint=@{/api/chat/conversation},data-doctor-base=@{/doctor/},data-orientacion-endpoint=@{/api/chat/orientacion},data-patient-name=${patientName}">
+      <div class="assistant-chat"><div class="chat-toolbar"><span class="chat-toolbar-title">✦ Asistente MediCerca</span><button type="button" class="chat-new" id="chat-new">↻ Nueva conversación</button></div><div class="chat-messages" id="chat-messages" role="log" aria-live="polite"><div class="chat-message assistant-message"><span class="chat-avatar" aria-hidden="true">M</span><p>Cargando conversación…</p></div></div><div class="chat-options" id="chat-options" hidden></div><form class="chat-composer" id="chat-form"><label class="sr-only" for="chat-input">Escribe tu mensaje</label><textarea id="chat-input" rows="1" maxlength="500" placeholder="Escribe tus síntomas o tu consulta." required></textarea><button class="chat-send" type="submit" aria-label="Enviar mensaje">↑</button></form><p class="assistant-disclaimer">El asistente orienta sobre especialidades y médicos; no realiza diagnósticos.</p></div>
+      <section class="body-panel" id="body-panel" aria-labelledby="body-title" hidden><div class="body-head"><div><h3 id="body-title">Orientación por zona del cuerpo</h3><p>Toca el punto donde sientes el malestar. Esta herramienta solo orienta sobre una especialidad.</p></div><div class="body-tools"><div class="body-sex" role="group" aria-label="Tipo de maniquí"><button type="button" class="body-sex-btn" data-sexo="mujer" aria-pressed="false">Mujer</button><button type="button" class="body-sex-btn" data-sexo="hombre" aria-pressed="false">Hombre</button></div><button type="button" class="btn btn-ghost" id="body-pdf" disabled>Descargar PDF</button></div></div><div class="body-layout"><figure class="body-figure"><div id="body-svg" role="group" aria-label="Maniquí del cuerpo humano"></div><figcaption id="body-caption">Vista frontal. Toca el punto donde sientes el malestar.</figcaption></figure><div class="body-report" id="body-report" aria-live="polite"></div></div></section>
+      <div class="filters-row"><label class="recommendation-filter">Especialidad<select id="chat-specialty-filter"><option value="">Todas</option></select></label><label class="recommendation-filter">Distrito<select id="chat-district-filter"><option value="">Todos</option><option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option></select></label><label class="recommendation-filter">Ordenar por<select id="chat-sort-filter"><option value="rating">Mejor calificados</option><option value="price">Menor precio</option></select></label></div>
+      <p class="results-summary" id="chat-results-summary" role="status" aria-live="polite">Cargando médicos…</p><div class="recommendations-grid" id="chat-doctor-cards" aria-live="polite"></div>
+    </div>
   </div>
-  <div class="results-grid" id="results-list" aria-live="polite"></div>
+  <div id="manual-search-panel" class="finder-panel" role="tabpanel" aria-labelledby="tab-manual" th:classappend="${modoBusqueda != 'manual'} ? ' is-hidden' : ''">
+    <form class="manual-form" id="search-form" data-autoload="true" th:attr="data-search-endpoint=@{/api/doctors/search},data-doctor-base=@{/doctor/}"><label class="recommendation-filter">Especialidad<select id="specialty-input" name="specialty"><option value="">Todas las especialidades</option><option th:each="specialty : ${searchSpecialties}" th:value="${specialty.nombre}" th:text="${specialty.nombre}">Especialidad</option></select></label><label class="recommendation-filter">Distrito<select id="district-input" name="district"><option value="">Todos los distritos</option><option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option></select></label><label class="recommendation-filter">Sede<select id="clinic-input" name="clinic"><option value="">Todas las sedes</option><option th:each="clinic : ${searchClinics}" th:value="${clinic}" th:text="${clinic}">Sede</option></select></label><div class="manual-actions"><button class="btn btn-primary" type="submit">Buscar</button><button class="btn btn-ghost" id="clear-search" type="reset">Limpiar</button></div></form>
+    <p class="search-status" id="search-status" role="status" aria-live="polite"></p><section class="results-block" id="results" aria-labelledby="results-title" hidden><div class="results-head"><h3 id="results-title">Médicos encontrados</h3><p id="results-summary" aria-live="polite"></p></div><div class="results-grid" id="results-list" aria-live="polite"></div></section>
+  </div>
 </section>
 
 <section class="block wrap trust-block" aria-label="Por qué reservar en MediCerca">
@@ -350,5 +347,6 @@
 <footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca · Encuentra salud de confianza cerca de ti.')}"></footer>
 
 <script th:src="@{/js/pages/home.js(v='home-contact-20261018')}"></script>
+<script th:if="${nav != null and nav.paciente()}" th:src="@{/js/pages/orientacion-corporal.js(v='maniqui-20261021')}"></script>
 </body>
 </html>

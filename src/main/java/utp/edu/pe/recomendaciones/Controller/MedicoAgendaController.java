@@ -45,9 +45,11 @@ public class MedicoAgendaController {
 
     @GetMapping("/agenda")
     public String agenda(@RequestParam(defaultValue = "semana") String vista,
-                         @RequestParam(required = false) String fecha, Authentication auth, Model model) {
+                         @RequestParam(required = false) String fecha,
+                         @RequestParam(defaultValue = "pendientes") String estado,
+                         Authentication auth, Model model) {
         if (!esMedico(auth)) return "redirect:/account";
-        model.addAttribute("a", agenda.agenda(auth.getName(), vista, fecha(fecha)));
+        model.addAttribute("a", agenda.agenda(auth.getName(), vista, fecha(fecha), "atendidas".equals(estado)));
         return "medico/agenda";
     }
 

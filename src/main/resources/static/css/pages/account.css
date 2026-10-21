@@ -72,10 +72,16 @@
 .result-availability,.recommendation-details span{overflow-wrap:anywhere}
 
 /* ---------- Datos de la cuenta y citas ---------- */
+.account-view-tabs{display:flex;gap:6px;width:max-content;margin:0 0 18px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow-soft)}
+.account-view-tab{border:0;border-radius:11px;padding:10px 18px;background:transparent;color:var(--muted);font:inherit;font-weight:700;cursor:pointer;transition:background .2s,color .2s}
+.account-view-tab:hover{color:var(--ink)}
+.account-view-tab.is-active{background:linear-gradient(135deg,var(--primary),#12886F);color:#fff;box-shadow:0 10px 20px -12px rgba(14,107,92,.9)}
+.account-panel[hidden]{display:none}
 .account-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.45fr);gap:24px;align-items:start}
 .account-card{position:sticky;top:96px;border-radius:26px;padding:26px}
 .account-columns h2{font-size:1.35rem;margin-bottom:16px}
 .account-card h2{margin-bottom:14px}
+.section-count{display:inline-flex;align-items:center;padding:5px 10px;border-radius:100px;background:var(--mint);color:var(--primary-dark);font-size:.76rem;font-weight:700;white-space:nowrap}
 .account-grid{list-style:none;display:grid;gap:10px}
 .account-grid li{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:18px;background:var(--bg);border:1px solid transparent;transition:border-color .25s,background .25s,transform .3s var(--ease-out)}
 .account-grid li:hover{background:#fff;border-color:var(--tone-soft);transform:translateX(3px)}
@@ -88,6 +94,10 @@
 .appointments{display:grid;gap:14px}
 .appointments h2{margin-bottom:2px}
 .appointment-card h3{font-size:1.1rem;margin-bottom:6px}
+.clinical-history{grid-column:2;display:grid;gap:14px;background:linear-gradient(145deg,#fff,#F4FAF8);border:1px solid var(--line);border-radius:26px;padding:26px;box-shadow:var(--shadow-soft)}
+.clinical-history-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 16px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.clinical-history-head h2{margin:0 0 4px}
+.clinical-history-head p{margin:0;color:var(--muted);font-size:.88rem}
 
 @media(max-width:900px){
   .profile-hero{grid-template-columns:auto 1fr}
@@ -97,8 +107,11 @@
   .filters-row{grid-template-columns:repeat(2,minmax(0,1fr))}
   .results-grid,.recommendations-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .account-columns{grid-template-columns:1fr}
+  .clinical-history{grid-column:auto}
 }
 @media(max-width:560px){
+  .account-view-tabs{width:100%}
+  .account-view-tab{flex:1;padding:10px 8px}
   .profile-hero{grid-template-columns:1fr;padding:24px 20px;border-radius:24px}
   .profile-avatar{width:72px;height:72px;border-radius:24px;font-size:1.7rem}
   .profile-stats{grid-template-columns:1fr 1fr 1fr;gap:8px}
@@ -136,7 +149,8 @@
 .appt-go{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;color:var(--primary);opacity:.55;transition:opacity .25s,transform .35s var(--ease-out)}
 .appt-link:hover .appt-go,.appt-link:focus-within .appt-go{opacity:1;transform:translateX(3px)}
 .appt-doctor-link{color:inherit;text-decoration:none}
-.appt-doctor-link::after{content:"";position:absolute;inset:0;border-radius:18px}
+.appt-doctor-link::after{content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none}
+.patient-review-form,.patient-review-existing{position:relative;z-index:2}
 .appt-doctor-link:hover{color:var(--primary)}
 .appt-reason.cancel{color:#8E3A26}
 .appt-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
@@ -153,8 +167,18 @@
 .appt-meta dd{margin:0;color:var(--ink);font-size:.92rem;overflow-wrap:anywhere}
 .appt-reason{margin:10px 0 0;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
 .appt-code{margin:0;color:var(--muted);font-size:.76rem;letter-spacing:.04em}
+.patient-review-form{display:grid;gap:10px;margin-top:14px;padding:16px;border-radius:16px;background:#fff;border:1px solid var(--aqua-soft)}
+.patient-review-form label{display:grid;gap:5px;color:var(--muted);font-size:.78rem;font-weight:700}
+.patient-review-form select,.patient-review-form textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-weight:400;resize:vertical}
+.patient-review-form select:focus,.patient-review-form textarea:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(14,107,92,.12)}
+.patient-review-form .btn{justify-self:start;margin-top:2px}
+.patient-review-existing{display:grid;gap:5px;margin-top:14px;padding:14px 16px;border-radius:16px;background:var(--mint);color:var(--primary-dark)}
+.patient-review-existing strong{font-size:.8rem}
+.patient-review-existing p{margin:0;color:var(--ink);font-size:.9rem;line-height:1.45}
+.patient-review-existing .btn{justify-self:start;margin-top:4px}
 @media(max-width:560px){
   .my-appts{padding:18px 14px}
+  .clinical-history{padding:18px 14px}
   .appt-tabs{width:100%}
   .appt-tab{flex:1;justify-content:center;padding:9px 8px}
 }

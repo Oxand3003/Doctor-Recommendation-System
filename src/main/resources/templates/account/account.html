@@ -7,6 +7,9 @@
 
 <main class="wrap portal-main account-page">
 
+  <div class="flash flash-ok" th:if="${ok != null}" th:text="${ok}"></div>
+  <div class="flash flash-error" th:if="${error != null}" th:text="${error}"></div>
+
   <!-- ===== Banner del perfil ===== -->
   <section class="profile-hero" aria-labelledby="profile-name"
            th:with="partes=${#strings.arraySplit(cuenta.nombre().trim(), ' ')},
@@ -19,13 +22,14 @@
     </div>
     <ul class="profile-stats" th:if="${cuenta.paciente()}" aria-label="Resumen de tus citas">
       <li class="st-amber"><b th:text="${cuenta.pendientes().size()}">0</b><span>Citas pendientes</span></li>
-      <li class="st-sky"><b th:text="${cuenta.historial().size()}">0</b><span>En tu historial</span></li>
+      <li class="st-sky"><b th:text="${cuenta.historial().size()}">0</b><span>Historial clínico</span></li>
       <li class="st-aqua"><b class="st-text" th:text="${cuenta.estado() == 'ACTIVO'} ? 'Activa' : ${cuenta.estado()}">Activa</b><span>Estado de la cuenta</span></li>
     </ul>
   </section>
 
   <!-- ===== Buscador de médicos (solo pacientes) ===== -->
-  <section class="finder" id="patient-search" th:if="${cuenta.paciente()}" aria-labelledby="finder-title">
+  <!-- El buscador de médicos se encuentra ahora en el inicio para pacientes autenticados. -->
+  <section class="finder" id="patient-search" th:if="${false}" aria-labelledby="finder-title">
     <header class="finder-head">
       <div>
         <h2 id="finder-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></span>Encuentra a tu médico</h2>
@@ -94,12 +98,6 @@
               <option th:each="district : ${searchDistricts}" th:value="${district}" th:text="${district}">Distrito</option>
             </select>
           </label>
-          <label class="recommendation-filter">Fecha
-            <input id="chat-date-filter" type="date">
-          </label>
-          <label class="recommendation-filter">Desde la hora
-            <input id="chat-time-filter" type="time">
-          </label>
           <label class="recommendation-filter">Ordenar por
             <select id="chat-sort-filter">
               <option value="rating">Mejor calificados</option>
@@ -135,12 +133,6 @@
             <option th:each="clinic : ${searchClinics}" th:value="${clinic}" th:text="${clinic}">Sede</option>
           </select>
         </label>
-        <label class="recommendation-filter">Fecha (opcional)
-          <input id="date-input" name="date" type="date">
-        </label>
-        <label class="recommendation-filter">Desde la hora (opcional)
-          <input id="time-input" name="time" type="time">
-        </label>
         <div class="manual-actions">
           <button class="btn btn-primary" type="submit">Buscar</button>
           <button class="btn btn-ghost" id="clear-search" type="reset">Limpiar</button>
@@ -153,6 +145,11 @@
       </section>
     </div>
   </section>
+
+  <nav class="account-view-tabs" th:if="${cuenta.paciente()}" aria-label="Secciones de tu cuenta">
+    <button type="button" class="account-view-tab is-active" data-account-view="appointments" aria-selected="true">Mis citas</button>
+    <button type="button" class="account-view-tab" data-account-view="history" aria-selected="false">Historial clínico</button>
+  </nav>
 
   <!-- ===== Datos de la cuenta y citas ===== -->
   <div class="account-columns">
@@ -181,37 +178,38 @@
       <a class="btn btn-primary" th:if="${cuenta.paciente()}" th:href="@{/chat}">Abrir chat con mis médicos</a>
     </section>
 
-    <section class="appointments my-appts" id="my-appointments" th:if="${cuenta.paciente()}" aria-labelledby="my-appointments-title">
+    <section class="appointments my-appts account-panel" id="my-appointments" data-account-panel="appointments" th:if="${cuenta.paciente()}" aria-labelledby="my-appointments-title">
       <header class="my-appts-head">
         <h2 id="my-appointments-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>Mis citas</h2>
-        <div class="appt-tabs" role="tablist" aria-label="Mis citas">
-          <button type="button" role="tab" class="appt-tab is-active" id="appt-tab-pendientes" data-appt-tab="pendientes"
-                  aria-controls="appt-panel-pendientes" aria-selected="true">Pendientes <span class="appt-count" th:text="${cuenta.pendientes().size()}">0</span></button>
-          <button type="button" role="tab" class="appt-tab" id="appt-tab-historial" data-appt-tab="historial"
-                  aria-controls="appt-panel-historial" aria-selected="false" tabindex="-1">Historial <span class="appt-count" th:text="${cuenta.historial().size()}">0</span></button>
-        </div>
+        <span class="section-count" th:text="${cuenta.pendientes().size()} + ' pendientes'">0 pendientes</span>
       </header>
 
-      <div class="appt-panel" id="appt-panel-pendientes" role="tabpanel" aria-labelledby="appt-tab-pendientes">
+      <div class="appt-panel" id="appt-panel-pendientes" role="region" aria-labelledby="my-appointments-title">
         <p class="appt-empty" th:if="${cuenta.pendientes().isEmpty()}">No tienes citas pendientes. Usa la búsqueda de arriba para encontrar un médico y reservar.</p>
         <ul class="appt-list" th:unless="${cuenta.pendientes().isEmpty()}">
           <th:block th:each="c : ${cuenta.pendientes()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
         </ul>
       </div>
 
-      <div class="appt-panel" id="appt-panel-historial" role="tabpanel" aria-labelledby="appt-tab-historial" hidden>
-        <p class="appt-empty" th:if="${cuenta.historial().isEmpty()}">Aún no tienes citas anteriores.</p>
-        <ul class="appt-list" th:unless="${cuenta.historial().isEmpty()}">
-          <th:block th:each="c : ${cuenta.historial()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
-        </ul>
-      </div>
+    </section>
+
+    <section class="clinical-history account-panel" id="clinical-history" data-account-panel="history" th:if="${cuenta.paciente()}" aria-labelledby="clinical-history-title" hidden>
+      <header class="clinical-history-head">
+        <div>
+          <h2 id="clinical-history-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>Historial clínico</h2>
+          <p>Consulta el registro de tus atenciones anteriores.</p>
+        </div>
+        <span class="section-count" th:text="${cuenta.historial().size()} + ' registros'">0 registros</span>
+      </header>
+      <p class="appt-empty" th:if="${cuenta.historial().isEmpty()}">Aún no tienes atenciones registradas.</p>
+      <ul class="appt-list" th:unless="${cuenta.historial().isEmpty()}">
+        <th:block th:each="c : ${cuenta.historial()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
+      </ul>
     </section>
   </div>
 </main>
 
 <footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
-<script th:src="@{/js/pages/home.js(v='patient-finder-20261018')}"></script>
-<script th:src="@{/js/pages/orientacion-corporal.js(v='maniqui-20261018')}"></script>
-<script th:src="@{/js/pages/mis-citas.js}"></script>
+<script th:src="@{/js/pages/account.js(v='account-tabs-20261021')}"></script>
 </body>
 </html>
