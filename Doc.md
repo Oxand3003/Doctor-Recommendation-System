@@ -618,7 +618,7 @@ Los POST de `/admin/api/**` exigen el token CSRF en la cabecera (el JS lo lee de
 - **Por defecto** la aplicación usa **H2 en archivo** (`jdbc:h2:file:./data/medicerca;MODE=MySQL`): no requiere instalar nada y **los datos se conservan al reiniciar** (se guardan en la carpeta `data/`, que está en `.gitignore`). Para empezar de cero, borra esa carpeta. Hibernate crea las tablas (`ddl-auto=update`) y `DataInitializer` carga los datos base.
 - **MySQL:** arrancar con `--spring.profiles.active=mysql` y definir `MYSQL_PASSWORD`. Usa la base nueva `medicerca_app` (se crea sola).
 - **Pruebas:** `src/test/resources/application.properties` usa H2 en memoria con `create-drop`.
-- **Administrador inicial:** `admin@medicerca.local` / `Admin123!` (configurable con `ADMIN_EMAIL` y `ADMIN_PASSWORD`). Cambiar antes de publicar.
+- **Administrador inicial:** se crea al configurar `ADMIN_EMAIL` y `ADMIN_PASSWORD` en el entorno; no hay credenciales predeterminadas en el repositorio.
 - **Datos de ejemplo:** `DemoDataLoader` (activo por defecto; `medicerca.demo-data=false` para desactivarlo).
 
 ## 16. Estado actual del proyecto

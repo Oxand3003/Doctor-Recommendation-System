@@ -1,7 +1,8 @@
-# MediCerca — Recomendación de citas médicas
+# MediCerca — Plataforma de recomendación y citas médicas
 
-Módulo que ayuda a un paciente a encontrar al especialista adecuado y reservar
-una cita, en lugar de elegir a ciegas.
+Plataforma web que conecta pacientes con profesionales médicos: permite buscar
+especialistas, consultar perfiles, reservar citas y darles seguimiento, y da a
+los médicos y administradores sus propias herramientas de gestión.
 
 ---
 
@@ -15,13 +16,13 @@ y en reclamos por haber sido derivado al especialista equivocado.
 
 ## 🛡️ Flujo de Trabajo y Reglas del Repositorio
 
-Para mantener la estabilidad del código y asegurar un desarrollo ordenado, este equipo sigue un flujo de trabajo basado en Ramas (Branching Workflow). 
+Para mantener la estabilidad del código y asegurar un desarrollo ordenado, este equipo sigue un flujo de trabajo basado en Ramas (Branching Workflow).
 
 Dado que las limitaciones de la plataforma en repositorios privados no nos permiten bloquear las ramas técnicamente, **este documento actúa como un acuerdo obligatorio** para todos los miembros del equipo.
 
 ### 🚫 Regla de Oro: Protección de la rama `main`
-**Queda estrictamente prohibido hacer un `git push` directo a la rama `main`.** 
-La rama `main` debe reflejar únicamente el código que está 100% probado, estable y listo para producción. 
+**Queda estrictamente prohibido hacer un `git push` directo a la rama `main`.**
+La rama `main` debe reflejar únicamente el código que está 100% probado, estable y listo para producción.
 
 ### 🔄 Flujo de Integración
 Todo el desarrollo debe seguir el siguiente proceso:
@@ -35,43 +36,43 @@ El respeto a este flujo es responsabilidad de todos para evitar romper el entorn
 
 ---
 
-## Entidad núcleo
+## Modelo de dominio
 
-**Doctor** — es la entidad sobre la que se construye el CRUD completo:
+El sistema gira alrededor de **Usuario** (con un **Rol**: `PACIENTE`, `MEDICO` o
+`ADMIN`) y de **Medico**, que extiende los datos profesionales (especialidad,
+sedes, horarios, tarifas, formación) sobre un usuario con rol médico.
 
-| Campo | Tipo | Notas |
-|---|---|---|
-| `id` | Long | autogenerado |
-| `nombres` | String | obligatorio |
-| `apellidos` | String | obligatorio |
-| `cmp` | String | obligatorio y único (colegiatura) |
-| `rating` | Double | 0.0 a 5.0 |
-| `aniosExperiencia` | Integer | 0 a 80 |
-| `disponible` | Boolean | por defecto `true` |
-| `especialidad` | Especialidad | relación obligatoria |
-| `establecimiento` | Establecimiento | relación opcional |
-
-Entidades de apoyo: **Especialidad** y **Establecimiento**.
+| Entidad | Para qué sirve |
+|---|---|
+| `Usuario` / `Rol` | Autenticación y autorización (login, roles) |
+| `Medico` | Perfil profesional: especialidad, sedes, horarios, tarifas, fotos |
+| `Especialidad` / `Establecimiento` / `Distrito` | Catálogo para buscar y filtrar médicos |
+| `Cita` | Reserva de un paciente con un médico (estado, modalidad, fecha) |
+| `Valoracion` | Reseña de un paciente sobre una cita atendida |
+| `Consulta` | Mensaje del formulario público de contacto |
+| `Conversacion` / `MensajeChat` | Mensajería en tiempo real paciente-médico (WebSocket/STOMP) |
+| `SolicitudVerificacion` | Solicitud de un médico nuevo, pendiente de aprobación por un admin |
 
 ---
 
 ## Integrantes y roles
 
-| Integrante | Rol | Módulo |
+| Integrante | Rol | Módulo principal |
 |---|---|---|
-| André Ramírez | Owner del repositorio, integración | Controller, services, merges |
-| Nelson Alva Zegarra | Landing page | `feature/pagina-principal` |
-| J. Alvarez F. | Manejo de errores y documentación | `feature/recomendacion-doctores` |
+| André Ramírez | Owner del repositorio, integración | Controllers, services, merges |
+| Nelson Alva Zegarra | Landing page, buscador por síntomas | `feature/pagina-principal`, `feature/sugerencia-sintomas` |
+| J. Alvarez F. | Versión final: login, citas, mensajería, panel admin | `feature/version-final` |
 | Raúl Rosas | Lógica de recomendación | `feature/nucleo-recommendations` |
 | Jhonatan Alva Castillo | Perfil del doctor y reserva de citas | `feature/perfil-doctores` |
 
-Aporte por integrante según `git shortlog -s -n --all`:
+Aporte por integrante según `git shortlog -s -n --all` (algunas personas comitean
+desde más de un usuario/correo, por eso la suma no es exacta):
 
 ```
-11  André Ramírez
-11  Nelson Alva Zegarra
- 7  J. Alvarez F.
- 6  Raúl Rosas
+32  J. Alvarez F.      (DAlvarezF / JAlvarezF / ALvarezF)
+31  Nelson Alva Zegarra (NAlvaZ / Zean2040)
+30  André Ramírez       (ARamirezA / Oxand)
+ 7  Raúl Rosas          (ERosasR / Edgar Rosas)
  5  Jhonatan Alva Castillo
 ```
 
@@ -84,12 +85,12 @@ Nadie trabaja directamente sobre `main`: cada funcionalidad se desarrolla en una
 rama `feature/...` y se integra a `develop` mediante un pull request.
 
 ```
-main        ──●────────────────────────────────────────────●────────►  estable
-               \                                          /
-develop         ●──●────●────●────●────●────●────●────●──●──────────►  integración
-                 \    \    \    \    \    \    \    \  /
-feature/…         ●────●────●────●────●────●────●────●              una por funcionalidad
-                landing  controller  perfil  núcleo  errores  crud
+main        ──●──────────────────────────────────────────────────────────●────────►  estable
+               \                                                        /
+develop         ●──●────●────●────●────●────●────●────●────●──●────●───●──────────►  integración
+                 \    \    \    \    \    \    \    \  /         \   /
+feature/…         ●────●────●────●────●────●────●────●           ●─●              una por funcionalidad
+                landing  controller  perfil  núcleo  errores  crud  síntomas  version-final
 ```
 
 Ciclo que sigue cada funcionalidad:
@@ -100,10 +101,7 @@ git pull origin develop
 git checkout -b feature/nombre-funcionalidad
 # ... programar, git add, git commit ...
 git push -u origin feature/nombre-funcionalidad
-# integrar cuando la funcionalidad está terminada
-git checkout develop
-git merge feature/nombre-funcionalidad
-git push origin develop
+# integrar cuando la funcionalidad está terminada (via Pull Request en GitHub)
 ```
 
 Ramas utilizadas:
@@ -116,15 +114,20 @@ Ramas utilizadas:
 | `feature/nucleo-recommendations` | Núcleo de recomendación |
 | `feature/recomendacion-doctores` | Manejo de errores, CORS y OpenAPI |
 | `feature/crud-doctores` | CRUD de doctores y correcciones para Spring Boot 4 |
+| `feature/sugerencia-sintomas` | Buscador por síntomas y maniquí interactivo en el hero |
+| `feature/version-final` | Login, roles, citas, mensajería, panel admin y MySQL (versión final) |
 
 ---
 
-## Fusión y conflicto resuelto
+## Fusiones y conflictos resueltos
 
 Se realizaron varias fusiones hacia `develop` (una por cada pull request más
-los merges de integración). El conflicto real ocurrió en el `<title>` de
-`frontend/index.html`, cuando `feature/pagina-principal` y `feature/controller`
-modificaron la misma línea a partir de la misma base:
+los merges de integración). Dos conflictos reales quedaron documentados:
+
+### 1. Título de la landing page
+
+`feature/pagina-principal` y `feature/controller` modificaron la misma línea
+del `<title>` a partir de la misma base:
 
 ```
 <<<<<<< HEAD
@@ -136,123 +139,87 @@ modificaron la misma línea a partir de la misma base:
 
 Se conservó la versión de `feature/pagina-principal` ("Encuentra a tu doctor
 ideal") por ser más natural y estar libre de errores gramaticales. Commit de
-resolución: `c968490` — *merge: resolver conflicto en titulo de landing page*
-(verificable con `git show c968490:frontend/index.html`).
+resolución: `c968490` (verificable con `git show c968490:frontend/index.html`).
+
+### 2. Integración de `feature/version-final` (PR #14)
+
+`feature/version-final` se construyó desde el commit inicial del proyecto, en
+paralelo a `develop`, reconstruyendo todo el sistema con su propia arquitectura
+(entidad `Medico` en vez de `Doctor`, vistas Thymeleaf en vez de HTML estático,
+login con roles, citas, mensajería, panel admin y MySQL). Al fusionarla:
+
+- Se descartó el stack REST antiguo (`Doctor`/`domain`, el motor local de
+  sugerencia por síntomas, la landing estática en `frontend/`) porque la
+  versión final ya cubre esas funciones con su propia implementación.
+- Se eliminó un gitlink roto que había quedado comiteado por error en `develop`.
+- Se reemplazaron contraseñas reales que estaban en texto plano en
+  `application.properties` (MySQL, admin, SMTP) por variables de entorno.
+
+Commit de resolución: `92d9bb8` (`git show 92d9bb8` tiene el detalle completo),
+fusionado a `develop` vía el PR #14.
 
 ---
 
 ## Cómo ejecutar
 
-Requisitos: **Java 17 o superior** y **Maven**.
+Requisitos: **Java 17**, **Maven**, y **MySQL** corriendo localmente (puerto
+`3306`, base de datos `medicerca`).
 
 ```bash
 git clone https://github.com/Oxand3003/Doctor-Recommendation-System.git
 cd Doctor-Recommendation-System
 git checkout develop
 
-# levantar la API
-mvn spring-boot:run
+# crear la base de datos (una sola vez)
+mysql -u root -p -e "CREATE DATABASE medicerca CHARACTER SET utf8mb4;"
 ```
 
-La API queda en `http://localhost:8080`. La base de datos es H2 en memoria y se
-crea con datos de ejemplo en cada arranque (`src/main/resources/data.sql`).
+La configuración de conexión vive en `src/main/resources/application.properties`.
+Las credenciales **no se guardan en el repositorio**: se definen como variables
+de entorno antes de arrancar (o en `config/mail.local.properties`, que está en
+`.gitignore`, para el correo).
 
-Para abrir el frontend, servir la carpeta `frontend/` con cualquier servidor
-estático y entrar a `index.html`.
+| Variable | Para qué | Si no se define |
+|---|---|---|
+| `DB_USERNAME` | Usuario de MySQL | usa `root` |
+| `DB_PASSWORD` | Contraseña de MySQL | vacío |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Cuenta de administrador inicial | vacío (pedir al equipo) |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Envío de correos (notificaciones, códigos) | vacío (deshabilita el correo) |
+| `GROQ_API_KEY` | Asistente de orientación por IA (síntoma → especialidad) | vacío (deshabilita el asistente) |
+
+```bash
+# arrancar la app (Hibernate crea/actualiza las tablas automáticamente)
+./mvnw spring-boot:run
+```
+
+La app queda en `http://localhost:8080`. Al arrancar se crean automáticamente
+los roles, especialidades, distritos y el usuario administrador
+(`medicerca.demo-data=true` por defecto también agrega médicos, citas y
+valoraciones de ejemplo). Si se quieren más médicos de prueba, se puede correr
+además `sql/cargar-medicos-demo.sql` directamente contra la base de datos.
 
 > **Nota:** si `./mvnw` falla, usar `mvn` del sistema. El wrapper necesita
 > `.mvn/wrapper/maven-wrapper.jar`, que está en el `.gitignore`.
 
 ---
 
-## Endpoints
+## Roles y rutas principales
 
-Base: `http://localhost:8080/api/v1/doctors`
+| Rol | Puede hacer |
+|---|---|
+| Visitante | Ver la página principal, buscar médicos (`/`, `/doctor/**`), enviar una consulta (`/consultas`) |
+| Paciente | Todo lo anterior + reservar y gestionar citas (`/appointments/**`), mensajería con su médico, chat de orientación por IA |
+| Médico | Gestionar su perfil, horarios, sedes, tarifas, reseñas y citas recibidas (`/medico/**`) |
+| Administrador | Aprobar/rechazar solicitudes de médicos, gestionar cuentas y consultas (`/admin/**`) |
 
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Lista todos los médicos |
-| GET | `/{id}` | Obtiene un médico por id |
-| POST | `/` | Registra un médico nuevo |
-| PUT | `/{id}` | Actualiza un médico |
-| DELETE | `/{id}` | Elimina un médico |
-| GET | `/recomendar?especialidad=&limite=` | Recomienda médicos por especialidad |
+Rutas públicas (sin login): `/`, `/login`, `/register/**`, `/doctor/**`,
+`/especialidades/**`, `/consultas`. El resto requiere sesión iniciada, y
+`/admin/**` exige además el rol `ADMIN`.
 
-Documentación interactiva: `http://localhost:8080/swagger-ui/index.html`
-Consola de base de datos: `http://localhost:8080/h2-console`
+Documentación interactiva de la API REST: `http://localhost:8080/swagger-ui/index.html`
+Consola de base de datos H2 (solo si se cambia el datasource a H2 para pruebas rápidas): `http://localhost:8080/h2-console`
 
-### Cómo probar el CRUD
-
-La base ya trae 10 médicos de ejemplo. Comandos listos para copiar y pegar
-(requieren la app corriendo en `http://localhost:8080`):
-
-```bash
-# 1. Listar todos los médicos
-curl http://localhost:8080/api/v1/doctors
-
-# 2. Obtener un médico por id
-curl http://localhost:8080/api/v1/doctors/1
-
-# 3. Crear un médico nuevo
-curl -X POST http://localhost:8080/api/v1/doctors \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres": "Test",
-    "apellidos": "Prueba QA",
-    "cmp": "CMPDEMO1",
-    "rating": 4.5,
-    "aniosExperiencia": 5,
-    "disponible": true,
-    "especialidadId": 1
-  }'
-# -> 201 Created, con el médico creado y su id nuevo (ej: 11)
-
-# 4. Actualizar ese médico (usa el id que devolvió el paso 3)
-curl -X PUT http://localhost:8080/api/v1/doctors/11 \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombres": "Test",
-    "apellidos": "Prueba Editada",
-    "cmp": "CMPDEMO1",
-    "rating": 4.8,
-    "aniosExperiencia": 6,
-    "disponible": false,
-    "especialidadId": 2
-  }'
-# -> 200 OK, con los datos actualizados
-
-# 5. Eliminarlo
-curl -X DELETE http://localhost:8080/api/v1/doctors/11
-# -> 204 No Content
-
-# 6. Confirmar que ya no existe
-curl http://localhost:8080/api/v1/doctors/11
-# -> 404 Not Found
-
-# 7. Validación: no se permite un CMP duplicado
-curl -X POST http://localhost:8080/api/v1/doctors \
-  -H "Content-Type: application/json" \
-  -d '{"nombres":"X","apellidos":"Y","cmp":"CMP10001","rating":4.0,"aniosExperiencia":1,"especialidadId":1}'
-# -> 400 Bad Request, "Ya existe un medico registrado con el CMP: CMP10001"
-```
-
-Especialidades disponibles para `especialidadId`: 1 Cardiología, 2 Dermatología,
-3 Pediatría, 4 Medicina General, 5 Odontología, 6 Neurología, 7 Oftalmología,
-8 Traumatología.
-
-También se puede probar todo esto de forma visual en
-`http://localhost:8080/swagger-ui/index.html`, o correr `./mvnw test` para ver
-los 13 tests automatizados pasar.
-
-### Fórmula de recomendación
-
-```
-puntaje = (rating / 5 * 0.70 + min(aniosExperiencia, 20) / 20 * 0.30) * 100
-```
-
-El rating pesa 70 % y la experiencia 30 %, con un tope de 20 años para que una
-trayectoria muy larga no aplaste al resto. Ambos pesos y el tope se definieron
-para priorizar la satisfacción del paciente sin ignorar la experiencia clínica.
+Para ver los tests automatizados: `./mvnw test`.
 
 ---
 
@@ -260,11 +227,20 @@ para priorizar la satisfacción del paciente sin ignorar la experiencia clínica
 
 ```
 src/main/java/utp/edu/pe/recomendaciones/
-├── config/       CORS y metadatos de OpenAPI
-├── controller/   Endpoints REST
-├── domain/       Entidades JPA (Doctor, Especialidad, Establecimiento)
-├── dto/          Objetos de entrada y salida
-├── exception/    Manejo global de errores
+├── config/       Seguridad, WebSocket, datos iniciales, mensajería
+├── Controller/   Controladores web (Thymeleaf) y de API
+├── model/        Entidades JPA (Usuario, Medico, Cita, Consulta, ...)
+├── model/enums/  Estados y modalidades (EstadoCita, Modalidad, ...)
+├── dto/          Objetos de entrada y salida de cada caso de uso
+├── exception/    Excepciones de negocio
 ├── repository/   Acceso a datos
-└── service/      Lógica de negocio
-frontend/         Landing page, buscador y perfil del doctor
+└── service/      Lógica de negocio (citas, credenciales, correo, IA, ...)
+
+src/main/resources/
+├── templates/    Vistas Thymeleaf (home, doctor, medico, admin, fragments)
+├── static/       CSS, JS e imágenes
+└── application*.properties
+
+sql/              Scripts SQL auxiliares (carga de médicos de demostración)
+uploads/          Fotos de perfil subidas por los médicos (no versionado)
+```
