@@ -3,8 +3,6 @@ package utp.edu.pe.recomendaciones.config;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -30,8 +28,6 @@ import utp.edu.pe.recomendaciones.repository.UsuarioRepository;
  */
 @Configuration
 public class DataInitializer {
-
-  private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
   @Bean
   @Order(1)
@@ -82,8 +78,7 @@ public class DataInitializer {
           Map.entry("Salaverry", "CAP I Salaverry"),
           Map.entry("Víctor Larco Herrera", "Policlínico Víctor Larco Herrera"));
       for (java.util.Map.Entry<String, String> sede : catalogoPrincipal.entrySet()) {
-        Distrito distrito = distritos.findByNombreAndProvincia(sede.getKey(), "Trujillo")
-            .orElseGet(() -> distritos.save(nuevoDistrito(sede.getKey(), "Trujillo", "La Libertad")));
+        Distrito distrito = distritos.findByNombreAndProvincia(sede.getKey(), "Trujillo").orElseThrow();
         boolean existe = establecimientos.findByPropietarioIsNull(org.springframework.data.domain.Sort.unsorted())
             .stream().anyMatch(e -> sede.getValue().equals(e.getNombre())
                 && e.getDistrito().getId().equals(distrito.getId()));
@@ -106,8 +101,7 @@ public class DataInitializer {
             Map.entry("Salaverry", "CAP I Salaverry"),
             Map.entry("Víctor Larco Herrera", "Policlínico Víctor Larco Herrera"));
         for (java.util.Map.Entry<String, String> sede : catalogoAnterior.entrySet()) {
-          Distrito distrito = distritos.findByNombreAndProvincia(sede.getKey(), "Trujillo")
-              .orElseGet(() -> distritos.save(nuevoDistrito(sede.getKey(), "Trujillo", "La Libertad")));
+          Distrito distrito = distritos.findByNombreAndProvincia(sede.getKey(), "Trujillo").orElseThrow();
           boolean existe = establecimientos.findByPropietarioIsNull(org.springframework.data.domain.Sort.unsorted())
               .stream().anyMatch(e -> sede.getValue().equals(e.getNombre())
                   && e.getDistrito().getId().equals(distrito.getId()));
@@ -117,31 +111,6 @@ public class DataInitializer {
         }
       }
 
-            String email = adminEmail.trim().toLowerCase();
-            Rol rolAdmin = roles.findByNombre("ADMIN").orElseThrow();
-            if (!adminPassword.isBlank() && !usuarios.existsByEmail(email)) {
-                Usuario admin = new Usuario();
-                admin.setNombres("Administrador");
-                admin.setApellidos("MediCerca");
-                admin.setDni("25000045");
-                admin.setEmail(email);
-                admin.setTelefono("900900900");
-                admin.setPasswordHash(encoder.encode(adminPassword));
-                admin.setEstado(EstadoUsuario.ACTIVO);
-                admin.setRol(rolAdmin);
-                admin.setPuedeGestionarAdministradores(true);
-                usuarios.save(admin);
-            } else if (!adminPassword.isBlank()) {
-                usuarios.findByEmail(email).ifPresent(admin -> {
-                    admin.setRol(rolAdmin);
-                    admin.setEstado(EstadoUsuario.ACTIVO);
-                    admin.setPasswordHash(encoder.encode(adminPassword));
-                    admin.setPuedeGestionarAdministradores(true);
-                    usuarios.save(admin);
-                });
-            }
-        };
-    }
       if (distritosPermitidos.isEmpty() && distritosPermitidos.size() > 0) {
         for (String nombre : List.of("San Borja", "Surco", "Miraflores", "San Isidro", "La Molina")) {
           Distrito d = new Distrito();
@@ -150,12 +119,9 @@ public class DataInitializer {
           d.setDepartamento("Lima");
           distritos.save(d);
         }
-        Distrito sanBorja = distritos.findByNombreAndProvincia("San Borja", "Lima")
-            .orElseGet(() -> distritos.save(nuevoDistrito("San Borja", "Lima", "Lima")));
-        Distrito surco = distritos.findByNombreAndProvincia("Surco", "Lima")
-            .orElseGet(() -> distritos.save(nuevoDistrito("Surco", "Lima", "Lima")));
-        Distrito miraflores = distritos.findByNombreAndProvincia("Miraflores", "Lima")
-            .orElseGet(() -> distritos.save(nuevoDistrito("Miraflores", "Lima", "Lima")));
+        Distrito sanBorja = distritos.findByNombreAndProvincia("San Borja", "Lima").orElseThrow();
+        Distrito surco = distritos.findByNombreAndProvincia("Surco", "Lima").orElseThrow();
+        Distrito miraflores = distritos.findByNombreAndProvincia("Miraflores", "Lima").orElseThrow();
         establecimientos.save(nuevoEstablecimiento("Clínica San Borja", "Av. Javier Prado Este 2450", sanBorja));
         establecimientos.save(nuevoEstablecimiento("Centro Médico Surco", "Av. Primavera 1200", surco));
         establecimientos.save(nuevoEstablecimiento("Clínica Miraflores", "Av. Larco 800", miraflores));
@@ -164,10 +130,6 @@ public class DataInitializer {
       String email = adminEmail.trim().toLowerCase();
       Rol rolAdmin = roles.findByNombre("ADMIN").orElseThrow();
       if (!adminPassword.isBlank() && !usuarios.existsByEmail(email)) {
-        if (usuarios.existsByDni("25000045")) {
-          log.warn("No se creo el administrador inicial: su DNI ya pertenece a un usuario existente.");
-          return;
-        }
         Usuario admin = new Usuario();
         admin.setNombres("Administrador");
         admin.setApellidos("MediCerca");
@@ -181,22 +143,14 @@ public class DataInitializer {
         usuarios.save(admin);
       } else if (!adminPassword.isBlank()) {
         usuarios.findByEmail(email).ifPresent(admin -> {
-          if (admin.getRol() != null && admin.getRol().getId().equals(rolAdmin.getId())) {
-            admin.setPasswordHash(encoder.encode(adminPassword));
-            admin.setPuedeGestionarAdministradores(true);
-            usuarios.save(admin);
-          }
+          admin.setRol(rolAdmin);
+          admin.setEstado(EstadoUsuario.ACTIVO);
+          admin.setPasswordHash(encoder.encode(adminPassword));
+          admin.setPuedeGestionarAdministradores(true);
+          usuarios.save(admin);
         });
       }
     };
-  }
-
-  private Distrito nuevoDistrito(String nombre, String provincia, String departamento) {
-    Distrito distrito = new Distrito();
-    distrito.setNombre(nombre);
-    distrito.setProvincia(provincia);
-    distrito.setDepartamento(departamento);
-    return distrito;
   }
 
   private Establecimiento nuevoEstablecimiento(String nombre, String direccion, Distrito distrito) {
