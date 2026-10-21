@@ -14,5 +14,6 @@ public record AccountView(String nombre, String rol, String email, String dni, S
     /** estadoClave se usa como clase CSS (pendiente, confirmada, cancelada, completada, no-asistio). */
     public record CitaItem(Long id, Long medicoId, String codigo, String medico, String especialidad, String fecha,
                            String hora, String modalidad, String lugar, String estado, String estadoClave,
-                           String motivo, String motivoCancelacion) { }
+                           String motivo, String motivoCancelacion, Long valoracionId,
+                           String comentarioValoracion, boolean puedeValorar) { }
 }

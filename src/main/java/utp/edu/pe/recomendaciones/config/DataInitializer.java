@@ -140,11 +140,11 @@ public class DataInitializer {
                 usuarios.save(admin);
             } else if (!adminPassword.isBlank()) {
                 usuarios.findByEmail(email).ifPresent(admin -> {
-                    if (admin.getRol() != null && admin.getRol().getId().equals(rolAdmin.getId())) {
-                        admin.setPasswordHash(encoder.encode(adminPassword));
-                        admin.setPuedeGestionarAdministradores(true);
-                        usuarios.save(admin);
-                    }
+                    admin.setRol(rolAdmin);
+                    admin.setEstado(EstadoUsuario.ACTIVO);
+                    admin.setPasswordHash(encoder.encode(adminPassword));
+                    admin.setPuedeGestionarAdministradores(true);
+                    usuarios.save(admin);
                 });
             }
         };

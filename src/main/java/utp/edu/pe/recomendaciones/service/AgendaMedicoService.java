@@ -59,10 +59,12 @@ public class AgendaMedicoService {
 
     private final MedicoSesion sesion;
     private final AgendaCitaRepository citas;
+    private final CitaEstadoService estados;
 
-    public AgendaMedicoService(MedicoSesion sesion, AgendaCitaRepository citas) {
+    public AgendaMedicoService(MedicoSesion sesion, AgendaCitaRepository citas, CitaEstadoService estados) {
         this.sesion = sesion;
         this.citas = citas;
+        this.estados = estados;
     }
 
     // ================== DASHBOARD ==================
@@ -86,8 +88,9 @@ public class AgendaMedicoService {
     // ================== AGENDA ==================
     /** vista: "dia", "semana" o "mes" (otro valor → semana). fecha: cualquier día dentro del periodo. */
     @Transactional(readOnly = true)
-    public AgendaView agenda(String email, String vista, LocalDate fecha) {
+    public AgendaView agenda(String email, String vista, LocalDate fecha, boolean atendidas) {
         Medico m = sesion.actual(email);
+        estados.marcarAtendidas();
         LocalDate hoy = LocalDate.now();
         LocalDate f = fecha == null ? hoy : fecha;
         String v = "dia".equals(vista) || "mes".equals(vista) ? vista : "semana";
@@ -121,7 +124,11 @@ public class AgendaMedicoService {
 
         Map<LocalDate, List<CitaResumen>> porDia = new TreeMap<>();
         int total = 0;
-        for (Cita c : citas.entre(m.getId(), desde.atStartOfDay(), hasta.plusDays(1).atStartOfDay())) {
+        EnumSet<EstadoCita> estadosAgenda = atendidas
+                ? EnumSet.of(EstadoCita.COMPLETADA)
+                : EnumSet.complementOf(EnumSet.of(EstadoCita.COMPLETADA));
+        for (Cita c : citas.entreEstados(m.getId(), estadosAgenda,
+                desde.atStartOfDay(), hasta.plusDays(1).atStartOfDay())) {
             porDia.computeIfAbsent(c.getFechaHoraInicio().toLocalDate(), k -> new ArrayList<>()).add(resumen(c));
             if (v.equals("mes") ? c.getFechaHoraInicio().getMonth() == f.getMonth() : true) total++;
         }
@@ -131,7 +138,7 @@ public class AgendaMedicoService {
             dias.add(new Dia(d, capitalizar(d.format(FECHA_CORTA)), d.getDayOfMonth(), d.equals(hoy),
                     !v.equals("mes") || d.getMonth() == f.getMonth(), porDia.getOrDefault(d, List.of())));
         }
-        return new AgendaView(v, titulo, f, anterior, siguiente, hoy, total, dias);
+        return new AgendaView(v, titulo, f, anterior, siguiente, hoy, total, atendidas, dias);
     }
 
     // ================== DETALLE ==================
@@ -252,7 +259,7 @@ public class AgendaMedicoService {
             case PENDIENTE -> "Pendiente";
             case CONFIRMADA -> "Confirmada";
             case CANCELADA -> "Cancelada";
-            case COMPLETADA -> "Completada";
+            case COMPLETADA -> "Atendida";
             case NO_ASISTIO -> "No asistió";
         };
     }

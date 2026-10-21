@@ -9,6 +9,8 @@ public interface ValoracionRepository extends JpaRepository<Valoracion, Long> {
     List<Valoracion> findByMedicoIdOrderByCreadaEnDesc(Long medicoId);
     boolean existsByCitaId(Long citaId);
 
+    Optional<Valoracion> findByCitaId(Long citaId);
+
     Optional<Valoracion> findByIdAndMedicoId(Long id, Long medicoId);
 
     /** Lo que ve el público: solo las reseñas que el médico dejó visibles. */

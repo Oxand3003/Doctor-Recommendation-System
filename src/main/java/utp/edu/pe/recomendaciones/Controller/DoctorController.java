@@ -17,6 +17,7 @@ import utp.edu.pe.recomendaciones.dto.SlotView;
 import utp.edu.pe.recomendaciones.model.enums.Modalidad;
 import utp.edu.pe.recomendaciones.service.CitaPacienteService;
 import utp.edu.pe.recomendaciones.service.DoctorProfileService;
+import utp.edu.pe.recomendaciones.service.ValoracionPacienteService;
 
 @Controller
 @RequestMapping("/doctor")   // /doctor/** PUBLICO en SecurityConfig
@@ -24,10 +25,13 @@ public class DoctorController {
 
     private final DoctorProfileService service;
     private final CitaPacienteService citas;
+    private final ValoracionPacienteService valoraciones;
 
-    public DoctorController(DoctorProfileService service, CitaPacienteService citas) {
+    public DoctorController(DoctorProfileService service, CitaPacienteService citas,
+                            ValoracionPacienteService valoraciones) {
         this.service = service;
         this.citas = citas;
+        this.valoraciones = valoraciones;
     }
 
     /** Enlaces de ejemplo del home (/doctor/profile): llevan al primer perfil. */
@@ -42,6 +46,9 @@ public class DoctorController {
         model.addAttribute("doc", service.getProfile(id));
         // Quién mira el perfil (paciente / anónimo / otro rol) y sus datos, para la ventana de reserva.
         model.addAttribute("reserva", citas.perfilReserva(auth == null ? null : auth.getName()));
+        model.addAttribute("reviewCitaId", auth != null && auth.isAuthenticated()
+                && auth.getAuthorities().stream().anyMatch(a -> "ROLE_PACIENTE".equals(a.getAuthority()))
+                ? valoraciones.citaParaValorar(auth.getName(), id).orElse(null) : null);
         return "doctor/profile";
     }
 

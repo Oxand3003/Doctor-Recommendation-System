@@ -21,6 +21,7 @@ import utp.edu.pe.recomendaciones.model.enums.Modalidad;
 import utp.edu.pe.recomendaciones.repository.CitaRepository;
 import utp.edu.pe.recomendaciones.repository.MedicoRepository;
 import utp.edu.pe.recomendaciones.repository.UsuarioRepository;
+import utp.edu.pe.recomendaciones.repository.ValoracionRepository;
 
 @Service
 public class CuentaService {
@@ -33,11 +34,16 @@ public class CuentaService {
     private final UsuarioRepository usuarios;
     private final MedicoRepository medicos;
     private final CitaRepository citas;
+    private final CitaEstadoService estados;
+    private final ValoracionRepository valoraciones;
 
-    public CuentaService(UsuarioRepository usuarios, MedicoRepository medicos, CitaRepository citas) {
+    public CuentaService(UsuarioRepository usuarios, MedicoRepository medicos, CitaRepository citas,
+                         CitaEstadoService estados, ValoracionRepository valoraciones) {
         this.usuarios = usuarios;
         this.medicos = medicos;
         this.citas = citas;
+        this.estados = estados;
+        this.valoraciones = valoraciones;
     }
 
     @Transactional(readOnly = true)
@@ -55,6 +61,7 @@ public class CuentaService {
         List<CitaItem> pendientes = new ArrayList<>();
         List<CitaItem> historial = new ArrayList<>();
         if (paciente) {
+            estados.marcarAtendidas();
             LocalDateTime ahora = LocalDateTime.now(LIMA);
             // La consulta llega de la más reciente a la más antigua.
             for (Cita c : citas.delPacienteConMedico(u.getId())) {
@@ -95,7 +102,10 @@ public class CuentaService {
                 c.getEstado().name().toLowerCase(Locale.ROOT).replace('_', '-'),
                 motivo,
                 c.getEstado() == EstadoCita.CANCELADA && c.getMotivoCancelacion() != null
-                        && !c.getMotivoCancelacion().isBlank() ? c.getMotivoCancelacion() : null);
+                        && !c.getMotivoCancelacion().isBlank() ? c.getMotivoCancelacion() : null,
+                valoraciones.findByCitaId(c.getId()).map(utp.edu.pe.recomendaciones.model.Valoracion::getId).orElse(null),
+                valoraciones.findByCitaId(c.getId()).map(utp.edu.pe.recomendaciones.model.Valoracion::getComentario).orElse(null),
+                c.getEstado() == EstadoCita.COMPLETADA && !valoraciones.existsByCitaId(c.getId()));
     }
 
     private static String etiqueta(EstadoCita e) {
@@ -103,7 +113,7 @@ public class CuentaService {
             case PENDIENTE -> "Pendiente";
             case CONFIRMADA -> "Confirmada";
             case CANCELADA -> "Cancelada";
-            case COMPLETADA -> "Completada";
+            case COMPLETADA -> "Atendida";
             case NO_ASISTIO -> "No asistió";
         };
     }

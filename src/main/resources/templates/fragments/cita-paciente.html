@@ -25,6 +25,32 @@
     <span class="appt-go" aria-hidden="true">Ver perfil del médico
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
   </div>
+  <div class="patient-review-existing" th:if="${c.comentarioValoracion() != null}">
+    <strong>Tu comentario</strong>
+    <p th:text="${c.comentarioValoracion()}">Comentario del paciente</p>
+    <form th:if="${c.valoracionId() != null}" th:action="@{/valoraciones/{id}/eliminar(id=${c.valoracionId()})}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+      <button class="btn btn-ghost btn-sm" type="submit" onclick="return confirm('¿Eliminar tu comentario?')">Eliminar comentario</button>
+    </form>
+  </div>
+  <form class="patient-review-form" th:if="${c.puedeValorar()}" th:action="@{/valoraciones}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+    <input type="hidden" name="citaId" th:value="${c.id()}">
+    <label>Tu valoración
+      <select name="puntaje" required>
+        <option value="">Selecciona una puntuación</option>
+        <option value="5">★★★★★ Excelente</option>
+        <option value="4">★★★★ Muy buena</option>
+        <option value="3">★★★ Buena</option>
+        <option value="2">★★ Regular</option>
+        <option value="1">★ Necesita mejorar</option>
+      </select>
+    </label>
+    <label>Comenta tu experiencia
+      <textarea name="comentario" rows="3" maxlength="500" required placeholder="¿Cómo fue tu atención?"></textarea>
+    </label>
+    <button class="btn btn-primary" type="submit">Publicar comentario</button>
+  </form>
 </li>
 
 </body>

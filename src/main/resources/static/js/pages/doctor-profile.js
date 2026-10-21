@@ -271,26 +271,34 @@
   const starInput = $('#star-input');
   const reviewForm = $('#review-form');
   const reviewStatus = $('#review-status');
+  const reviewScore = $('#review-score');
   let rating = 0;
 
   function paintStars(n) {
-    $$('button', starInput).forEach(b => b.classList.toggle('active', Number(b.dataset.value) <= n));
+    $$('button', starInput).forEach(b => {
+      const selected = Number(b.dataset.value) <= n;
+      b.classList.toggle('active', selected);
+      b.setAttribute('aria-checked', String(Number(b.dataset.value) === n));
+    });
   }
   if (starInput) {
     starInput.addEventListener('click', e => {
       const b = e.target.closest('button[data-value]');
       if (!b) return;
       rating = Number(b.dataset.value);
+      if (reviewScore) reviewScore.value = String(rating);
       paintStars(rating);
     });
   }
   if (reviewForm) {
     reviewForm.addEventListener('submit', e => {
-      e.preventDefault();
       if (!rating) {
+        e.preventDefault();
         reviewStatus.textContent = 'Selecciona una valoración de 1 a 5 estrellas.';
         return;
       }
+      if (reviewForm.dataset.demo !== 'true') return;
+      e.preventDefault();
       if (!reviewForm.checkValidity()) {
         reviewForm.reportValidity();
         return;

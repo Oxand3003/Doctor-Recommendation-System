@@ -40,6 +40,12 @@ public interface AgendaCitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> entre(@Param("medicoId") Long medicoId, @Param("desde") LocalDateTime desde,
                      @Param("hasta") LocalDateTime hasta);
 
+    @Query("select c from Cita c join fetch c.paciente where c.medico.id = :medicoId "
+            + "and c.estado in :estados and c.fechaHoraInicio >= :desde and c.fechaHoraInicio < :hasta "
+            + "order by c.fechaHoraInicio")
+    List<Cita> entreEstados(@Param("medicoId") Long medicoId, @Param("estados") Collection<EstadoCita> estados,
+                            @Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+
     @Query("select c from Cita c join fetch c.paciente where c.id = :id and c.medico.id = :medicoId")
     Optional<Cita> findByIdAndMedicoId(@Param("id") Long id, @Param("medicoId") Long medicoId);
 }

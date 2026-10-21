@@ -6,6 +6,10 @@
 .ma-kpi b{display:block;font-family:var(--font-heading);font-size:2rem;line-height:1.1}
 .ma-kpi span{font-size:.85rem;color:var(--muted)}
 .ma-kpi small{display:block;font-size:.74rem;color:var(--muted);margin-top:4px}
+.agenda-mode-tabs{display:flex;gap:6px;width:max-content;margin:0 0 18px;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow-soft)}
+.agenda-mode-tabs a{padding:10px 18px;border-radius:11px;color:var(--muted);font-weight:700;font-size:.9rem}
+.agenda-mode-tabs a:hover{color:var(--ink)}
+.agenda-mode-tabs a.active{background:linear-gradient(135deg,var(--primary),#12886F);color:#fff;box-shadow:0 10px 20px -12px rgba(14,107,92,.9)}
 
 .ma-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);margin-top:10px;color:inherit}
 .ma-row:hover{border-color:var(--primary)}
@@ -56,6 +60,7 @@
 
 @media(max-width:960px){.ma-kpis{grid-template-columns:repeat(2,1fr)}.ma-week{grid-template-columns:1fr}.ma-col{min-height:0}}
 @media(max-width:640px){.ma-detail{grid-template-columns:1fr}.ma-cell{min-height:64px;padding:4px}.ma-cell .ma-chip{display:none}.ma-cell .ma-dot{display:block}}
+@media(max-width:560px){.agenda-mode-tabs{width:100%}.agenda-mode-tabs a{flex:1;text-align:center;padding:10px 8px}}
 .ma-dot{display:none;font-size:.72rem;font-weight:700;color:var(--primary)}
 
 /* Acciones de la cita: WhatsApp y eliminar */

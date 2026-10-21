@@ -16,6 +16,7 @@
 
   <link rel="stylesheet" th:href="@{/css/main.css}">
   <link rel="stylesheet" th:href="@{|/css/pages/${pageCss}.css?v=home-reveal-20261020|}">
+  <link rel="stylesheet" th:if="${pageCss == 'home' and nav != null and nav.paciente()}" th:href="@{/css/pages/account.css?v=patient-finder-20261021}">
   <script th:src="@{/js/components/navbar.js}" defer></script>
 </head>
 </html>

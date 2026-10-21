@@ -89,13 +89,15 @@ public class SecurityConfig {
             // autorización ROLE_PACIENTE más abajo y evitamos que el token CSRF bloquee el chat.
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/chat/**"))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register/**", "/doctor/**", "/especialidades/**", "/api/doctors/search", "/consultas", "/error",
+                .requestMatchers("/", "/login", "/register/**", "/doctor/**", "/especialidades/**", "/consultas", "/error",
                                  "/css/**", "/js/**", "/img/**",
                                  "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/doctors/search").hasRole("PACIENTE")
                 .requestMatchers("/api/chat/**").hasRole("PACIENTE")
                 .requestMatchers("/api/mensajeria/**").hasAnyRole("PACIENTE", "MEDICO")
                 .requestMatchers("/ws-mensajeria").hasAnyRole("PACIENTE", "MEDICO")
                 .requestMatchers("/appointments/**").hasRole("PACIENTE")
+                .requestMatchers("/valoraciones/**").hasRole("PACIENTE")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .formLogin(form -> form
