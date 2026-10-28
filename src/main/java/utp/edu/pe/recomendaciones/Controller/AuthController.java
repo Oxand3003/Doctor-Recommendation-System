@@ -3,6 +3,7 @@ package utp.edu.pe.recomendaciones.Controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,9 +22,12 @@ import utp.edu.pe.recomendaciones.service.RegistroService;
 public class AuthController {
 
     private final RegistroService registro;
+    private final int loginBloqueoMinutos;
 
-    public AuthController(RegistroService registro) {
+    public AuthController(RegistroService registro,
+                          @Value("${medicerca.security.login-bloqueo-minutos:15}") int loginBloqueoMinutos) {
         this.registro = registro;
+        this.loginBloqueoMinutos = loginBloqueoMinutos;
     }
 
     @GetMapping("/login")
@@ -36,6 +40,7 @@ public class AuthController {
         }
         model.addAttribute("specialties", registro.especialidades());
         model.addAttribute("establishments", registro.establecimientos());
+        model.addAttribute("loginBloqueoMinutos", loginBloqueoMinutos);
         return "auth/auth";
     }
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Acceso | MediCerca', 'auth')}"></head>
-<body>
+<body th:attr="data-reabrir=${reabrir} ?: '', data-recuperar-email=${recuperarEmail} ?: '', data-bloqueo-minutos=${loginBloqueoMinutos}">
 
 <nav th:replace="~{fragments/navbar :: auth}"></nav>
 
@@ -43,7 +43,34 @@
       <div class="form-group"><label for="login-password">Contraseña</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
       <p class="search-status" id="login-status" role="status" aria-live="polite"></p>
       <button class="btn btn-primary" type="submit">Ingresar</button>
+      <button class="btn btn-link" type="button" id="toggle-recover">¿Olvidaste tu contraseña?</button>
     </form>
+
+    <!-- RECUPERAR CONTRASEÑA -->
+    <div id="recover-panel" hidden>
+      <!-- Paso 1: pedir el código -->
+      <form id="recover-request-form" class="auth-form" th:action="@{/recuperar-password/codigo}" method="post">
+        <div class="form-group">
+          <label for="recover-email">Correo electrónico</label>
+          <input id="recover-email" name="email" type="email" th:value="${recuperarEmail}" maxlength="190" autocomplete="email" required>
+        </div>
+        <p class="auth-note">Te enviaremos un código de 6 dígitos a ese correo para restablecer tu contraseña.</p>
+        <p class="search-status" id="recover-request-status" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Enviar código</button>
+        <button class="btn btn-link" type="button" id="back-to-login-1">Volver a iniciar sesión</button>
+      </form>
+
+      <!-- Paso 2: código + contraseña nueva -->
+      <form id="recover-confirm-form" class="auth-form" th:action="@{/recuperar-password}" method="post" hidden>
+        <input type="hidden" name="email" th:value="${recuperarEmail}" id="recover-confirm-email">
+        <div class="form-group"><label for="recover-codigo">Código de 6 dígitos</label><input id="recover-codigo" name="codigo" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" required></div>
+        <div class="form-group"><label for="recover-new-password">Contraseña nueva (mínimo 8 caracteres)</label><input id="recover-new-password" name="nuevaPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        <div class="form-group"><label for="recover-confirm-password">Confirmar contraseña nueva</label><input id="recover-confirm-password" name="confirmarPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
+        <p class="search-status" id="recover-confirm-status" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit">Restablecer contraseña</button>
+        <button class="btn btn-link" type="button" id="back-to-login-2">Volver a iniciar sesión</button>
+      </form>
+    </div>
 
     <!-- REGISTER -->
     <div id="register-panel" hidden>

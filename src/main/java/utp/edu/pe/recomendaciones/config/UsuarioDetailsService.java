@@ -30,13 +30,15 @@ public class UsuarioDetailsService implements UserDetailsService {
         Usuario u = usuarios.findByEmail(email.trim().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
         boolean activo = u.getEstado() == EstadoUsuario.ACTIVO;
-        if (activo) {
+        boolean bloqueado = u.getBloqueadoHasta() != null && u.getBloqueadoHasta().isAfter(LocalDateTime.now());
+        if (activo && !bloqueado) {
             u.setUltimoAcceso(LocalDateTime.now());
         }
         return User.withUsername(u.getEmail())
                 .password(u.getPasswordHash())
                 .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + u.getRol().getNombre())))
                 .disabled(!activo)
+                .accountLocked(bloqueado)
                 .build();
     }
 }

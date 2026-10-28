@@ -50,6 +50,14 @@ public class Usuario {
     @Column(nullable = false)
     private boolean puedeGestionarAdministradores;
 
+    /** Intentos de inicio de sesión fallidos consecutivos. Se reinicia al entrar correctamente. */
+    @Column(nullable = false)
+    private int intentosFallidos;
+
+    /** Si no es null y es futuro, la cuenta está bloqueada por demasiados intentos fallidos. */
+    @Column
+    private LocalDateTime bloqueadoHasta;
+
     public Usuario() {
     }
 
@@ -164,5 +172,11 @@ public class Usuario {
     public void setPuedeGestionarAdministradores(boolean puedeGestionarAdministradores) {
         this.puedeGestionarAdministradores = puedeGestionarAdministradores;
     }
+
+    public int getIntentosFallidos() { return intentosFallidos; }
+    public void setIntentosFallidos(int intentosFallidos) { this.intentosFallidos = intentosFallidos; }
+
+    public LocalDateTime getBloqueadoHasta() { return bloqueadoHasta; }
+    public void setBloqueadoHasta(LocalDateTime bloqueadoHasta) { this.bloqueadoHasta = bloqueadoHasta; }
 
 }
