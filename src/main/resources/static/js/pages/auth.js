@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var registerPanel = document.querySelector('#register-panel');
   var patientForm = document.querySelector('#patient-form');
   var doctorForm = document.querySelector('#doctor-form');
+  var recoverPanel = document.querySelector('#recover-panel');
+  var recoverRequestForm = document.querySelector('#recover-request-form');
+  var recoverConfirmForm = document.querySelector('#recover-confirm-form');
 
   var tabLogin = document.querySelector('#tab-login');
   var tabRegister = document.querySelector('#tab-register');
@@ -17,10 +20,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function showMode(mode) {
     var registering = mode === 'register';
-    loginForm.hidden = registering;
+    var recovering = mode === 'recover';
+    loginForm.hidden = registering || recovering;
     registerPanel.hidden = !registering;
-    tabLogin.classList.toggle('active', !registering);
+    recoverPanel.hidden = !recovering;
+    tabLogin.classList.toggle('active', !registering && !recovering);
     tabRegister.classList.toggle('active', registering);
+  }
+
+  // "¿Olvidaste tu contraseña?" y los dos "Volver a iniciar sesión"
+  document.querySelector('#toggle-recover').addEventListener('click', function () {
+    showMode('recover');
+    showRecoverStep('request');
+  });
+  document.querySelector('#back-to-login-1').addEventListener('click', function () { showMode('login'); });
+  document.querySelector('#back-to-login-2').addEventListener('click', function () { showMode('login'); });
+
+  function showRecoverStep(step) {
+    recoverRequestForm.hidden = step !== 'request';
+    recoverConfirmForm.hidden = step !== 'confirm';
   }
 
   function showRegistrationType(type) {
@@ -43,7 +61,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var params = new URLSearchParams(window.location.search);
   var loginStatus = document.querySelector('#login-status');
   if (loginStatus) {
-    if (params.has('disabled')) {
+    if (params.has('locked')) {
+      var minutos = document.body.dataset.bloqueoMinutos || '15';
+      loginStatus.textContent = 'Bloqueamos tu cuenta ' + minutos + ' minutos por demasiados intentos fallidos. ' +
+        'Espera o usa "¿Olvidaste tu contraseña?" para recuperarla antes.';
+    } else if (params.has('disabled')) {
       loginStatus.textContent = 'Tu cuenta aún no está activa: puede estar pendiente de aprobación, rechazada o suspendida. ' +
         'Si fue rechazada, puedes volver a enviar tu solicitud desde "Crear cuenta > Soy médico" con el mismo correo y contraseña.';
     } else if (params.has('error')) {
@@ -55,6 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
       loginStatus.textContent = 'Tu correo de acceso se cambió correctamente. Inicia sesión con el correo nuevo.';
       loginStatus.style.color = '#067647';
     }
+  }
+
+  // Reabrir el panel de recuperación tras un POST a /recuperar-password/** (ver data-reabrir en <body>).
+  // El mensaje de éxito/error ya se muestra arriba (#flash-ok / #flash-error); esto solo deja visible
+  // el formulario correcto para que el usuario lo vea junto a ese mensaje.
+  var reabrir = document.body.dataset.reabrir;
+  if (reabrir === 'recuperar' || reabrir === 'recuperar-codigo') {
+    showMode('recover');
+    showRecoverStep(reabrir === 'recuperar-codigo' ? 'confirm' : 'request');
   }
 
   // Open the register tab directly with /login#register

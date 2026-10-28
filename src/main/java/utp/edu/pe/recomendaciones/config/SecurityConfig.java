@@ -3,6 +3,7 @@ package utp.edu.pe.recomendaciones.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -44,11 +45,13 @@ public class SecurityConfig {
         };
     }
 
-    /** Distingue "cuenta no activa" (médico pendiente/suspendido) de "credenciales incorrectas". */
+    /** Distingue "cuenta no activa", "cuenta bloqueada por intentos fallidos" y "credenciales incorrectas". */
     @Bean
     AuthenticationFailureHandler loginFailureHandler() {
         return (request, response, exception) -> {
-            String param = exception instanceof DisabledException ? "disabled" : "error";
+            String param = exception instanceof LockedException ? "locked"
+                    : exception instanceof DisabledException ? "disabled"
+                    : "error";
             response.sendRedirect(request.getContextPath() + "/login?" + param);
         };
     }
@@ -89,11 +92,11 @@ public class SecurityConfig {
             // autorización ROLE_PACIENTE más abajo y evitamos que el token CSRF bloquee el chat.
             .csrf(csrf -> csrf.ignoringRequestMatchers("/api/chat/**"))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register/**", "/doctor/**", "/especialidades/**", "/consultas", "/error",
+                .requestMatchers("/", "/login", "/register/**", "/recuperar-password/**", "/doctor/**",
+                                 "/especialidades/**", "/consultas", "/error", "/api/chat/**",
                                  "/css/**", "/js/**", "/img/**",
                                  "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/doctors/search").hasRole("PACIENTE")
-                .requestMatchers("/api/chat/**").hasRole("PACIENTE")
                 .requestMatchers("/api/mensajeria/**").hasAnyRole("PACIENTE", "MEDICO")
                 .requestMatchers("/ws-mensajeria").hasAnyRole("PACIENTE", "MEDICO")
                 .requestMatchers("/appointments/**").hasRole("PACIENTE")
