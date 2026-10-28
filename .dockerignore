@@ -1,0 +1,7 @@
+target/
+uploads/
+.git/
+.vscode/
+.mvn/wrapper/maven-wrapper.jar
+*.md
+config/mail.local.properties
