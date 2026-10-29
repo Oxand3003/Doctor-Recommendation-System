@@ -31,6 +31,12 @@
   </scm>
   <properties>
     <java.version>17</java.version>
+    <!-- Sin esto, javac usa la codificacion por defecto del sistema (no siempre UTF-8,
+         por ejemplo en contenedores Docker con locale POSIX/C como el de Render), y los
+         literales con tildes en el codigo fuente (ej. "Víctor Larco Herrera" en
+         DataInitializer) se corrompen al compilar. -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
   <dependencies>
