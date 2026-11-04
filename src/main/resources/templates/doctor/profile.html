@@ -213,6 +213,16 @@
           <div class="booking-price-tag"><span class="cur">S/</span><span class="amt" id="booking-price-amt" th:text="${doc.modalidadInicial() == 'TELECONSULTA'} ? ${doc.precioTeleconsulta()} : ${doc.precioPresencial()}">120</span><span class="per">/ sesión</span></div>
         </div>
 
+        <!-- Avisar desde el inicio (no recién al confirmar) que hace falta una cuenta de paciente. -->
+        <div class="booking-notice" th:if="${reserva.estado() == 'ANONIMO'}">
+          <b>Inicia sesión para reservar</b>
+          <p>Puedes elegir día y hora para ver la disponibilidad, pero necesitas una cuenta de paciente para confirmar la cita. <a th:href="@{/login}">Inicia sesión o crea una cuenta</a>.</p>
+        </div>
+        <div class="booking-notice" th:if="${reserva.estado() == 'OTRO'}">
+          <b>Esta cuenta no puede reservar citas</b>
+          <p>Solo las cuentas de paciente pueden agendar. Cierra sesión e ingresa con una cuenta de paciente para reservar.</p>
+        </div>
+
         <div class="modality-picker">
           <button class="mod-btn" type="button" data-modality="PRESENCIAL" data-label="Presencial"
                   th:classappend="${doc.modalidadInicial() == 'PRESENCIAL'} ? 'active'"

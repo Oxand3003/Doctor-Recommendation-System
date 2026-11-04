@@ -1,9 +1,15 @@
 /* ============ NAVBAR: cápsula flotante ============ */
 body>nav{position:sticky;top:0;z-index:50;height:76px;padding:12px 16px 0;pointer-events:none}
 .nav-in{pointer-events:auto;position:relative;display:flex;align-items:center;gap:20px;height:64px;max-width:1120px;margin:0 auto;padding:0 10px 0 18px;
-  background:rgba(255,255,255,.78);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px);
+  background:#fdfefe;
   border:1px solid rgba(214,228,223,.95);border-radius:22px;box-shadow:0 10px 30px -24px rgba(10,61,54,.55);
   transition:height .35s var(--ease-out),box-shadow .35s,background .35s,border-color .35s}
+/* El desenfoque de fondo (cápsula "flotante" sobre el contenido) solo se aplica donde el navegador
+   lo soporta de verdad: sin esto, en moviles sin soporte de backdrop-filter se ve el texto de abajo
+   transparentandose a traves del menu (reportado como "distorsion"). */
+@supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
+  .nav-in{background:rgba(255,255,255,.78);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px)}
+}
 nav.is-scrolled .nav-in{height:56px;background:rgba(255,255,255,.93);border-color:var(--line);box-shadow:0 16px 36px -22px rgba(10,61,54,.55)}
 
 /* Logo */
