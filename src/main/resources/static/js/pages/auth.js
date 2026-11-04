@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', function () {
   var yearInput = document.querySelector('#doctor-graduation-year');
   if (yearInput) yearInput.max = new Date().getFullYear();
 
+  // DNI y teléfono: no dejar escribir nada que no sea un dígito (puntos, letras, etc.).
+  document.querySelectorAll('[data-solo-digitos]').forEach(function (input) {
+    input.addEventListener('input', function () {
+      var limpio = input.value.replace(/\D/g, '');
+      if (limpio !== input.value) input.value = limpio;
+    });
+  });
+
   function showMode(mode) {
     var registering = mode === 'register';
     var recovering = mode === 'recover';

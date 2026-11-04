@@ -37,7 +37,7 @@ public class RegistroService {
 
     private static final Pattern EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern DNI = Pattern.compile("^[0-9]{8}$");
-    private static final Pattern TEL = Pattern.compile("^[0-9 +()\\-]{6,30}$");
+    private static final Pattern TEL = Pattern.compile("^[0-9]{9}$");
     private static final Pattern CMP = Pattern.compile("^[A-Za-z0-9-]{4,20}$");
 
     private final UsuarioRepository usuarios;
@@ -216,9 +216,9 @@ public class RegistroService {
         if (!DNI.matcher(d).matches()) {
             throw new NegocioException("El DNI debe tener 8 dígitos.");
         }
-        String t = limpiar(telefono);
+        String t = limpiar(telefono).replaceAll("[ +()\\-]", "");
         if (!TEL.matcher(t).matches()) {
-            throw new NegocioException("El teléfono no es válido.");
+            throw new NegocioException("El teléfono debe tener 9 dígitos.");
         }
         String e = validarEmail(email);
         validarContrasena(password);
