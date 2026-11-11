@@ -129,11 +129,15 @@ public class DataInitializer {
 
       String email = adminEmail.trim().toLowerCase();
       Rol rolAdmin = roles.findByNombre("ADMIN").orElseThrow();
-      if (!adminPassword.isBlank() && !usuarios.existsByEmail(email)) {
-        Usuario admin = new Usuario();
+      String adminDni = "25000045";
+      if (!adminPassword.isBlank()) {
+        // Se busca por el DNI fijo del admin inicial (no por el correo, que puede cambiar entre
+        // despliegues via ADMIN_EMAIL): si no se busca asi, al cambiar el correo esto intentaba
+        // crear un admin nuevo con el mismo DNI y chocaba con la restriccion de DNI unico.
+        Usuario admin = usuarios.findByDni(adminDni).orElseGet(Usuario::new);
         admin.setNombres("Administrador");
         admin.setApellidos("MediCerca");
-        admin.setDni("25000045");
+        admin.setDni(adminDni);
         admin.setEmail(email);
         admin.setTelefono("900900900");
         admin.setPasswordHash(encoder.encode(adminPassword));
@@ -141,14 +145,6 @@ public class DataInitializer {
         admin.setRol(rolAdmin);
         admin.setPuedeGestionarAdministradores(true);
         usuarios.save(admin);
-      } else if (!adminPassword.isBlank()) {
-        usuarios.findByEmail(email).ifPresent(admin -> {
-          admin.setRol(rolAdmin);
-          admin.setEstado(EstadoUsuario.ACTIVO);
-          admin.setPasswordHash(encoder.encode(adminPassword));
-          admin.setPuedeGestionarAdministradores(true);
-          usuarios.save(admin);
-        });
       }
     };
   }
