@@ -80,6 +80,17 @@
       </a>
     </div>
   </div>
+
+  <!-- Botón flotante del asistente de IA (pacientes y visitantes). El visitante va al login, que luego
+       lo deja en el buscador con el asistente abierto. En el inicio, home.js lo abre sin recargar. -->
+  <a th:unless="${esMedico or (nav != null and nav.admin())}" class="ai-fab" id="ai-fab"
+     th:href="${esPaciente} ? @{/(modo='ia')} + '#patient-search' : @{/login}"
+     th:title="${esPaciente} ? 'Describe tus síntomas y te recomendamos médicos' : 'Inicia sesión para usar el asistente de IA'">
+    <span class="ai-fab-icon" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 13.9 9l5.6 1.9-5.6 1.9L12 18.5l-1.9-5.7-5.6-1.9L10.1 9 12 3.5Z"/><path d="M19 3v3M17.5 4.5h3M5 17.5v3M3.5 19h3"/></svg>
+    </span>
+    <span class="ai-fab-text">Asistente IA</span>
+  </a>
 </footer>
 </body>
 </html>

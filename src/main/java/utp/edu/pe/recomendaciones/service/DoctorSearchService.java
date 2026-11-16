@@ -3,6 +3,7 @@ package utp.edu.pe.recomendaciones.service;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import utp.edu.pe.recomendaciones.dto.ClinicOption;
 import utp.edu.pe.recomendaciones.dto.DoctorProfileView;
 import utp.edu.pe.recomendaciones.dto.DoctorSearchResult;
 import utp.edu.pe.recomendaciones.dto.SlotView;
@@ -62,14 +64,14 @@ public class DoctorSearchService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> clinicOptions() {
+    public List<ClinicOption> clinicOptions() {
         return medicos.findByUsuarioEstadoOrderByRatingPromedioDesc(EstadoUsuario.ACTIVO).stream()
                 .map(Medico::getEstablecimiento)
-                .filter(java.util.Objects::nonNull)
-                .map(e -> e.getNombre())
-                .filter(java.util.Objects::nonNull)
+                .filter(e -> e != null && e.getNombre() != null)
+                .map(e -> new ClinicOption(e.getNombre(), e.getDistrito() == null ? "" : e.getDistrito().getNombre()))
                 .distinct()
-                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .sorted(Comparator.comparing(ClinicOption::name, String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(ClinicOption::district, String.CASE_INSENSITIVE_ORDER))
                 .toList();
     }
 
