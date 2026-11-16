@@ -34,6 +34,10 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private EstadoUsuario estado;
 
+    /** Motivo que escribió el administrador al suspender la cuenta; se borra al reactivarla. */
+    @Column(name = "motivo_suspension", length = 500)
+    private String motivoSuspension;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "rol_id", nullable = false)
     private Rol rol;
@@ -134,6 +138,14 @@ public class Usuario {
 
     public void setEstado(EstadoUsuario estado) {
         this.estado = estado;
+    }
+
+    public String getMotivoSuspension() {
+        return motivoSuspension;
+    }
+
+    public void setMotivoSuspension(String motivoSuspension) {
+        this.motivoSuspension = motivoSuspension;
     }
 
     public Rol getRol() {

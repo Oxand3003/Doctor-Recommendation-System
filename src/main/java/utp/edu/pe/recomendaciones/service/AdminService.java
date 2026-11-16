@@ -14,6 +14,7 @@ import utp.edu.pe.recomendaciones.dto.AdminDataView.ApplicationView;
 import utp.edu.pe.recomendaciones.dto.AdminDataView.DoctorView;
 import utp.edu.pe.recomendaciones.dto.AdminDataView.PatientView;
 import utp.edu.pe.recomendaciones.dto.DecisionMedico;
+import utp.edu.pe.recomendaciones.dto.SuspensionCuenta;
 import utp.edu.pe.recomendaciones.exception.NegocioException;
 import utp.edu.pe.recomendaciones.model.Auditoria;
 import utp.edu.pe.recomendaciones.model.Medico;
@@ -145,16 +146,21 @@ public class AdminService {
     // ------------------------------------------------------------------
     // Cuentas de médicos
     // ------------------------------------------------------------------
+    /** Suspende al médico con un motivo obligatorio. Devuelve los datos para que quien llama le avise por correo. */
     @Transactional
-    public void suspender(Long medicoId, String adminEmail) {
+    public SuspensionCuenta suspender(Long medicoId, String motivo, String adminEmail) {
+        String razon = motivoSuspension(motivo);
         Medico m = medico(medicoId);
         Usuario u = m.getUsuario();
         if (u.getEstado() != EstadoUsuario.ACTIVO) {
             throw new NegocioException("Solo se puede suspender una cuenta activa.");
         }
         u.setEstado(EstadoUsuario.SUSPENDIDO);
+        u.setMotivoSuspension(razon);
         usuarios.save(u);
-        registrar(admin(adminEmail), AccionAuditoria.SUSPENDER_MEDICO, m, "Cuenta suspendida: " + nombre(u));
+        registrar(admin(adminEmail), AccionAuditoria.SUSPENDER_MEDICO, m,
+                "Cuenta suspendida: " + nombre(u) + ". Motivo: " + razon);
+        return new SuspensionCuenta(u.getEmail(), nombre(u), razon);
     }
 
     @Transactional
@@ -165,6 +171,7 @@ public class AdminService {
             throw new NegocioException("Solo se puede reactivar una cuenta suspendida.");
         }
         u.setEstado(EstadoUsuario.ACTIVO);
+        u.setMotivoSuspension(null);
         usuarios.save(u);
         registrar(admin(adminEmail), AccionAuditoria.REACTIVAR_MEDICO, m, "Cuenta reactivada: " + nombre(u));
     }
@@ -185,17 +192,20 @@ public class AdminService {
     // ------------------------------------------------------------------
     // Cuentas de pacientes
     // ------------------------------------------------------------------
-    /** Suspende a un paciente: no podrá iniciar sesión hasta que se reactive. */
+    /** Suspende a un paciente con un motivo obligatorio: no podrá iniciar sesión hasta que se reactive. */
     @Transactional
-    public void suspenderPaciente(Long usuarioId, String adminEmail) {
+    public SuspensionCuenta suspenderPaciente(Long usuarioId, String motivo, String adminEmail) {
+        String razon = motivoSuspension(motivo);
         Usuario u = paciente(usuarioId);
         if (u.getEstado() != EstadoUsuario.ACTIVO) {
             throw new NegocioException("Solo se puede suspender una cuenta activa.");
         }
         u.setEstado(EstadoUsuario.SUSPENDIDO);
+        u.setMotivoSuspension(razon);
         usuarios.save(u);
         registrarPaciente(admin(adminEmail), AccionAuditoria.SUSPENDER_MEDICO, u,
-                "Paciente suspendido: " + nombre(u));
+                "Paciente suspendido: " + nombre(u) + ". Motivo: " + razon);
+        return new SuspensionCuenta(u.getEmail(), nombre(u), razon);
     }
 
     @Transactional
@@ -205,6 +215,7 @@ public class AdminService {
             throw new NegocioException("Solo se puede reactivar una cuenta suspendida.");
         }
         u.setEstado(EstadoUsuario.ACTIVO);
+        u.setMotivoSuspension(null);
         usuarios.save(u);
         registrarPaciente(admin(adminEmail), AccionAuditoria.REACTIVAR_MEDICO, u,
                 "Paciente reactivado: " + nombre(u));
@@ -213,6 +224,18 @@ public class AdminService {
     // ------------------------------------------------------------------
     // Auxiliares
     // ------------------------------------------------------------------
+    /** El motivo se le envía al usuario por correo: obligatorio y con algo de detalle. */
+    private static String motivoSuspension(String motivo) {
+        String razon = motivo == null ? "" : motivo.trim();
+        if (razon.length() < 10) {
+            throw new NegocioException("Escribe el motivo de la suspensión (al menos 10 caracteres): se le enviará al usuario.");
+        }
+        if (razon.length() > 500) {
+            throw new NegocioException("El motivo no puede superar 500 caracteres.");
+        }
+        return razon;
+    }
+
     /** Solo cuentas con rol PACIENTE: este flujo nunca debe tocar administradores ni médicos. */
     private Usuario paciente(Long id) {
         Usuario u = usuarios.findById(id).orElseThrow(() -> new NegocioException("El paciente no existe."));
@@ -266,7 +289,7 @@ public class AdminService {
         return new PatientView(u.getId(), nombre(u), u.getEmail(), u.getDni(), vacio(u.getTelefono()),
                 u.getCreadoEn() != null ? u.getCreadoEn().format(FECHA) : "",
                 u.getUltimoAcceso() != null ? u.getUltimoAcceso().format(FECHA_HORA) : "Nunca",
-                u.getEstado().name());
+                u.getEstado().name(), vacio(u.getMotivoSuspension()));
     }
 
     private String nombre(Usuario u) {
@@ -295,7 +318,7 @@ public class AdminService {
         return new DoctorView(
                 m.getId(), nombre(u), u.getEmail(), m.getEspecialidad().getNombre(),
                 m.getEstablecimiento() != null ? m.getEstablecimiento().getNombre() : "Independiente",
-                m.getRatingPromedio(), u.getEstado().name());
+                m.getRatingPromedio(), u.getEstado().name(), vacio(u.getMotivoSuspension()));
     }
 
     private ActivityView toActivity(Auditoria a) {

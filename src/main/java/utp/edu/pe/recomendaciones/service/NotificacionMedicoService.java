@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import utp.edu.pe.recomendaciones.dto.DecisionMedico;
+import utp.edu.pe.recomendaciones.dto.SuspensionCuenta;
 import utp.edu.pe.recomendaciones.exception.NegocioException;
 
 /**
@@ -50,9 +51,43 @@ public class NotificacionMedicoService {
         }
     }
 
+    /**
+     * Avisa al médico o paciente que su cuenta fue suspendida y por qué. Se invoca después de guardar la
+     * suspensión: si el correo falla, la cuenta sigue suspendida y el administrador recibe el aviso devuelto.
+     *
+     * @return null si el correo salió bien; si no, un mensaje para mostrar al administrador.
+     */
+    public String notificarSuspension(SuspensionCuenta s) {
+        try {
+            correo.enviarHtml(s.email(), "Tu cuenta de MediCerca fue suspendida", htmlSuspension(s));
+            return null;
+        } catch (NegocioException e) {
+            log.warn("La suspensión de {} se guardó, pero no se pudo notificar por correo.",
+                    CorreoService.enmascarar(s.email()));
+            return "La cuenta quedó suspendida, pero no se pudo enviar el correo con el motivo (" + e.getMessage()
+                    + ") Avísale por otro medio.";
+        }
+    }
+
     // ------------------------------------------------------------------
     // Contenido de los correos
     // ------------------------------------------------------------------
+    String htmlSuspension(SuspensionCuenta s) {
+        String contacto = urlBase + "/#contacto";
+        return plantilla("Tu cuenta fue suspendida",
+                "<p>Hola " + Html.esc(s.nombre()) + ",</p>"
+                        + "<p>Un administrador de MediCerca <b>suspendió tu cuenta</b>. Mientras esté suspendida no "
+                        + "podrás iniciar sesión.</p>"
+                        + "<p><b>Motivo indicado por el administrador:</b><br>"
+                        + Html.esc(s.motivo()).replace("\n", "<br>") + "</p>"
+                        + "<p>Si crees que se trata de un error o quieres resolverlo, escríbenos desde el formulario "
+                        + "de contacto eligiendo «Problemas con mi cuenta o mi acceso».</p>"
+                        + "<p><a href=\"" + Html.esc(contacto) + "\" style=\"display:inline-block;background:#0F766E;"
+                        + "color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600\">"
+                        + "Escribir a MediCerca</a></p>",
+                "Este mensaje se envió automáticamente desde MediCerca porque tu cuenta cambió de estado.");
+    }
+
     String htmlAprobacion(DecisionMedico d) {
         String login = urlBase + "/login";
         return plantilla("¡Bienvenido a MediCerca, " + Html.esc(d.nombre()) + "!",
@@ -77,11 +112,15 @@ public class NotificacionMedicoService {
     }
 
     private String plantilla(String titulo, String cuerpo) {
+        return plantilla(titulo, cuerpo, "Este mensaje se envió automáticamente desde MediCerca. "
+                + "Si no solicitaste registrarte, puedes ignorarlo.");
+    }
+
+    private String plantilla(String titulo, String cuerpo, String pie) {
         return "<div style=\"font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1f2937;"
                 + "line-height:1.55\"><h2 style=\"color:#0F766E\">" + titulo + "</h2>" + cuerpo
                 + "<hr style=\"border:none;border-top:1px solid #e5e7eb;margin:24px 0\">"
-                + "<p style=\"font-size:12px;color:#6b7280\">Este mensaje se envió automáticamente desde MediCerca. "
-                + "Si no solicitaste registrarte, puedes ignorarlo.</p></div>";
+                + "<p style=\"font-size:12px;color:#6b7280\">" + pie + "</p></div>";
     }
 
     /** Escapado mínimo para texto que se inserta dentro de HTML (nombres y motivos escritos por personas). */
