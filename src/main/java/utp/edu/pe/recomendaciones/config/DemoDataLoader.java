@@ -12,17 +12,18 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import utp.edu.pe.recomendaciones.model.Cita;
-import utp.edu.pe.recomendaciones.model.Distrito;
 import utp.edu.pe.recomendaciones.model.Especialidad;
 import utp.edu.pe.recomendaciones.model.Establecimiento;
 import utp.edu.pe.recomendaciones.model.FormacionMedico;
@@ -38,7 +39,6 @@ import utp.edu.pe.recomendaciones.model.enums.Modalidad;
 import utp.edu.pe.recomendaciones.model.enums.ModalidadAtencion;
 import utp.edu.pe.recomendaciones.model.enums.TipoFormacion;
 import utp.edu.pe.recomendaciones.repository.CitaRepository;
-import utp.edu.pe.recomendaciones.repository.DistritoRepository;
 import utp.edu.pe.recomendaciones.repository.EspecialidadRepository;
 import utp.edu.pe.recomendaciones.repository.EstablecimientoRepository;
 import utp.edu.pe.recomendaciones.repository.FormacionMedicoRepository;
@@ -63,7 +63,6 @@ public class DemoDataLoader implements ApplicationRunner {
     private final RolRepository rolRepo;
     private final UsuarioRepository usuarioRepo;
     private final EspecialidadRepository especialidadRepo;
-    private final DistritoRepository distritoRepo;
     private final EstablecimientoRepository establecimientoRepo;
     private final MedicoRepository medicoRepo;
     private final HorarioAtencionRepository horarioRepo;
@@ -74,7 +73,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final PasswordEncoder encoder;
 
     public DemoDataLoader(RolRepository rolRepo, UsuarioRepository usuarioRepo,
-                          EspecialidadRepository especialidadRepo, DistritoRepository distritoRepo,
+                          EspecialidadRepository especialidadRepo,
                           EstablecimientoRepository establecimientoRepo, MedicoRepository medicoRepo,
                           HorarioAtencionRepository horarioRepo, ServicioMedicoRepository servicioRepo,
                           FormacionMedicoRepository formacionRepo, CitaRepository citaRepo,
@@ -82,7 +81,6 @@ public class DemoDataLoader implements ApplicationRunner {
         this.rolRepo = rolRepo;
         this.usuarioRepo = usuarioRepo;
         this.especialidadRepo = especialidadRepo;
-        this.distritoRepo = distritoRepo;
         this.establecimientoRepo = establecimientoRepo;
         this.medicoRepo = medicoRepo;
         this.horarioRepo = horarioRepo;
@@ -93,9 +91,20 @@ public class DemoDataLoader implements ApplicationRunner {
         this.encoder = encoder;
     }
 
+    /**
+     * Sedes de la demo: antes eran 3 sedes en distritos de Lima, que no existen en el buscador (solo ofrece los
+     * distritos de Trujillo), así que al elegir un distrito nunca aparecían. Ahora se usan sedes del catálogo de
+     * Trujillo que crea {@link DataInitializer}; esta tabla dice a cuál pasa cada sede antigua.
+     */
+    private static final Map<String, String> SEDE_TRUJILLO = Map.of(
+            "Clínica San Borja", "Clínica San Pablo",
+            "Centro Médico Miraflores", "Policlínico Víctor Larco Herrera",
+            "Policlínico Surco", "Centro Médico Huanchaco");
+
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        moverSedesDeLima();
         if (medicoRepo.count() > 0) return;
 
         // ---------- Catálogos ----------
@@ -103,16 +112,9 @@ public class DemoDataLoader implements ApplicationRunner {
         Especialidad pediatria = especialidad("Pediatría", "Salud de niños y adolescentes");
         Especialidad dermato = especialidad("Dermatología", "Piel, cabello y uñas");
 
-        Distrito sanBorja = distrito("San Borja");
-        Distrito miraflores = distrito("Miraflores");
-        Distrito surco = distrito("Santiago de Surco");
-
-        Establecimiento clinicaSanBorja = establecimiento("Clínica San Borja",
-                "Av. Javier Prado Este 2450, Consultorio 402", "Frente al Museo de la Nación", sanBorja, -12.0897, -77.0003);
-        Establecimiento centroMiraflores = establecimiento("Centro Médico Miraflores",
-                "Av. Larco 1150, Piso 5", "Cerca al Parque Kennedy", miraflores, -12.1219, -77.0297);
-        Establecimiento policlinicoSurco = establecimiento("Policlínico Surco",
-                "Av. Primavera 890, Consultorio 12", "Altura del Jockey Plaza", surco, -12.0870, -76.9760);
+        Establecimiento clinicaSanBorja = sedeTrujillo("Clínica San Borja");
+        Establecimiento centroMiraflores = sedeTrujillo("Centro Médico Miraflores");
+        Establecimiento policlinicoSurco = sedeTrujillo("Policlínico Surco");
 
         // ---------- Pacientes ----------
         Usuario carlos = usuario("Carlos", "Mendoza", "45871234", "carlos.mendoza@correo.com", "987111222", "PACIENTE", "Paciente123!");
@@ -199,29 +201,28 @@ public class DemoDataLoader implements ApplicationRunner {
         });
     }
 
-    private Distrito distrito(String nombre) {
-        return distritoRepo.findByNombreAndProvincia(nombre, "Lima").orElseGet(() -> {
-            Distrito d = new Distrito();
-            d.setNombre(nombre);
-            d.setProvincia("Lima");
-            d.setDepartamento("Lima");
-            return distritoRepo.save(d);
-        });
+    /** Sede del catálogo de Trujillo que reemplaza a la sede antigua de Lima con ese nombre (null si no está). */
+    private Establecimiento sedeTrujillo(String sedeAntigua) {
+        String nombre = SEDE_TRUJILLO.get(sedeAntigua);
+        return establecimientoRepo.findByPropietarioIsNull(Sort.unsorted()).stream()
+                .filter(e -> e.getNombre().equals(nombre) && e.getDistrito() != null
+                        && "Trujillo".equals(e.getDistrito().getProvincia()))
+                .findFirst().orElse(null);
     }
 
-    private Establecimiento establecimiento(String nombre, String dir, String ref, Distrito d, Double lat, Double lng) {
-        return establecimientoRepo.findAll().stream()
-                .filter(e -> e.getNombre().equals(nombre)).findFirst()
-                .orElseGet(() -> {
-                    Establecimiento e = new Establecimiento();
-                    e.setNombre(nombre);
-                    e.setDireccion(dir);
-                    e.setReferencia(ref);
-                    e.setDistrito(d);
-                    e.setLatitud(lat);
-                    e.setLongitud(lng);
-                    return establecimientoRepo.save(e);
-                });
+    /**
+     * Bases que ya tenían la demo antigua: los médicos con una de las 3 sedes de Lima pasan a su sede de Trujillo.
+     * Solo toca esas sedes exactas (nombre de la demo y distrito de Lima), que ningún médico puede crear desde su
+     * panel porque allí solo se ofrecen los distritos de Trujillo.
+     */
+    private void moverSedesDeLima() {
+        for (Medico medico : medicoRepo.findAll()) {
+            Establecimiento actual = medico.getEstablecimiento();
+            if (actual == null || actual.getDistrito() == null || !SEDE_TRUJILLO.containsKey(actual.getNombre())
+                    || !"Lima".equals(actual.getDistrito().getProvincia())) continue;
+            Establecimiento nueva = sedeTrujillo(actual.getNombre());
+            if (nueva != null) medico.setEstablecimiento(nueva);
+        }
     }
 
     private Rol rol(String nombre) {

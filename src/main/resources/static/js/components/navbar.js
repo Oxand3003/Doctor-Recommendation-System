@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
     var here = location.pathname.replace(/\/+$/, '') || '/';
     function path(a) { return a.pathname.replace(/\/+$/, '') || '/'; }
     var exact = plain.filter(function (a) { return path(a) === here && a.hash && a.hash === location.hash; });
-    var samePage = plain.filter(function (a) { return path(a) === here && !a.hash; });
+    // data-nav-main: enlace principal de su página aunque lleve #sección (p. ej. "Buscar médicos" -> /#patient-search).
+    var samePage = plain.filter(function (a) { return path(a) === here && (!a.hash || a.hasAttribute('data-nav-main')); });
     var active = exact[0] || samePage[0] || null;
     if (active) { active.classList.add('active'); active.setAttribute('aria-current', 'page'); }
 

@@ -130,7 +130,7 @@
         <label class="recommendation-filter">Sede
           <select id="clinic-input" name="clinic">
             <option value="">Todas las sedes</option>
-            <option th:each="clinic : ${searchClinics}" th:value="${clinic}" th:text="${clinic}">Sede</option>
+            <option th:each="clinic : ${searchClinics}" th:value="${clinic.name()}" th:text="${clinic.name()}" th:attr="data-district=${clinic.district()}">Sede</option>
           </select>
         </label>
         <div class="manual-actions">

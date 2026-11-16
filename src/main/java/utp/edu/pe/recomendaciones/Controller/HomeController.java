@@ -49,7 +49,8 @@ public class HomeController {
         if (paciente) {
             model.addAttribute("searchSpecialties", especialidades.findByActivaTrueOrderByNombreAsc());
             model.addAttribute("searchClinics", doctorSearch.clinicOptions());
-            model.addAttribute("modoBusqueda", "ia".equals(modo) ? "ia" : "manual");
+            // El asistente de IA es la pestaña por defecto; ?modo=manual abre la búsqueda por filtros.
+            model.addAttribute("modoBusqueda", "manual".equals(modo) ? "manual" : "ia");
             model.addAttribute("patientName", cuentas.cuenta(auth.getName()).nombre());
         }
         // El formulario de contacto también se renderiza en la carga inicial.

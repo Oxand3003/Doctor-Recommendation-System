@@ -24,7 +24,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /** Admin -> panel de solicitudes; cualquier otro -> /account. */
+    /** Admin -> verificación en dos pasos; médico -> su perfil; paciente -> buscador de médicos del inicio. */
     @Bean
     AuthenticationSuccessHandler loginSuccessHandler(utp.edu.pe.recomendaciones.service.AdminAccessService adminAccess) {
         return (request, response, authentication) -> {
@@ -39,8 +39,12 @@ public class SecurityConfig {
                     // El usuario queda detenido por el filtro hasta que pueda solicitar un código válido.
                 }
                 response.sendRedirect(request.getContextPath() + "/admin/verify");
+            } else if (authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority).anyMatch("ROLE_MEDICO"::equals)) {
+                response.sendRedirect(request.getContextPath() + "/medico/perfil");
             } else {
-                response.sendRedirect(request.getContextPath() + "/account");
+                // "Mi cuenta" es corta y el paciente quedaba mirando el pie de página: entra directo a buscar médico.
+                response.sendRedirect(request.getContextPath() + "/#patient-search");
             }
         };
     }

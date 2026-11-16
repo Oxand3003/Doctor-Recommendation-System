@@ -116,6 +116,55 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }
 
+  /* Sedes según el distrito: al elegir un distrito solo se ofrecen sus sedes y al elegir una sede se marca su
+     distrito. Va antes que los listeners de búsqueda para que la búsqueda use los filtros ya ajustados. */
+  function sameText(a, b) {
+    function plain(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase(); }
+    return plain(a) === plain(b);
+  }
+  var allClinics = clinicInput ? Array.prototype.slice.call(clinicInput.options, 1).map(function (option) {
+    return { name: option.value, district: option.dataset.district || '' };
+  }) : [];
+
+  function syncClinics() {
+    if (!clinicInput || !districtInput) return;
+    var district = districtInput.value;
+    var chosen = clinicInput.value;
+    var seen = {};
+    var list = allClinics.filter(function (clinic) {
+      if (district && !sameText(clinic.district, district)) return false;
+      if (seen[clinic.name]) return false;          // la misma cadena puede tener sedes en varios distritos
+      seen[clinic.name] = true;
+      return true;
+    });
+    clinicInput.innerHTML = '';
+    clinicInput.add(new Option(!district ? 'Todas las sedes'
+      : list.length ? 'Todas las sedes de ' + district : 'No hay sedes registradas en ' + district, ''));
+    list.forEach(function (clinic) {
+      var option = new Option(clinic.name, clinic.name);
+      option.dataset.district = clinic.district;
+      clinicInput.add(option);
+    });
+    clinicInput.value = list.some(function (clinic) { return clinic.name === chosen; }) ? chosen : '';
+  }
+
+  if (clinicInput && districtInput) {
+    districtInput.addEventListener('change', syncClinics);
+    clinicInput.addEventListener('change', function () {
+      if (districtInput.value || !clinicInput.value) return;
+      var districts = allClinics.filter(function (clinic) { return clinic.name === clinicInput.value; })
+        .map(function (clinic) { return clinic.district; });
+      // Solo si la sede está en un único distrito: si hay varias, el paciente elige el distrito.
+      if (districts.length !== 1) return;
+      var match = Array.prototype.find.call(districtInput.options, function (option) {
+        return option.value && sameText(option.value, districts[0]);
+      });
+      if (match) { districtInput.value = match.value; syncClinics(); }
+    });
+    if (form) form.addEventListener('reset', function () { window.setTimeout(syncClinics, 0); });
+    syncClinics();                                  // quita las sedes repetidas desde la carga
+  }
+
   if (form) {
     form.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -547,6 +596,32 @@ document.addEventListener('DOMContentLoaded', function () {
   if (aiPanel && manualPanel) {
     // Abre el modo indicado por el navbar (?modo=ia | ?modo=manual) y carga datos reales de inmediato.
     activateMode(aiPanel.classList.contains('is-hidden') ? 'manual' : 'ia', false);
+  }
+
+  /* Botón flotante del asistente (fragments/footer): en el inicio abre la pestaña de IA sin recargar y se
+     esconde mientras el asistente ya está en pantalla. */
+  var fab = document.querySelector('#ai-fab');
+  var finder = document.querySelector('#patient-search');
+  if (fab && finder && aiPanel) {
+    fab.addEventListener('click', function (event) {
+      event.preventDefault();
+      activateMode('ia', true);
+      finder.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var input = document.querySelector('#chat-input');
+      // Espera al desplazamiento para no cortarlo al enfocar (el foco también mueve la página).
+      if (input) window.setTimeout(function () { input.focus({ preventScroll: true }); }, 450);
+    });
+    if ('IntersectionObserver' in window) {
+      var aiOnScreen = false;
+      var refreshFab = function () {
+        fab.classList.toggle('is-away', aiOnScreen && !aiPanel.classList.contains('is-hidden'));
+      };
+      new IntersectionObserver(function (entries) {
+        aiOnScreen = entries[0].isIntersecting;
+        refreshFab();
+      }, { threshold: 0.25 }).observe(aiPanel);
+      Array.prototype.forEach.call(tabs, function (tab) { tab.addEventListener('click', refreshFab); });
+    }
   }
 
   // Botón inferior del inicio: vuelve al buscador.
