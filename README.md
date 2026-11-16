@@ -184,8 +184,9 @@ de entorno antes de arrancar (o en `config/mail.local.properties`, que está en
 | `DB_USERNAME` | Usuario de MySQL | usa `root` |
 | `DB_PASSWORD` | Contraseña de MySQL | vacío |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Cuenta de administrador inicial | vacío (pedir al equipo) |
-| `MAIL_USERNAME` / `MAIL_PASSWORD` | Envío de correos (notificaciones, códigos) | vacío (deshabilita el correo) |
-| `GROQ_API_KEY` | Asistente de orientación por IA (síntoma → especialidad) | vacío (deshabilita el asistente) |
+| `RESEND_API_KEY` / `MAIL_FROM` | Envío de correos por Resend (notificaciones, códigos) | vacío (deshabilita el correo) |
+| `AI_API_KEY` | Clave de Google Gemini para el asistente de IA (chat de orientación por síntomas) | vacío (el asistente responde solo con sus reglas internas) |
+| `AI_MODEL` | Modelos de Gemini en orden de preferencia, separados por coma | `gemini-3.8-flash,gemini-3.5-flash-lite` |
 
 ```bash
 # arrancar la app (Hibernate crea/actualiza las tablas automáticamente)
