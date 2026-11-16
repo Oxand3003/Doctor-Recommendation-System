@@ -1,0 +1,10 @@
+# Las páginas públicas (inicio, perfiles de médicos y especialidades) se pueden indexar;
+# las zonas con sesión no aportan nada a un buscador.
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /appointments
+Disallow: /chat
+Disallow: /medico/
+Disallow: /admin/
+Disallow: /api/

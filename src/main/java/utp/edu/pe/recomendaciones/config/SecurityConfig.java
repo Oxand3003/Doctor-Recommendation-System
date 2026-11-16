@@ -99,6 +99,8 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/register/**", "/recuperar-password/**", "/doctor/**",
                                  "/especialidades/**", "/consultas", "/error", "/api/chat/**",
                                  "/css/**", "/js/**", "/img/**",
+                                 // Iconos y robots.txt: Google y los navegadores los piden en la raíz y sin sesión.
+                                 "/favicon.ico", "/apple-touch-icon.png", "/site.webmanifest", "/robots.txt",
                                  "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/api/doctors/search").hasRole("PACIENTE")
                 .requestMatchers("/api/mensajeria/**").hasAnyRole("PACIENTE", "MEDICO")

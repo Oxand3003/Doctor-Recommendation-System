@@ -62,6 +62,20 @@ class PaginaInicioIntegrationTest {
     }
 
     @Test
+    void losIconosYRobotsSeSirvenSinSesion() throws Exception {
+        // Google pide /favicon.ico y /robots.txt en la raíz: antes redirigían al login y el buscador no mostraba el icono.
+        HttpClient http = cliente();
+        for (String[] archivo : new String[][]{{"/favicon.ico", "image/"}, {"/apple-touch-icon.png", "image/png"},
+                {"/img/icon-192.png", "image/png"}, {"/img/favicon.svg", "image/svg+xml"}, {"/robots.txt", "text/plain"}}) {
+            HttpResponse<String> r = get(http, archivo[0]);
+            assertThat(r.statusCode()).as(archivo[0]).isEqualTo(200);
+            assertThat(r.headers().firstValue("Content-Type").orElse("")).as(archivo[0]).startsWith(archivo[1]);
+        }
+        assertThat(get(http, "/").body()).contains("<link rel=\"icon\" href=\"/favicon.ico\" sizes=\"32x32 48x48\">")
+                .contains("<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\">");
+    }
+
+    @Test
     void elPacienteEntraAlBuscadorConElAsistenteAbiertoYLasSedesTienenSuDistrito() throws Exception {
         String suffix = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         String password = "Inicio!" + suffix;
