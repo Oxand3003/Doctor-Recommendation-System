@@ -308,7 +308,8 @@ public class AdminService {
                 m.getCmp(), vacio(m.getRne()), vacio(m.getTituloProfesional()), vacio(m.getUniversidad()),
                 m.getAnioEgreso(), m.getAniosExperiencia(),
                 m.getEspecialidad().getNombre(),
-                m.getEstablecimiento() != null ? m.getEstablecimiento().getNombre() : "",
+                m.getEstablecimiento() != null ? m.getEstablecimiento().getNombre()
+                        : s.getEstablecimientoIndicado() != null ? s.getEstablecimientoIndicado() + " (no está en el catálogo)" : "",
                 s.getSustentoUrl(), s.getFechaSolicitud().format(FECHA),
                 s.getEstado().name(), vacio(s.getMotivoRechazo()));
     }

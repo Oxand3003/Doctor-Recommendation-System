@@ -40,8 +40,6 @@ public class AuthController {
                 && auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()))) {
             return "redirect:/admin/doctor-applications";
         }
-        model.addAttribute("specialties", registro.especialidades());
-        model.addAttribute("establishments", registro.establecimientos());
         model.addAttribute("loginBloqueoMinutos", loginBloqueoMinutos);
         return "auth/auth";
     }

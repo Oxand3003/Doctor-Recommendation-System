@@ -26,6 +26,14 @@ public class SolicitudVerificacion {
     @Column(length = 500)
     private String motivoRechazo;
 
+    /**
+     * Establecimiento que escribió el médico al registrarse y que no está en el catálogo (null si eligió uno
+     * del catálogo o no indicó ninguno). El administrador lo ve en la solicitud; el médico lo registra como
+     * sede, con su distrito, desde su panel.
+     */
+    @Column(name = "establecimiento_indicado", length = 150)
+    private String establecimientoIndicado;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "revisado_por")
     private Usuario revisadoPor;
@@ -66,6 +74,14 @@ public class SolicitudVerificacion {
 
     public void setSustentoUrl(String sustentoUrl) {
         this.sustentoUrl = sustentoUrl;
+    }
+
+    public String getEstablecimientoIndicado() {
+        return establecimientoIndicado;
+    }
+
+    public void setEstablecimientoIndicado(String establecimientoIndicado) {
+        this.establecimientoIndicado = establecimientoIndicado;
     }
 
     public EstadoSolicitud getEstado() {
