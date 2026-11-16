@@ -54,7 +54,7 @@ public final class AsistenteTexto {
 
     /** Errores permitidos según el largo: palabras cortas deben ser exactas para evitar falsos positivos. */
     static int tolerancia(int largo) {
-        if (largo <= 3) return 0;
+        if (largo <= 4) return 0;          // "como" no debe leerse como "codo", ni "mano" como "mareo"
         if (largo <= 7) return 1;
         return 2;
     }

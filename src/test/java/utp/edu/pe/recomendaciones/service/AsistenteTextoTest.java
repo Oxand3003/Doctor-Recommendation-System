@@ -42,6 +42,8 @@ class AsistenteTextoTest {
         assertThat(especialidadPara("mañana a las 4")).isNull();
         // "marzo" no debe confundirse con "mareo".
         assertThat(especialidadPara("el 5 de marzo")).isNull();
+        // "cómo" no debe confundirse con "codo".
+        assertThat(especialidadPara("hola como estas")).isNull();
     }
 
     @Test

@@ -164,6 +164,41 @@ class ChatRecommendationServiceTest {
     }
 
     @Test
+    void otraMolestiaDespuesDeUnaRecomendacionSeEntiendeAunqueLaIaNoResponda() {
+        when(ia.disponible()).thenReturn(true);
+        when(ia.consultar(anyString(), anyString())).thenReturn(null);
+
+        // El paciente ya tenía Cardiología elegida y ahora cuenta que le duele otra parte.
+        ChatRecommendationResponse r = chat.recommend(new ChatRecommendationRequest("ahora me duele la rodilla",
+                "Cardiología", null, null, null, true, List.of(), null, null));
+
+        assertThat(r.reply()).doesNotContain("No logré entender").contains("Traumatología")
+                .contains("no tenemos médicos de esa especialidad");
+        assertThat(r.stage()).isEqualTo("ELEGIR");
+    }
+
+    @Test
+    void otraMolestiaConMedicosCambiaDeEspecialidad() {
+        when(ia.disponible()).thenReturn(false);
+
+        ChatRecommendationResponse r = chat.recommend(new ChatRecommendationRequest("ahora tengo granos en la cara",
+                "Cardiología", null, null, null, true, List.of(), null, null));
+
+        assertThat(r.specialty()).isEqualTo("Dermatología");
+    }
+
+    @Test
+    void siLaIaNoRespondeLoDiceEnVezDeCulparAlPaciente() {
+        when(ia.disponible()).thenReturn(true);
+        when(ia.consultar(anyString(), anyString())).thenReturn(null);
+
+        ChatRecommendationResponse r = escribe("hola, ¿cómo estás? ¿qué puedes hacer?");
+
+        assertThat(r.reply()).doesNotContain("No logré entender").contains("no pude consultar al asistente de IA")
+                .doesNotContain("Traumatología");
+    }
+
+    @Test
     void cambiarSoloElDiaNoConsultaALaIa() {
         when(ia.disponible()).thenReturn(true);
 

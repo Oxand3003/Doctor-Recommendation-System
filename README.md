@@ -186,7 +186,7 @@ de entorno antes de arrancar (o en `config/mail.local.properties`, que está en
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | Cuenta de administrador inicial | vacío (pedir al equipo) |
 | `RESEND_API_KEY` / `MAIL_FROM` | Envío de correos por Resend (notificaciones, códigos) | vacío (deshabilita el correo) |
 | `AI_API_KEY` | Clave de Google Gemini para el asistente de IA (chat de orientación por síntomas) | vacío (el asistente responde solo con sus reglas internas) |
-| `AI_MODEL` | Modelos de Gemini en orden de preferencia, separados por coma | `gemini-3.8-flash,gemini-3.5-flash-lite` |
+| `AI_MODEL` | Modelos de Gemini en orden de preferencia, separados por coma | `gemini-3.5-flash-lite,gemini-3.8-flash` |
 
 ```bash
 # arrancar la app (Hibernate crea/actualiza las tablas automáticamente)
