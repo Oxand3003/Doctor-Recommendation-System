@@ -1,30 +1,21 @@
 package utp.edu.pe.recomendaciones.service;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import utp.edu.pe.recomendaciones.dto.OrientacionCorporalRequest;
 import utp.edu.pe.recomendaciones.dto.OrientacionCorporalResponse;
@@ -61,31 +52,14 @@ public class OrientacionCorporalService {
             "Fiebre alta que no cede o sangrado abundante.");
 
     private final MedicoRepository medicos;
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final RestClient http;
-    private final String apiKey;
-    private final String baseUrl;
-    private final String model;
+    private final ClienteIa ia;
     private final String systemPrompt;
-    private final String reasoningEffort;
 
-    public OrientacionCorporalService(MedicoRepository medicos,
-                                      @Value("${medicerca.ai.api-key:}") String apiKey,
-                                      @Value("${medicerca.ai.base-url:https://generativelanguage.googleapis.com/v1beta/openai/}") String baseUrl,
-                                      @Value("${medicerca.ai.model:gemini-3.8-flash}") String model,
-                                      @Value("${medicerca.ai.system-prompt:}") String systemPrompt,
-                                      @Value("${medicerca.ai.reasoning-effort:low}") String reasoningEffort,
-                                      @Value("${medicerca.ai.timeout-seconds:30}") int timeoutSeconds) {
+    public OrientacionCorporalService(MedicoRepository medicos, ClienteIa ia,
+                                      @Value("${medicerca.ai.system-prompt:}") String systemPrompt) {
         this.medicos = medicos;
-        this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.baseUrl = baseUrl;
-        this.model = model;
+        this.ia = ia;
         this.systemPrompt = systemPrompt == null ? "" : systemPrompt;
-        this.reasoningEffort = reasoningEffort == null ? "" : reasoningEffort.trim();
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofSeconds(5));
-        factory.setReadTimeout(Duration.ofSeconds(Math.max(5, timeoutSeconds)));
-        this.http = RestClient.builder().requestFactory(factory).build();
     }
 
     public OrientacionCorporalResponse orientar(OrientacionCorporalRequest request) {
@@ -181,7 +155,7 @@ public class OrientacionCorporalService {
 
     /** Un solo llamado que devuelve la explicación en JSON, o null si la IA no está disponible. */
     private JsonNode preguntarIa(String sexo, String sintomas, String zona, String especialidad, boolean tocada) {
-        if (!StringUtils.hasText(apiKey)) return null;
+        if (!ia.disponible()) return null;
         try {
             String instrucciones = systemPrompt + " Reglas obligatorias: responde en español claro y cercano. Eres un "
                     + "orientador para buscar médico, no un profesional clínico: NO des un diagnóstico definitivo, NO "
@@ -197,41 +171,11 @@ public class OrientacionCorporalService {
                     + (sintomas.isBlank() ? "(no los describió; solo tocó la zona en el maniquí)" : sintomas)
                     + ". Zona del cuerpo " + (tocada ? "elegida por el paciente" : "deducida de los síntomas") + ": " + zona
                     + ". Especialidad sugerida: " + (especialidad == null ? "ninguna disponible" : especialidad) + ".";
-            return callModel(instrucciones, mensaje);
+            return ia.consultar(instrucciones, mensaje);
         } catch (Exception ex) {
             log.warn("Orientación corporal: IA no disponible ({}): {}", ex.getClass().getSimpleName(), ex.getMessage());
             return null;
         }
-    }
-
-    private JsonNode callModel(String instructions, String message) throws Exception {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", model);
-        body.put("messages", List.of(Map.of("role", "system", "content", instructions),
-                Map.of("role", "user", "content", message)));
-        body.put("response_format", Map.of("type", "json_object"));
-        body.put("temperature", 0.2);
-        // Los modelos que "piensan" antes de responder (ej. Gemini 3) tardan demasiado con su nivel de
-        // razonamiento por defecto y la llamada vencía por tiempo; aquí basta un razonamiento bajo.
-        if (!reasoningEffort.isEmpty()) body.put("reasoning_effort", reasoningEffort);
-        String endpoint = baseUrl.replaceAll("/+$", "") + "/chat/completions";
-        // Se lee el cuerpo crudo con exchange() en vez de retrieve().body(String.class): así un error
-        // (tiempo de espera, 4xx/5xx) llega al log con su causa real y con el cuerpo que devolvió la IA.
-        String raw = http.post().uri(endpoint)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + apiKey)
-                .body(mapper.writeValueAsString(body))
-                .exchange((req, res) -> {
-                    String texto = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                    if (res.getStatusCode().isError()) {
-                        throw new IOException("IA respondió " + res.getStatusCode().value() + ": " + texto);
-                    }
-                    return texto;
-                });
-        if (!StringUtils.hasText(raw)) return null;
-        String content = mapper.readTree(raw).path("choices").path(0).path("message").path("content").asText("");
-        content = content.replaceAll("(?s)^\\s*```(?:json)?\\s*|\\s*```\\s*$", "").trim();
-        return content.isEmpty() ? null : mapper.readTree(content);
     }
 
     /** Texto de la IA recortado; null si no es texto o está vacío. */

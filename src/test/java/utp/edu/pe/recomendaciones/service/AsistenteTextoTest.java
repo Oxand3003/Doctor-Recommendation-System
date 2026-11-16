@@ -52,6 +52,18 @@ class AsistenteTextoTest {
     }
 
     @Test
+    void detectaSintomasDeEspecialidadesQueAunNoTienenMedicos() {
+        List<String> pocas = List.of("Cardiología", "Dermatología", "Pediatría");
+
+        assertThat(CatalogoSintomas.sinCobertura("me duele la cabeza y tengo nauseas", pocas))
+                .extracting(CatalogoSintomas.Sugerencia::especialidad).contains("Neurología");
+        // Si la especialidad sí tiene médicos no se reporta como faltante.
+        assertThat(CatalogoSintomas.sinCobertura("tengo acne y granos", pocas)).isEmpty();
+        assertThat(CatalogoSintomas.sinCobertura("me duele mucho la cavesa", ESPECIALIDADES)).isEmpty();
+        assertThat(CatalogoSintomas.sinCobertura("hola buenas", pocas)).isEmpty();
+    }
+
+    @Test
     void avisaCuandoPuedeSerUrgente() {
         assertThat(CatalogoSintomas.pareceUrgente("tengo dolor de pecho y me falta el aire")).isTrue();
         assertThat(CatalogoSintomas.pareceUrgente("me duele la muela")).isFalse();

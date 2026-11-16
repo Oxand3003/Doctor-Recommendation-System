@@ -25,6 +25,18 @@ public final class CatalogoSintomas {
     private static final List<Termino> URGENCIAS = new ArrayList<>();
     private static final List<String> PALABRAS_DE_FECHA = new ArrayList<>();
 
+    /** Nombre para mostrar de cada raíz, cuando la especialidad todavía no existe en la base. */
+    private static final Map<String, String> NOMBRES = Map.ofEntries(
+            Map.entry("cardiolog", "Cardiología"), Map.entry("pediatr", "Pediatría"),
+            Map.entry("dermatolog", "Dermatología"), Map.entry("ginecolog", "Ginecología"),
+            Map.entry("endocrinolog", "Endocrinología"), Map.entry("neurolog", "Neurología"),
+            Map.entry("traumatolog", "Traumatología"), Map.entry("psiquiatr", "Psiquiatría"),
+            Map.entry("gastroenterolog", "Gastroenterología"), Map.entry("oftalmolog", "Oftalmología"),
+            Map.entry("otorrino", "Otorrinolaringología"), Map.entry("urolog", "Urología"),
+            Map.entry("neumolog", "Neumología"), Map.entry("reumatolog", "Reumatología"),
+            Map.entry("nutri", "Nutrición"), Map.entry("odontolog", "Odontología"),
+            Map.entry("medicina general", "Medicina General"), Map.entry("medicina interna", "Medicina Interna"));
+
     private static void def(String raiz, String... terminos) {
         List<Termino> lista = CATALOGO.computeIfAbsent(raiz, k -> new ArrayList<>());
         for (String t : terminos) {
@@ -38,7 +50,8 @@ public final class CatalogoSintomas {
     static {
         def("cardiolog", "corazon|3", "cardiaco|3", "cardiologo|3", "palpitaciones|3", "taquicardia|3", "arritmia|3",
                 "dolor de pecho|3", "presion alta|3", "hipertension|3", "presion arterial|2", "infarto|3", "soplo|3",
-                "latidos|2", "pecho apretado|3", "se me acelera el corazon|3", "hinchazon de piernas|1", "tension alta|2");
+                "latidos|2", "pecho apretado|3", "se me acelera el corazon|3", "hinchazon de piernas|1", "tension alta|2",
+                "duele el pecho|3");
         def("pediatr", "pediatra|3", "mi hijo|3", "mi hija|3", "mi bebe|3", "bebe|3", "recien nacido|3", "nino|2",
                 "nina|2", "mi nino|3", "mi nina|3", "vacunas|2", "lactancia|2", "crecimiento|1", "llora mucho|2",
                 "adolescente|2", "menor de edad|2");
@@ -56,7 +69,7 @@ public final class CatalogoSintomas {
         def("neurolog", "dolor de cabeza|3", "cefalea|3", "migrana|3", "jaqueca|3", "mareos|2", "mareo|2", "vertigo|2",
                 "convulsiones|3", "convulsion|3", "epilepsia|3", "hormigueo|2", "adormecimiento|2", "entumecimiento|2",
                 "temblor|2", "temblores|2", "perdida de memoria|3", "olvidos|2", "memoria|2", "parkinson|3", "derrame|3",
-                "neurologo|3", "cabeza|1", "desmayo|1", "desmayos|1", "no puedo dormir|1");
+                "neurologo|3", "cabeza|1", "desmayo|1", "desmayos|1", "no puedo dormir|1", "duele la cabeza|3");
         def("traumatolog", "fractura|3", "esguince|3", "golpe|2", "rodilla|3", "tobillo|3", "hombro|3", "codo|2",
                 "muneca|2", "espalda|3", "columna|3", "lumbar|3", "cintura|2", "cadera|3", "hueso|3", "huesos|3",
                 "articulacion|3", "articulaciones|3", "torcedura|3", "luxacion|3", "lesion|2", "tendinitis|3",
@@ -101,7 +114,7 @@ public final class CatalogoSintomas {
             PALABRAS_DE_FECHA.add(AsistenteTexto.fonetica(t));
         }
         for (String t : new String[]{"no puedo respirar", "dificultad para respirar", "me falta el aire", "dolor de pecho",
-                "dolor fuerte de pecho", "perdi el conocimiento", "me desmaye", "convulsion", "convulsiones",
+                "dolor fuerte de pecho", "duele el pecho", "perdi el conocimiento", "me desmaye", "convulsion", "convulsiones",
                 "sangrado abundante", "hemorragia", "quiero morir", "me quiero matar", "suicidio", "paralisis",
                 "no puedo mover", "cara caida", "envenenamiento", "infarto", "derrame cerebral"}) {
             URGENCIAS.add(new Termino(t, AsistenteTexto.palabras(t), 3));
@@ -123,17 +136,46 @@ public final class CatalogoSintomas {
             List<String> motivos = new ArrayList<>();
             for (Map.Entry<String, List<Termino>> entrada : CATALOGO.entrySet()) {
                 if (!normal.startsWith(entrada.getKey())) continue;
-                for (Termino t : entrada.getValue()) {
-                    if (AsistenteTexto.buscar(palabras, t.fonetico()) >= 0) {
-                        puntaje += t.peso();
-                        if (t.peso() >= 2 && !motivos.contains(t.texto())) motivos.add(t.texto());
-                    }
-                }
+                puntaje += puntuar(palabras, entrada.getValue(), motivos);
             }
             if (puntaje > 0) out.add(new Sugerencia(nombre, puntaje, motivos));
         }
         out.sort(Comparator.comparingInt(Sugerencia::puntaje).reversed());
         return out;
+    }
+
+    /**
+     * Especialidades que encajan con lo escrito pero que NO tienen médicos en la base (por ejemplo, el paciente
+     * describe un dolor de cabeza y aún no hay neurólogos). Sirve para decirle con claridad qué especialidad
+     * necesitaría, en vez de responder que no se le entendió. De mayor a menor puntaje.
+     */
+    public static List<Sugerencia> sinCobertura(String texto, List<String> especialidadesBase) {
+        List<String> palabras = AsistenteTexto.palabras(texto);
+        palabras.removeAll(PALABRAS_DE_FECHA);
+        List<Sugerencia> out = new ArrayList<>();
+        if (palabras.isEmpty()) return out;
+        List<String> base = especialidadesBase.stream().map(AsistenteTexto::normalizar).toList();
+        for (Map.Entry<String, List<Termino>> entrada : CATALOGO.entrySet()) {
+            String raiz = entrada.getKey();
+            if (base.stream().anyMatch(n -> n.startsWith(raiz))) continue;
+            List<String> motivos = new ArrayList<>();
+            int puntaje = puntuar(palabras, entrada.getValue(), motivos);
+            if (puntaje >= 2) out.add(new Sugerencia(NOMBRES.getOrDefault(raiz, raiz), puntaje, motivos));
+        }
+        out.sort(Comparator.comparingInt(Sugerencia::puntaje).reversed());
+        return out;
+    }
+
+    /** Suma el peso de los términos presentes en el texto y anota los más específicos como motivos. */
+    private static int puntuar(List<String> palabras, List<Termino> terminos, List<String> motivos) {
+        int puntaje = 0;
+        for (Termino t : terminos) {
+            if (AsistenteTexto.buscar(palabras, t.fonetico()) >= 0) {
+                puntaje += t.peso();
+                if (t.peso() >= 2 && !motivos.contains(t.texto())) motivos.add(t.texto());
+            }
+        }
+        return puntaje;
     }
 
     /** ¿Lo descrito podría ser una urgencia? (solo para avisar que acuda a emergencias). */

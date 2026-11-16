@@ -1,30 +1,22 @@
 package utp.edu.pe.recomendaciones.service;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,8 +48,9 @@ import utp.edu.pe.recomendaciones.repository.MedicoRepository;
  *   <li>Ofrece opciones rápidas (orientarme, filtrar especialidad, precios más bajos, mejor calificados).</li>
  *   <li>Recuerda la conversación ({@link AsistenteMemoriaService}) hasta que el paciente inicia una nueva.</li>
  * </ol>
- * La IA externa (si hay clave) solo refuerza la elección de especialidad y redacta un comentario empático;
- * si no responde, todo sigue funcionando con las reglas propias.
+ * Cuando el paciente escribe un texto libre, la IA externa (si hay clave) conversa con él: entiende el mensaje
+ * (síntomas, saludos, dudas), elige la especialidad y redacta la respuesta con los datos reales de MediCerca.
+ * Las reglas propias le sirven de pista y de respaldo: si la IA no responde, todo sigue funcionando con ellas.
  */
 @Service
 public class ChatRecommendationService {
@@ -66,7 +59,10 @@ public class ChatRecommendationService {
     private static final int MAX_RESULTS = 12;
     private static final int MAX_TIMES_SHOWN = 4;
     private static final int PUNTAJE_FUERTE = 3;
+    private static final int MAX_AI_REPLY = 900;
+    private static final int MAX_AI_DOCTORS = 6;
     private static final DateTimeFormatter DIA = DateTimeFormatter.ofPattern("dd/MM", Locale.ROOT);
+    private static final DateTimeFormatter DIA_LARGO = DateTimeFormatter.ofPattern("EEEE dd/MM/yyyy", Locale.forLanguageTag("es"));
 
     static final String SALUDO = "¡Hola! Soy el asistente de MediCerca. Para empezar, cuéntame qué síntomas o malestar "
             + "tienes (aunque lo escribas con errores, te entiendo). También puedes elegir una opción rápida:";
@@ -79,37 +75,18 @@ public class ChatRecommendationService {
     private final DoctorProfileService perfiles;
     private final AsistenteMemoriaService memoria;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final RestClient http;
-    private final String apiKey;
-    private final String baseUrl;
-    private final String model;
+    private final ClienteIa ia;
     private final String systemPrompt;
-    private final String reasoningEffort;
 
     public ChatRecommendationService(MedicoRepository medicos, DistritoRepository distritos,
-                                    DoctorProfileService perfiles, AsistenteMemoriaService memoria,
-                                    @Value("${medicerca.ai.api-key:}") String apiKey,
-                                    @Value("${medicerca.ai.base-url:https://generativelanguage.googleapis.com/v1beta/openai/}") String baseUrl,
-                                    @Value("${medicerca.ai.model:gemini-3.8-flash}") String model,
-                                    @Value("${medicerca.ai.system-prompt:}") String systemPrompt,
-                                    @Value("${medicerca.ai.reasoning-effort:low}") String reasoningEffort,
-                                    @Value("${medicerca.ai.timeout-seconds:30}") int timeoutSeconds) {
+                                    DoctorProfileService perfiles, AsistenteMemoriaService memoria, ClienteIa ia,
+                                    @Value("${medicerca.ai.system-prompt:}") String systemPrompt) {
         this.medicos = medicos;
         this.distritos = distritos;
         this.perfiles = perfiles;
         this.memoria = memoria;
-        this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.baseUrl = baseUrl;
-        this.model = model;
+        this.ia = ia;
         this.systemPrompt = systemPrompt == null ? "" : systemPrompt;
-        this.reasoningEffort = reasoningEffort == null ? "" : reasoningEffort.trim();
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(Duration.ofSeconds(5));
-        factory.setReadTimeout(Duration.ofSeconds(Math.max(5, timeoutSeconds)));
-        this.http = RestClient.builder().requestFactory(factory).build();
-        if (this.apiKey.isEmpty()) {
-            log.warn("Asistente IA: no hay medicerca.ai.api-key; se usarán solo las reglas internas.");
-        }
     }
 
     // ------------------------------------------------------------------ memoria
@@ -172,6 +149,9 @@ public class ChatRecommendationService {
         boolean urgent = false;
         boolean understood = false;
         String reply = "";
+        String aiReply = null;                 // lo que redactó la IA para este mensaje (si respondió)
+        boolean structured = false;            // el mensaje cambió un filtro: día, hora, distrito u orden
+        String specialtyBefore = specialty;
 
         switch (action) {
             case "MENU" -> {
@@ -218,29 +198,35 @@ public class ChatRecommendationService {
             default -> {
                 if (freeText) {
                     String wantedSort = sortFromText(current);
-                    if (wantedSort != null) { sort = wantedSort; understood = true; }
+                    if (wantedSort != null) { sort = wantedSort; structured = true; }
                     LocalDate spokenDate = InterpreteFechas.fecha(current, today);
-                    if (spokenDate != null) { date = spokenDate; understood = true; }
+                    if (spokenDate != null) { date = spokenDate; structured = true; }
                     LocalTime spokenTime = InterpreteFechas.hora(current);
-                    if (spokenTime != null) { time = spokenTime; understood = true; }
-                    if (district != null && !normalize(district).equals(normalize(request.district()))) understood = true;
+                    if (spokenTime != null) { time = spokenTime; structured = true; }
+                    if (district != null && !normalize(district).equals(normalize(request.district()))) structured = true;
+                    understood = structured;
 
                     urgent = CatalogoSintomas.pareceUrgente(current);
-                    String byName = CatalogoSintomas.porNombre(current, specialties);
-                    if (byName != null) {
-                        specialty = byName;
+                    String facts = structured && !signals(current, specialties) && current.split("\\s+").length <= 6
+                            ? null                                     // solo cambió un filtro: no hace falta la IA
+                            : aiFacts(activeDoctors, specialties, specialty, district, date, time, sort, today);
+                    Orientation o = orient(current, specialties, specialty, stage, facts, saved, request);
+                    aiReply = o.aiReply();
+                    if (aiReply != null) understood = true;
+                    if (o.specialty() != null) {
+                        specialty = o.specialty();
+                        suggestions = o.suggestions();
+                        intro = o.intro();
                         understood = true;
-                        intro = "Perfecto, busco médicos de " + byName + ". ";
                         stage = "LIBRE";
-                    } else {
-                        Orientation o = orient(current, specialties, specialty, stage, saved, request);
-                        if (o.specialty() != null) {
-                            specialty = o.specialty();
-                            suggestions = o.suggestions();
-                            intro = o.intro();
-                            understood = true;
-                            stage = "LIBRE";
-                        }
+                    } else if (!o.unavailable().isEmpty()) {
+                        // Se entendió el síntoma, pero su especialidad no está disponible: se dice con
+                        // claridad y se ofrecen las que sí hay, en vez de responder que no se entendió.
+                        specialty = null;
+                        understood = true;
+                        stage = "ELEGIR";
+                        purpose = "FILTRO";
+                        if (aiReply == null) reply = unavailableText(o.unavailable(), specialties);
                     }
                 } else if (talks) {
                     understood = true;
@@ -296,6 +282,15 @@ public class ChatRecommendationService {
             if (urgent) text.append(AVISO_URGENCIA);
             if (!reply.isEmpty()) {
                 text.append(reply);
+            } else if (aiReply != null) {
+                // La IA redactó la respuesta; el sistema solo añade lo que sale de la base (médicos y día)
+                // cuando este mensaje cambió la búsqueda.
+                text.append(aiReply);
+                boolean changed = structured || !Objects.equals(specialty, specialtyBefore);
+                if (changed && !askSymptoms) {
+                    text.append(' ').append(nextStep(specialty, district, date, time, sort, false,
+                            recommendations.size(), "price".equals(sort)));
+                }
             } else {
                 text.append(intro);
                 if (!understood) {
@@ -334,25 +329,54 @@ public class ChatRecommendationService {
 
     // ------------------------------------------------------------------ orientación por síntomas
 
-    private record Orientation(String specialty, String intro, List<Suggestion> suggestions) { }
+    /**
+     * Lo que se entendió de un mensaje libre.
+     * {@code unavailable}: lo descrito corresponde a especialidades que aún no tienen médicos en MediCerca
+     * (solo se llena cuando no se pudo elegir ninguna de las disponibles).
+     * {@code aiReply}: la respuesta que redactó la IA, o null si no respondió (entonces se usa {@code intro}).
+     */
+    private record Orientation(String specialty, String intro, List<Suggestion> suggestions,
+                               List<CatalogoSintomas.Sugerencia> unavailable, String aiReply) { }
 
-    /** Elige la especialidad según lo escrito: reglas tolerantes a errores y, si hace falta, la IA. */
+    /** ¿El mensaje nombra una especialidad o describe algún síntoma que las reglas reconocen? */
+    private boolean signals(String current, List<String> specialties) {
+        return CatalogoSintomas.porNombre(current, specialties) != null
+                || !CatalogoSintomas.sugerir(current, specialties).isEmpty()
+                || !CatalogoSintomas.sinCobertura(current, specialties).isEmpty();
+    }
+
+    /**
+     * Entiende el mensaje libre. La IA (si está disponible y {@code facts} no es null) elige la especialidad y
+     * redacta la respuesta; las reglas tolerantes a errores le dan una pista y la reemplazan cuando no responde.
+     */
     private Orientation orient(String current, List<String> specialties, String currentSpecialty, String stage,
-                               ChatConversationView saved, ChatRecommendationRequest request) {
+                               String facts, ChatConversationView saved, ChatRecommendationRequest request) {
+        String byName = CatalogoSintomas.porNombre(current, specialties);
         List<CatalogoSintomas.Sugerencia> rules = CatalogoSintomas.sugerir(current, specialties);
         CatalogoSintomas.Sugerencia top = rules.isEmpty() ? null : rules.get(0);
         boolean strong = top != null && top.puntaje() >= PUNTAJE_FUERTE;
 
+        // Síntomas que las reglas reconocen pero cuya especialidad todavía no tiene médicos registrados.
+        boolean orienting = currentSpecialty == null || "SINTOMAS".equals(stage);
+        List<CatalogoSintomas.Sugerencia> uncovered = orienting && byName == null
+                ? CatalogoSintomas.sinCobertura(current, specialties) : List.of();
+
         String aiSpecialty = null;
-        String aiComment = null;
+        String aiIdeal = null;
+        String aiReply = null;
         List<String> aiAlternatives = List.of();
-        boolean needsAi = !strong && StringUtils.hasText(apiKey)
-                && (currentSpecialty == null || "SINTOMAS".equals(stage)) && current.replaceAll("[^\\p{L}]", "").length() >= 4;
-        if (needsAi) {
-            JsonNode ai = askModel(conversationContext(request, saved), specialties);
+        if (facts != null && ia.disponible() && current.replaceAll("[^\\p{L}]", "").length() >= 2) {
+            String hint = byName != null ? "el paciente nombró la especialidad " + byName
+                    : top != null ? "sus palabras apuntan a " + top.especialidad()
+                    : !uncovered.isEmpty() ? "sus palabras apuntan a " + uncovered.get(0).especialidad()
+                            + ", que NO está disponible" : "ninguna";
+            JsonNode ai = askModel(conversationContext(request, saved), specialties, facts, hint);
             if (ai != null) {
                 aiSpecialty = matchSpecialty(ai.path("specialty").asText(null), specialties);
-                aiComment = ai.path("comment").isTextual() ? ai.path("comment").asText().trim() : null;
+                String ideal = ai.path("ideal_specialty").isTextual() ? ai.path("ideal_specialty").asText().trim() : "";
+                if (aiSpecialty == null) aiSpecialty = matchSpecialty(ideal, specialties);
+                if (aiSpecialty == null && ideal.matches("[\\p{L} ]{4,40}")) aiIdeal = ideal;
+                aiReply = replyText(ai.path("reply"));
                 List<String> alts = new ArrayList<>();
                 for (JsonNode n : ai.path("alternatives")) {
                     String m = matchSpecialty(n.asText(null), specialties);
@@ -361,9 +385,26 @@ public class ChatRecommendationService {
                 aiAlternatives = alts;
             }
         }
+        boolean aiAnswered = aiSpecialty != null || aiIdeal != null || aiReply != null;
 
-        String chosen = strong ? top.especialidad() : (aiSpecialty != null ? aiSpecialty : (top != null ? top.especialidad() : null));
-        if (chosen == null) return new Orientation(null, "", List.of());
+        // La IA decide; si no eligió, valen el nombre escrito y los síntomas claros. Las coincidencias débiles
+        // de las reglas solo se usan cuando la IA no respondió (si respondió, ya pidió más detalles).
+        String fromRules = byName != null ? byName
+                : top != null && (strong || !aiAnswered) ? top.especialidad() : null;
+        String chosen = aiSpecialty != null ? aiSpecialty : fromRules;
+        if (chosen == null) {
+            if (!aiAnswered) return new Orientation(null, "", List.of(), uncovered, null);
+            if (aiIdeal == null) return new Orientation(null, "", List.of(), List.of(), aiReply);
+            return new Orientation(null, "", List.of(),
+                    List.of(new CatalogoSintomas.Sugerencia(aiIdeal, PUNTAJE_FUERTE, List.of())),
+                    aiReply == null ? null : aiReply + " " + AVISO_ORIENTACION);
+        }
+        // El texto de la IA solo sirve si habla de la especialidad que finalmente se eligió.
+        if (!chosen.equals(aiSpecialty)) aiReply = null;
+        if (chosen.equals(byName) && aiReply == null) {
+            return new Orientation(chosen, "Perfecto, busco médicos de " + chosen + ". ", List.of(), List.of(), null);
+        }
+        if (aiReply != null && byName == null) aiReply += " " + AVISO_ORIENTACION;
 
         List<Suggestion> list = new ArrayList<>();
         String finalChosen = chosen;
@@ -383,14 +424,38 @@ public class ChatRecommendationService {
         }
 
         StringBuilder intro = new StringBuilder();
-        if (StringUtils.hasText(aiComment) && aiSpecialty != null) intro.append(aiComment.trim()).append(' ');
         intro.append(motives.isEmpty() ? "Por lo que me cuentas, " : "Por lo que me cuentas (" + String.join(", ", motives) + "), ")
                 .append("te oriento a ").append(chosen).append(". ").append(AVISO_ORIENTACION).append(' ');
         if (list.size() > 1) {
             intro.append("Otras opciones que podrían encajar: ")
                     .append(String.join(", ", list.stream().skip(1).map(Suggestion::specialty).toList())).append(". ");
         }
-        return new Orientation(chosen, intro.toString(), list);
+        return new Orientation(chosen, intro.toString(), list, List.of(), aiReply);
+    }
+
+    /** Texto que redactó la IA, en una sola línea y con tope de largo; null si no vino o está vacío. */
+    private String replyText(JsonNode node) {
+        if (node == null || !node.isTextual()) return null;
+        String text = node.asText().replaceAll("\\s+", " ").trim();
+        if (text.isEmpty()) return null;
+        return text.length() > MAX_AI_REPLY ? text.substring(0, MAX_AI_REPLY).trim() + "…" : text;
+    }
+
+    /** Respuesta cuando se entendió el síntoma pero su especialidad aún no tiene médicos en MediCerca. */
+    private String unavailableText(List<CatalogoSintomas.Sugerencia> unavailable, List<String> specialties) {
+        List<String> names = unavailable.stream().limit(2).map(CatalogoSintomas.Sugerencia::especialidad).toList();
+        List<String> motives = unavailable.stream().limit(2).flatMap(s -> s.motivos().stream()).distinct().toList();
+        StringBuilder text = new StringBuilder(motives.isEmpty() ? "Por lo que me cuentas, "
+                : "Por lo que me cuentas (" + String.join(", ", motives) + "), ");
+        text.append("lo más indicado sería ").append(String.join(" o ", names))
+                .append(", pero por ahora no tenemos médicos de esa especialidad en MediCerca. ");
+        if (specialties.isEmpty()) {
+            text.append("Todavía no hay especialidades disponibles. ");
+        } else {
+            text.append("Estas son las especialidades disponibles: ").append(String.join(", ", specialties))
+                    .append(". Si alguna te sirve, elígela; si no, cuéntame otro síntoma. ");
+        }
+        return text.append(AVISO_ORIENTACION).toString();
     }
 
     // ------------------------------------------------------------------ textos y opciones
@@ -515,55 +580,88 @@ public class ChatRecommendationService {
 
     // ------------------------------------------------------------------ IA
 
-    /** Un solo llamado: {"specialty", "alternatives", "comment"} o null si la IA no está disponible. */
-    private JsonNode askModel(String conversation, List<String> specialties) {
-        if (!StringUtils.hasText(apiKey)) return null;
+    /**
+     * Un solo llamado: la IA conversa con el paciente y devuelve {"specialty", "ideal_specialty", "alternatives",
+     * "reply"}, o null si no está disponible. {@code facts} son los datos reales de MediCerca que puede usar.
+     */
+    private JsonNode askModel(String conversation, List<String> specialties, String facts, String hint) {
+        if (!ia.disponible()) return null;
         try {
-            String instructions = systemPrompt + " Reglas obligatorias: responde en español. Eres un orientador de "
-                    + "búsqueda, no un profesional clínico: no diagnostiques, no prescribas ni interpretes gravedad. El "
-                    + "paciente puede escribir con faltas de ortografía, abreviaturas o lenguaje coloquial (por ejemplo "
-                    + "\"cavesa\", \"me duele la barriga\"): interprétalo con tolerancia. Catálogo de especialidades (usa un "
-                    + "nombre EXACTO del catálogo o null): " + mapper.writeValueAsString(specialties)
-                    + ". Tareas: 1) elige la especialidad que corresponde a los síntomas o al motivo del paciente (si "
-                    + "cambió de tema, la nueva) o null si no es clara; 2) opcionalmente hasta 2 alternativas del catálogo; "
-                    + "3) escribe un comentario empático de UNA frase corta, sin preguntas y sin dar diagnóstico (el sistema "
-                    + "pide después el día y muestra los médicos). Devuelve únicamente JSON: "
-                    + "{\"specialty\": string|null, \"alternatives\": [string], \"comment\": string}.";
-            return callModel(instructions, conversation);
+            String instructions = systemPrompt + " Eres el asistente conversacional de MediCerca, una plataforma para "
+                    + "encontrar médicos y reservar citas en Trujillo (Perú). Conversas por chat con un paciente.\n"
+                    + "Reglas obligatorias:\n"
+                    + "- Responde en español, con tono cercano y natural, en 2 a 4 oraciones, a lo que el paciente acaba "
+                    + "de decir (síntomas, saludos, dudas, agradecimientos) y teniendo en cuenta la conversación previa. "
+                    + "No repitas frases ya dichas.\n"
+                    + "- El paciente puede escribir con faltas de ortografía, abreviaturas o lenguaje coloquial (por "
+                    + "ejemplo \"cavesa\", \"me duele la barriga\"): interprétalo con tolerancia.\n"
+                    + "- No eres un profesional clínico: no diagnostiques, no recetes ni menciones medicamentos o dosis. "
+                    + "Sí puedes explicar en términos generales qué atiende una especialidad y por qué orientas hacia ella.\n"
+                    + "- Usa únicamente los datos de MediCerca que aparecen abajo: no inventes médicos, precios, horarios "
+                    + "ni especialidades. Si te preguntan algo que no está en esos datos, dilo con sinceridad.\n"
+                    + "- Debajo de tu mensaje el sistema muestra por su cuenta la lista de médicos con sus horarios y "
+                    + "pregunta el día de la cita: no escribas listas de médicos ni pidas la fecha.\n"
+                    + "- Si lo que describe podría ser una urgencia, recomiéndale acudir a emergencias o llamar al 106 (SAMU).\n"
+                    + "- Si el mensaje no trata de salud ni de MediCerca, responde con amabilidad en una frase y ofrece "
+                    + "tu ayuda para encontrar médico.\n"
+                    + "Datos de MediCerca:\n"
+                    + "- Especialidades disponibles (las únicas con médicos): " + mapper.writeValueAsString(specialties) + "\n"
+                    + facts
+                    + "- Pista del sistema de reglas (puede equivocarse): " + hint + ".\n"
+                    + "Devuelve únicamente JSON: {\"specialty\": string|null, \"ideal_specialty\": string|null, "
+                    + "\"alternatives\": [string], \"reply\": string}.\n"
+                    + "- specialty: nombre EXACTO de una especialidad disponible cuando el paciente describe síntomas o "
+                    + "pide esa especialidad (si cambió de tema, la nueva); null si solo conversa, pregunta algo general "
+                    + "o todavía no está claro.\n"
+                    + "- ideal_specialty: si lo que describe lo atiende una especialidad que NO está disponible, su "
+                    + "nombre (por ejemplo \"Neurología\"); si no, null.\n"
+                    + "- alternatives: hasta 2 especialidades disponibles que también podrían encajar.\n"
+                    + "- reply: tu mensaje para el paciente. Si elegiste specialty, explica brevemente por qué esa "
+                    + "especialidad. Si usaste ideal_specialty, dile con claridad que por ahora MediCerca no tiene médicos "
+                    + "de esa especialidad y que puede elegir una de las disponibles o contarte otro síntoma. Si no está "
+                    + "claro qué necesita, hazle UNA pregunta para entenderlo mejor.";
+            return ia.consultar(instructions, conversation);
         } catch (Exception ex) {
             log.warn("Asistente IA no disponible ({}): {}", ex.getClass().getSimpleName(), ex.getMessage());
             return null;
         }
     }
 
-    private JsonNode callModel(String instructions, String message) throws Exception {
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("model", model);
-        body.put("messages", List.of(Map.of("role", "system", "content", instructions),
-                Map.of("role", "user", "content", message)));
-        body.put("response_format", Map.of("type", "json_object"));
-        body.put("temperature", 0.2);
-        // Los modelos que "piensan" antes de responder (ej. Gemini 3) tardan demasiado con su nivel de
-        // razonamiento por defecto y la llamada vencía por tiempo; aquí basta un razonamiento bajo.
-        if (!reasoningEffort.isEmpty()) body.put("reasoning_effort", reasoningEffort);
-        String endpoint = baseUrl.replaceAll("/+$", "") + "/chat/completions";
-        // Se lee el cuerpo crudo con exchange() en vez de retrieve().body(String.class): así un error
-        // (tiempo de espera, 4xx/5xx) llega al log con su causa real y con el cuerpo que devolvió la IA.
-        String raw = http.post().uri(endpoint)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", "Bearer " + apiKey)
-                .body(mapper.writeValueAsString(body))
-                .exchange((req, res) -> {
-                    String texto = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
-                    if (res.getStatusCode().isError()) {
-                        throw new IOException("IA respondió " + res.getStatusCode().value() + ": " + texto);
-                    }
-                    return texto;
-                });
-        if (!StringUtils.hasText(raw)) return null;
-        String content = mapper.readTree(raw).path("choices").path(0).path("message").path("content").asText("");
-        content = content.replaceAll("(?s)^\\s*```(?:json)?\\s*|\\s*```\\s*$", "").trim();
-        return content.isEmpty() ? null : mapper.readTree(content);
+    /**
+     * Datos reales de la base que la IA puede usar al conversar: fecha de hoy, resumen por especialidad, los
+     * médicos mejor calificados de la especialidad elegida y los filtros de la búsqueda.
+     */
+    private String aiFacts(List<Medico> doctors, List<String> specialties, String specialty, String district,
+                           LocalDate date, LocalTime time, String sort, LocalDate today) {
+        StringBuilder facts = new StringBuilder("- Hoy es ").append(today.format(DIA_LARGO)).append(".\n");
+        for (String name : specialties) {
+            List<Medico> own = doctors.stream().filter(d -> d.getEspecialidad().getNombre().equals(name)).toList();
+            BigDecimal cheapest = own.stream().map(this::lowestPrice).filter(Objects::nonNull)
+                    .min(Comparator.naturalOrder()).orElse(null);
+            facts.append("- ").append(name).append(": ").append(own.size()).append(own.size() == 1 ? " médico" : " médicos")
+                    .append(cheapest == null ? "" : ", consulta desde " + priceText(cheapest)).append(".\n");
+        }
+        if (specialty != null) {
+            facts.append("- Médicos de ").append(specialty).append(" mejor calificados:\n");
+            doctors.stream().filter(d -> normalize(d.getEspecialidad().getNombre()).equals(normalize(specialty)))
+                    .limit(MAX_AI_DOCTORS).forEach(d -> {
+                        Establecimiento clinic = d.getEstablecimiento();
+                        String place = clinic == null ? "sede por confirmar" : clinic.getNombre()
+                                + (clinic.getDistrito() != null ? ", " + clinic.getDistrito().getNombre() : "");
+                        facts.append("  · ").append(DoctorProfileService.nombrePublico(d.getUsuario())).append(" (").append(place)
+                                .append("; ").append(d.getTotalValoraciones() > 0 ? String.format(Locale.ROOT,
+                                        "calificación %.1f de 5 con %d opiniones", d.getRatingPromedio(), d.getTotalValoraciones())
+                                        : "sin opiniones todavía")
+                                .append("; ").append(d.getAniosExperiencia()).append(" años de experiencia; ")
+                                .append(priceText(lowestPrice(d))).append(")\n");
+                    });
+        }
+        facts.append("- Búsqueda actual del paciente: especialidad ").append(specialty == null ? "sin elegir" : specialty)
+                .append("; distrito ").append(district == null ? "cualquiera" : district)
+                .append("; día ").append(date == null ? "sin elegir" : date.format(DIA_LARGO))
+                .append(time == null ? "" : " desde las " + time)
+                .append("; orden por ").append("price".equals(sort) ? "menor precio" : "mejor calificación").append(".\n");
+        return facts.toString();
     }
 
     /** Conversación reciente (la guardada en el servidor o, si no hay, la que envió el navegador) + mensaje actual. */
