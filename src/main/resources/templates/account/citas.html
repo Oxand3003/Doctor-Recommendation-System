@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mis citas | MediCerca', 'account')}"></head>
+<body>
+
+<nav th:replace="~{fragments/navbar :: session('Buscar médicos')}"></nav>
+
+<!-- Mis citas del paciente: pendientes e historial clínico. Los datos personales están en /account. -->
+<main class="wrap portal-main account-page citas-page">
+
+  <div class="flash flash-ok" th:if="${ok != null}" th:text="${ok}"></div>
+  <div class="flash flash-error" th:if="${error != null}" th:text="${error}"></div>
+
+  <header class="citas-head">
+    <div>
+      <h1>Mis citas</h1>
+      <p>Tus citas pendientes y el historial de tus atenciones.</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/} + '#patient-search'">Reservar otra cita</a>
+  </header>
+
+  <nav class="account-view-tabs" aria-label="Secciones de tus citas">
+    <button type="button" class="account-view-tab is-active" data-account-view="appointments" aria-selected="true">
+      Pendientes <span class="tab-count" th:text="${cuenta.pendientes().size()}">0</span></button>
+    <button type="button" class="account-view-tab" data-account-view="history" aria-selected="false">
+      Historial clínico <span class="tab-count" th:text="${cuenta.historial().size()}">0</span></button>
+  </nav>
+
+  <section class="appointments my-appts account-panel" id="my-appointments" data-account-panel="appointments" aria-labelledby="my-appointments-title">
+    <header class="my-appts-head">
+      <h2 id="my-appointments-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>Citas pendientes</h2>
+      <span class="section-count" th:text="${cuenta.pendientes().size()} + ' pendientes'">0 pendientes</span>
+    </header>
+
+    <div class="appt-panel" id="appt-panel-pendientes" role="region" aria-labelledby="my-appointments-title">
+      <p class="appt-empty" th:if="${cuenta.pendientes().isEmpty()}">No tienes citas pendientes. <a th:href="@{/} + '#patient-search'">Busca un médico</a> para reservar.</p>
+      <ul class="appt-list" th:unless="${cuenta.pendientes().isEmpty()}">
+        <th:block th:each="c : ${cuenta.pendientes()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
+      </ul>
+    </div>
+  </section>
+
+  <section class="clinical-history account-panel" id="clinical-history" data-account-panel="history" aria-labelledby="clinical-history-title" hidden>
+    <header class="clinical-history-head">
+      <div>
+        <h2 id="clinical-history-title"><span class="h-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18H6z"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span>Historial clínico</h2>
+        <p>Consulta el registro de tus atenciones anteriores.</p>
+      </div>
+      <span class="section-count" th:text="${cuenta.historial().size()} + ' registros'">0 registros</span>
+    </header>
+    <p class="appt-empty" th:if="${cuenta.historial().isEmpty()}">Aún no tienes atenciones registradas.</p>
+    <ul class="appt-list" th:unless="${cuenta.historial().isEmpty()}">
+      <th:block th:each="c : ${cuenta.historial()}"><th:block th:replace="~{fragments/cita-paciente :: item(${c})}"></th:block></th:block>
+    </ul>
+  </section>
+</main>
+
+<footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca')}"></footer>
+<script th:src="@{/js/pages/account.js(v='mis-citas-20261116')}"></script>
+</body>
+</html>

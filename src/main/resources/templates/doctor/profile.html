@@ -168,7 +168,7 @@
             <p class="sec-text">Valoraciones de citas reservadas a través de MediCerca</p>
           </div>
           <button class="btn btn-ghost" type="button" data-modal-open="review-modal" th:if="${reviewCitaId != null}">Escribir opinión</button>
-          <a class="btn btn-ghost" th:if="${reserva.paciente() and reviewCitaId == null}" th:href="@{/account} + '#clinical-history'">Ver historial para comentar</a>
+          <a class="btn btn-ghost" th:if="${reserva.paciente() and reviewCitaId == null}" th:href="@{/mis-citas} + '#clinical-history'">Ver historial para comentar</a>
         </div>
 
         <div class="rating-overview" th:if="${doc.totalValoraciones() > 0}">
@@ -356,7 +356,7 @@
     <p class="ticket-note" id="ticket-detail">Fecha y hora de tu cita.</p>
     <p class="ticket-note">Estado: <b>Pendiente</b>. El horario ya quedó reservado para ti; puedes seguirlo en «Mis citas».</p>
     <p class="ticket-note" id="ticket-mail" hidden>Te enviamos un correo con la confirmación de tu reserva.</p>
-    <a class="btn btn-ghost btn-block" th:href="@{/account}+'#my-appointments'">Ver mis citas</a>
+    <a class="btn btn-ghost btn-block" th:href="@{/mis-citas}">Ver mis citas</a>
     <button class="btn btn-primary btn-block" type="button" data-modal-close>Entendido</button>
   </div>
 </div>

@@ -224,7 +224,7 @@
       <p>Abres el perfil, eliges un horario libre y reservas tu cita en línea.</p>
     </li>
   </ol>
-  <p class="reco-foot reveal" th:if="${nav != null and nav.paciente()}">Como paciente, también puedes usar el asistente de recomendaciones desde <a th:href="@{/account}">Mi cuenta</a>.</p>
+  <p class="reco-foot reveal" th:if="${nav != null and nav.paciente()}">Como paciente, también puedes usar el asistente de recomendaciones desde <a th:href="@{/} + '#patient-search'">el buscador</a> de esta página.</p>
   <p class="reco-foot reveal" th:unless="${nav != null and nav.paciente()}">Con una cuenta de paciente también tienes un asistente de recomendaciones. <a th:href="@{/login} + '#register'">Crear mi cuenta</a></p>
 </section>
 
@@ -247,7 +247,7 @@
       <div class="aud-actions">
         <a class="btn btn-primary" href="#search-form" onclick="var f=document.getElementById('specialty-input');if(f){setTimeout(function(){f.focus()},350)}">Buscar un médico <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
         <a class="btn btn-ghost" th:unless="${nav != null and (nav.medico() or nav.paciente() or nav.admin())}" th:href="@{/login} + '#register'">Crear cuenta de paciente</a>
-        <a class="btn btn-ghost" th:if="${nav != null and nav.paciente()}" th:href="@{/account} + '#my-appointments'">Ver mis citas</a>
+        <a class="btn btn-ghost" th:if="${nav != null and nav.paciente()}" th:href="@{/mis-citas}">Ver mis citas</a>
       </div>
     </article>
 

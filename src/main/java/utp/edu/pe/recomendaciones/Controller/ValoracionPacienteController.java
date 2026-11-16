@@ -31,7 +31,7 @@ public class ValoracionPacienteController {
         } catch (NegocioException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/account#clinical-history";
+        return "redirect:/mis-citas#clinical-history";
     }
 
     @PostMapping("/{id}/eliminar")
@@ -42,6 +42,6 @@ public class ValoracionPacienteController {
         } catch (NegocioException e) {
             ra.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/account#clinical-history";
+        return "redirect:/mis-citas#clinical-history";
     }
 }

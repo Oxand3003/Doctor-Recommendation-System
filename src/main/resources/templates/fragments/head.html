@@ -16,6 +16,8 @@
   <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Mi cuenta / Mis citas: estilos propios además de account.css (sus selectores son más específicos). -->
+  <link rel="stylesheet" th:if="${pageCss == 'account'}" th:href="@{/css/pages/cuenta.css(v='mis-citas-20261116')}">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
