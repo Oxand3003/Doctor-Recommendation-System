@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
       loginStatus.textContent = 'Bloqueamos tu cuenta ' + minutos + ' minutos por demasiados intentos fallidos. ' +
         'Espera o usa "¿Olvidaste tu contraseña?" para recuperarla antes.';
     } else if (params.has('disabled')) {
-      loginStatus.textContent = 'Tu cuenta aún no está activa: puede estar pendiente de aprobación, rechazada o suspendida. ' +
+      loginStatus.textContent = 'Tu cuenta aún no está activa: puede estar pendiente de aprobación, rechazada o suspendida (si fue suspendida, te enviamos el motivo por correo). ' +
         'Si fue rechazada, puedes volver a enviar tu solicitud desde "Crear cuenta > Soy médico" con el mismo correo y contraseña.';
     } else if (params.has('error')) {
       loginStatus.textContent = 'Correo o contraseña incorrectos.';

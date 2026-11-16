@@ -14,12 +14,13 @@ public record AdminDataView(List<ApplicationView> applications,
                                   Integer egreso, int exp, String especialidad, String establecimiento,
                                   String sustento, String fecha, String estado, String motivo) { }
 
+    /** {@code motivoSuspension}: lo que escribió el administrador al suspender ("" si la cuenta está activa). */
     public record DoctorView(Long id, String nombre, String email, String especialidad,
-                             String establecimiento, double rating, String estado) { }
+                             String establecimiento, double rating, String estado, String motivoSuspension) { }
 
     /** Cuenta de paciente para la sección «Cuentas de pacientes». */
     public record PatientView(Long id, String nombre, String email, String dni, String tel,
-                              String registro, String ultimoAcceso, String estado) { }
+                              String registro, String ultimoAcceso, String estado, String motivoSuspension) { }
 
     public record ActivityView(String titulo, String detalle, String color, String fecha) { }
 }

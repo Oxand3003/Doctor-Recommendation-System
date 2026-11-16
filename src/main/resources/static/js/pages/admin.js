@@ -202,6 +202,12 @@ document.addEventListener('DOMContentLoaded', function () {
     $('#app-empty').hidden = rows.length > 0;
   }
 
+  /** Motivo que se escribió al suspender (cuentas suspendidas); vacío para las activas. */
+  function suspendReason(account) {
+    return account.estado === 'SUSPENDIDO' && account.motivoSuspension
+      ? '<small class="suspend-reason" title="Motivo de la suspensión">' + esc(account.motivoSuspension) + '</small>' : '';
+  }
+
   function renderDoctors() {
     var q = norm(state.docQuery);
     var rows = doctors.filter(function (d) {
@@ -216,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td data-label="Especialidad">' + esc(d.especialidad) + '</td>' +
         '<td data-label="Establecimiento">' + esc(d.establecimiento) + '</td>' +
         '<td data-label="Valoración">★ ' + d.rating.toFixed(1) + '</td>' +
-        '<td data-label="Estado">' + statusPill(d.estado) + '</td>' +
+        '<td data-label="Estado">' + statusPill(d.estado) + suspendReason(d) + '</td>' +
         '<td class="td-actions"><div class="row-actions">' +
         '<a class="abtn" href="/doctor/' + d.id + '">Ver perfil</a>' + toggle + '</div></td></tr>';
     }).join('');
@@ -238,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td data-label="Teléfono">' + esc(p.tel || '—') + '</td>' +
         '<td data-label="Registro">' + esc(p.registro || '—') + '</td>' +
         '<td data-label="Último acceso">' + esc(p.ultimoAcceso) + '</td>' +
-        '<td data-label="Estado">' + statusPill(p.estado) + '</td>' +
+        '<td data-label="Estado">' + statusPill(p.estado) + suspendReason(p) + '</td>' +
         '<td class="td-actions"><div class="row-actions">' + toggle + '</div></td></tr>';
     }).join('');
     $('#pat-empty').hidden = rows.length > 0;
@@ -429,20 +435,33 @@ document.addEventListener('DOMContentLoaded', function () {
     return act('api/applications/' + app.id + '/reject', { reason: reason }, 'Solicitud de ' + app.nombre + ' rechazada.');
   }
 
-  function askConfirm(title, text, okLabel, danger, onOk) {
+  /** withReason: pide un motivo (suspensiones) y se lo pasa a onOk; sin motivo de 10+ caracteres no confirma. */
+  function askConfirm(title, text, okLabel, danger, onOk, withReason) {
     $('#confirm-title').textContent = title;
     $('#confirm-text').textContent = text;
     var ok = $('#confirm-ok');
     ok.textContent = okLabel;
     ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+    $('#confirm-reason-box').hidden = !withReason;
+    $('#confirm-reason').value = '';
     state.pendingConfirm = onOk;
     openModal('#confirm-modal');
+    if (withReason) setTimeout(function () { $('#confirm-reason').focus(); }, 60);
   }
   $('#confirm-ok').addEventListener('click', function () {
+    var reason = '';
+    if (!$('#confirm-reason-box').hidden) {
+      reason = $('#confirm-reason').value.trim();
+      if (reason.length < 10) {
+        $('#confirm-reason').focus();
+        toast('Escribe el motivo de la suspensión (al menos 10 caracteres): se le enviará al usuario.');
+        return;
+      }
+    }
     var fn = state.pendingConfirm;
     state.pendingConfirm = null;
     closeAllModals();
-    if (fn) fn();
+    if (fn) fn(reason);
   });
 
   /* Detail modal */
@@ -585,12 +604,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var doc;
     if (t.dataset.suspend) {
       doc = findById(doctors, t.dataset.suspend);
-      askConfirm('Suspender cuenta', '¿Suspender a ' + doc.nombre + '? No podrá iniciar sesión ni aparecerá en las recomendaciones.', 'Suspender', true, function () { act('api/doctors/' + doc.id + '/suspend', null, 'Cuenta suspendida.'); });
+      askConfirm('Suspender cuenta', '¿Suspender a ' + doc.nombre + '? No podrá iniciar sesión ni aparecerá en las recomendaciones.', 'Suspender', true, function (reason) { act('api/doctors/' + doc.id + '/suspend', { reason: reason }, 'Cuenta suspendida. Le enviamos el motivo por correo.'); }, true);
     }
     var pat;
     if (t.dataset.patSuspend) {
       pat = findById(patientList, t.dataset.patSuspend);
-      askConfirm('Suspender paciente', '¿Suspender a ' + pat.nombre + '? No podrá iniciar sesión hasta que reactives su cuenta.', 'Suspender', true, function () { act('api/patients/' + pat.id + '/suspend', null, 'Paciente suspendido.'); });
+      askConfirm('Suspender paciente', '¿Suspender a ' + pat.nombre + '? No podrá iniciar sesión hasta que reactives su cuenta.', 'Suspender', true, function (reason) { act('api/patients/' + pat.id + '/suspend', { reason: reason }, 'Paciente suspendido. Le enviamos el motivo por correo.'); }, true);
     }
     if (t.dataset.patReactivate) {
       pat = findById(patientList, t.dataset.patReactivate);

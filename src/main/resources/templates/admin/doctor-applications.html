@@ -338,7 +338,13 @@
       <h2 id="confirm-title">Confirmar acción</h2>
       <button type="button" class="adm-modal-close" data-close aria-label="Cerrar">&times;</button>
     </div>
-    <div class="adm-modal-body"><p id="confirm-text"></p></div>
+    <div class="adm-modal-body"><p id="confirm-text"></p>
+      <div class="form-group" id="confirm-reason-box" hidden>
+        <label for="confirm-reason">Motivo de la suspensión *</label>
+        <textarea id="confirm-reason" rows="3" minlength="10" maxlength="500" placeholder="Ej. Se recibieron varias denuncias de pacientes por cancelar citas sin aviso."></textarea>
+        <small>Se le enviará al usuario por correo y quedará en el registro de actividad.</small>
+      </div>
+    </div>
     <div class="adm-modal-foot">
       <button type="button" class="btn btn-ghost" data-close>Cancelar</button>
       <button type="button" class="btn btn-primary" id="confirm-ok">Confirmar</button>
@@ -348,6 +354,6 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script th:src="@{/js/pages/admin.js}"></script>
+<script th:src="@{/js/pages/admin.js(v='motivo-20261116')}"></script>
 </body>
 </html>

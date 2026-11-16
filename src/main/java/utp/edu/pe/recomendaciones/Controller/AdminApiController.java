@@ -55,9 +55,10 @@ public class AdminApiController {
     }
 
     @PostMapping("/doctors/{id}/suspend")
-    public Map<String, Object> suspender(@PathVariable Long id, Authentication auth) {
-        admin.suspender(id, auth.getName());
-        return OK;
+    public Map<String, Object> suspender(@PathVariable Long id,
+                                         @RequestParam(defaultValue = "") String reason,
+                                         Authentication auth) {
+        return conAviso(notificaciones.notificarSuspension(admin.suspender(id, reason, auth.getName())));
     }
 
     @PostMapping("/doctors/{id}/reactivate")
@@ -73,9 +74,10 @@ public class AdminApiController {
     }
 
     @PostMapping("/patients/{id}/suspend")
-    public Map<String, Object> suspenderPaciente(@PathVariable Long id, Authentication auth) {
-        admin.suspenderPaciente(id, auth.getName());
-        return OK;
+    public Map<String, Object> suspenderPaciente(@PathVariable Long id,
+                                                 @RequestParam(defaultValue = "") String reason,
+                                                 Authentication auth) {
+        return conAviso(notificaciones.notificarSuspension(admin.suspenderPaciente(id, reason, auth.getName())));
     }
 
     @PostMapping("/patients/{id}/reactivate")
@@ -86,7 +88,10 @@ public class AdminApiController {
 
     /** {"ok":true} y, si el correo no pudo enviarse, {"warning":"..."} para que el panel lo muestre. */
     private static Map<String, Object> conAviso(NotificacionMedicoService notificaciones, DecisionMedico decision) {
-        String aviso = notificaciones.notificar(decision);
+        return conAviso(notificaciones.notificar(decision));
+    }
+
+    private static Map<String, Object> conAviso(String aviso) {
         if (aviso == null) return OK;
         Map<String, Object> respuesta = new HashMap<>(OK);
         respuesta.put("warning", aviso);
