@@ -70,6 +70,15 @@
   </div>
 </section>
 
+<!-- Aviso de emergencia cerca de la búsqueda (no solo en el pie): MediCerca no atiende urgencias. -->
+<aside class="wrap emergency-strip" aria-label="Emergencias">
+  <span class="emergency-strip-icon" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 10v4M12 17.5v.01"/></svg>
+  </span>
+  <p><b>¿Es una emergencia?</b> No esperes una cita: llama al 106 (SAMU) o acude a la emergencia más cercana.</p>
+  <a class="emergency-call" href="tel:106">Llamar al 106</a>
+</aside>
+
 <section class="block wrap trust-block" aria-label="Por qué reservar en MediCerca">
   <div class="trust">
     <div class="trust-item tone-teal">
@@ -346,7 +355,7 @@
 
 <footer th:replace="~{fragments/footer :: footer('© 2026 MediCerca · Encuentra salud de confianza cerca de ti.')}"></footer>
 
-<script th:src="@{/js/pages/home.js(v='home-fab-20261116')}"></script>
+<script th:src="@{/js/pages/home.js(v='emergencia-20261116')}"></script>
 <script th:if="${nav != null and nav.paciente()}" th:src="@{/js/pages/orientacion-corporal.js(v='maniqui-20261021')}"></script>
 </body>
 </html>
