@@ -150,6 +150,7 @@ public class ChatRecommendationService {
         boolean understood = false;
         String reply = "";
         String aiReply = null;                 // lo que redactó la IA para este mensaje (si respondió)
+        boolean aiFailed = false;              // se consultó a la IA y no respondió (saturada, sin cuota, etc.)
         boolean structured = false;            // el mensaje cambió un filtro: día, hora, distrito u orden
         String specialtyBefore = specialty;
 
@@ -210,8 +211,9 @@ public class ChatRecommendationService {
                     String facts = structured && !signals(current, specialties) && current.split("\\s+").length <= 6
                             ? null                                     // solo cambió un filtro: no hace falta la IA
                             : aiFacts(activeDoctors, specialties, specialty, district, date, time, sort, today);
-                    Orientation o = orient(current, specialties, specialty, stage, facts, saved, request);
+                    Orientation o = orient(current, specialties, facts, saved, request);
                     aiReply = o.aiReply();
+                    aiFailed = o.aiFailed();
                     if (aiReply != null) understood = true;
                     if (o.specialty() != null) {
                         specialty = o.specialty();
@@ -293,7 +295,12 @@ public class ChatRecommendationService {
                 }
             } else {
                 text.append(intro);
-                if (!understood) {
+                if (!understood && aiFailed) {
+                    // No es que el paciente se haya explicado mal: la IA no respondió y las reglas no bastan.
+                    text.append("Ahora mismo no pude consultar al asistente de IA, así que solo entiendo síntomas y "
+                            + "especialidades concretas. Cuéntame qué te duele (por ejemplo: \"me duele la rodilla\") "
+                            + "o elige una opción rápida.");
+                } else if (!understood) {
                     text.append("No logré entender bien eso. Cuéntame tus síntomas con tus palabras (por ejemplo: "
                             + "\"me duele la cabeza y estoy mareado\") o elige una opción rápida.");
                 } else {
@@ -334,9 +341,10 @@ public class ChatRecommendationService {
      * {@code unavailable}: lo descrito corresponde a especialidades que aún no tienen médicos en MediCerca
      * (solo se llena cuando no se pudo elegir ninguna de las disponibles).
      * {@code aiReply}: la respuesta que redactó la IA, o null si no respondió (entonces se usa {@code intro}).
+     * {@code aiFailed}: se le preguntó a la IA y no respondió.
      */
     private record Orientation(String specialty, String intro, List<Suggestion> suggestions,
-                               List<CatalogoSintomas.Sugerencia> unavailable, String aiReply) { }
+                               List<CatalogoSintomas.Sugerencia> unavailable, String aiReply, boolean aiFailed) { }
 
     /** ¿El mensaje nombra una especialidad o describe algún síntoma que las reglas reconocen? */
     private boolean signals(String current, List<String> specialties) {
@@ -349,21 +357,21 @@ public class ChatRecommendationService {
      * Entiende el mensaje libre. La IA (si está disponible y {@code facts} no es null) elige la especialidad y
      * redacta la respuesta; las reglas tolerantes a errores le dan una pista y la reemplazan cuando no responde.
      */
-    private Orientation orient(String current, List<String> specialties, String currentSpecialty, String stage,
-                               String facts, ChatConversationView saved, ChatRecommendationRequest request) {
+    private Orientation orient(String current, List<String> specialties, String facts, ChatConversationView saved, ChatRecommendationRequest request) {
         String byName = CatalogoSintomas.porNombre(current, specialties);
         List<CatalogoSintomas.Sugerencia> rules = CatalogoSintomas.sugerir(current, specialties);
         CatalogoSintomas.Sugerencia top = rules.isEmpty() ? null : rules.get(0);
         boolean strong = top != null && top.puntaje() >= PUNTAJE_FUERTE;
 
-        // Síntomas que las reglas reconocen pero cuya especialidad todavía no tiene médicos registrados.
-        boolean orienting = currentSpecialty == null || "SINTOMAS".equals(stage);
-        List<CatalogoSintomas.Sugerencia> uncovered = orienting && byName == null
+        // Síntomas que las reglas reconocen pero cuya especialidad todavía no tiene médicos registrados. Se buscan
+        // también con una especialidad ya elegida: el paciente puede pasar a contar otra molestia.
+        List<CatalogoSintomas.Sugerencia> uncovered = byName == null
                 ? CatalogoSintomas.sinCobertura(current, specialties) : List.of();
 
         String aiSpecialty = null;
         String aiIdeal = null;
         String aiReply = null;
+        boolean aiFailed = false;
         List<String> aiAlternatives = List.of();
         if (facts != null && ia.disponible() && current.replaceAll("[^\\p{L}]", "").length() >= 2) {
             String hint = byName != null ? "el paciente nombró la especialidad " + byName
@@ -383,6 +391,8 @@ public class ChatRecommendationService {
                     if (m != null && !m.equals(aiSpecialty)) alts.add(m);
                 }
                 aiAlternatives = alts;
+            } else {
+                aiFailed = true;
             }
         }
         boolean aiAnswered = aiSpecialty != null || aiIdeal != null || aiReply != null;
@@ -393,16 +403,16 @@ public class ChatRecommendationService {
                 : top != null && (strong || !aiAnswered) ? top.especialidad() : null;
         String chosen = aiSpecialty != null ? aiSpecialty : fromRules;
         if (chosen == null) {
-            if (!aiAnswered) return new Orientation(null, "", List.of(), uncovered, null);
-            if (aiIdeal == null) return new Orientation(null, "", List.of(), List.of(), aiReply);
+            if (!aiAnswered) return new Orientation(null, "", List.of(), uncovered, null, aiFailed);
+            if (aiIdeal == null) return new Orientation(null, "", List.of(), List.of(), aiReply, false);
             return new Orientation(null, "", List.of(),
                     List.of(new CatalogoSintomas.Sugerencia(aiIdeal, PUNTAJE_FUERTE, List.of())),
-                    aiReply == null ? null : aiReply + " " + AVISO_ORIENTACION);
+                    aiReply == null ? null : aiReply + " " + AVISO_ORIENTACION, false);
         }
         // El texto de la IA solo sirve si habla de la especialidad que finalmente se eligió.
         if (!chosen.equals(aiSpecialty)) aiReply = null;
         if (chosen.equals(byName) && aiReply == null) {
-            return new Orientation(chosen, "Perfecto, busco médicos de " + chosen + ". ", List.of(), List.of(), null);
+            return new Orientation(chosen, "Perfecto, busco médicos de " + chosen + ". ", List.of(), List.of(), null, false);
         }
         if (aiReply != null && byName == null) aiReply += " " + AVISO_ORIENTACION;
 
@@ -430,7 +440,7 @@ public class ChatRecommendationService {
             intro.append("Otras opciones que podrían encajar: ")
                     .append(String.join(", ", list.stream().skip(1).map(Suggestion::specialty).toList())).append(". ");
         }
-        return new Orientation(chosen, intro.toString(), list, List.of(), aiReply);
+        return new Orientation(chosen, intro.toString(), list, List.of(), aiReply, false);
     }
 
     /** Texto que redactó la IA, en una sola línea y con tope de largo; null si no vino o está vacío. */

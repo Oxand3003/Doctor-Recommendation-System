@@ -49,7 +49,7 @@ public class ClienteIa {
 
     public ClienteIa(@Value("${medicerca.ai.api-key:}") String apiKey,
                      @Value("${medicerca.ai.base-url:https://generativelanguage.googleapis.com/v1beta/openai/}") String baseUrl,
-                     @Value("${medicerca.ai.model:gemini-3.8-flash,gemini-3.5-flash-lite}") String modelos,
+                     @Value("${medicerca.ai.model:gemini-3.5-flash-lite,gemini-3.8-flash}") String modelos,
                      @Value("${medicerca.ai.reasoning-effort:low}") String reasoningEffort,
                      @Value("${medicerca.ai.timeout-seconds:12}") int timeoutSeconds) {
         this.apiKey = apiKey == null ? "" : apiKey.trim();
