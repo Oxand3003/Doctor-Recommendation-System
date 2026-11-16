@@ -115,22 +115,20 @@
           <div class="form-group"><label for="doctor-university">Universidad *</label><input id="doctor-university" name="universidad" th:value="${f?.get('universidad')}" minlength="3" maxlength="180" required></div>
           <div class="form-group"><label for="doctor-graduation-year">Año de egreso *</label><input id="doctor-graduation-year" name="anioEgreso" th:value="${f?.get('anioEgreso')}" type="number" min="1950" th:max="${anioActual}" max="2026" required></div>
           <div class="form-group"><label for="doctor-experience">Años de experiencia *</label><input id="doctor-experience" name="aniosExperiencia" th:value="${f?.get('aniosExperiencia')}" type="number" min="0" max="80" required></div>
-          <!-- Especialidad y establecimiento: se escriben o se eligen de la lista de sugerencias. Una especialidad
-               que aún no existe se crea al aprobar la solicitud; el establecimiento debe ser uno de la lista. -->
+          <!-- Especialidad y establecimiento se escriben (sin lista desplegable). Una especialidad que aún no existe
+               se crea al aprobar la solicitud; un establecimiento que no está en el catálogo queda anotado en la
+               solicitud y el médico lo registra como sede (con su distrito) desde su panel. -->
           <div class="form-group">
             <label for="doctor-specialty">Especialidad *</label>
-            <input id="doctor-specialty" name="especialidad" list="doctor-specialty-list" th:value="${f?.get('especialidad')}"
+            <input id="doctor-specialty" name="especialidad" th:value="${f?.get('especialidad')}"
                    minlength="4" maxlength="60" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,59}" title="Solo letras y espacios"
-                   placeholder="Escribe o elige, p. ej. Cardiología" autocomplete="off" required>
-            <datalist id="doctor-specialty-list"><option th:each="item : ${specialties}" th:value="${item.label()}"></option></datalist>
-            <small>Si tu especialidad no aparece, escríbela: se agregará al aprobar tu cuenta.</small>
+                   placeholder="Ej. Cardiología" required>
           </div>
           <div class="form-group">
             <label for="doctor-establishment">Establecimiento (opcional)</label>
-            <input id="doctor-establishment" name="establecimiento" list="doctor-establishment-list" th:value="${f?.get('establecimiento')}"
-                   maxlength="200" placeholder="Escribe para buscar o déjalo vacío" autocomplete="off">
-            <datalist id="doctor-establishment-list"><option th:each="item : ${establishments}" th:value="${item.label()}"></option></datalist>
-            <small>Elige uno de la lista. Si aún no tienes, déjalo vacío: podrás registrar tus sedes después.</small>
+            <input id="doctor-establishment" name="establecimiento" th:value="${f?.get('establecimiento')}"
+                   minlength="3" maxlength="150" placeholder="Ej. Clínica San Pablo">
+            <small>Donde atiendes. Si aún no tienes uno, déjalo vacío.</small>
           </div>
           <div class="form-group auth-span">
             <label for="doctor-proof">Constancia CMP, RNE o título (opcional)</label>

@@ -18,11 +18,13 @@ import utp.edu.pe.recomendaciones.exception.NegocioException;
 import utp.edu.pe.recomendaciones.model.Especialidad;
 import utp.edu.pe.recomendaciones.model.Medico;
 import utp.edu.pe.recomendaciones.repository.EspecialidadRepository;
+import utp.edu.pe.recomendaciones.repository.EstablecimientoRepository;
 
 /** Formulario de registro de médicos: validaciones, especialidad escrita libremente y archivo de sustento. */
 class RegistroMedicoValidacionTest extends BaseMedicosTest {
 
     @Autowired EspecialidadRepository especialidades;
+    @Autowired EstablecimientoRepository establecimientos;
     @Autowired AdminApiController api;
 
     /** Datos válidos que cada prueba modifica. */
@@ -84,7 +86,24 @@ class RegistroMedicoValidacionTest extends BaseMedicosTest {
         rechaza(d -> d.titulo = "12", "título profesional");
         rechaza(d -> d.egreso = Year.now().getValue() + 1, "año de egreso");
         rechaza(d -> { d.egreso = Year.now().getValue() - 3; d.experiencia = 10; }, "años desde tu egreso");
-        rechaza(d -> d.establecimiento = "Clínica que no existe", "establecimiento");
+        rechaza(d -> d.establecimiento = "12", "establecimiento");
+    }
+
+    @Test
+    void elEstablecimientoSeEscribeLibremente() {
+        // Uno del catálogo, escrito sin tildes: queda como su establecimiento.
+        Datos delCatalogo = registrar(x -> x.establecimiento = "clinica san pablo");
+        assertThat(establecimientos.findById(medicoDe(delCatalogo.email).getEstablecimiento().getId()).orElseThrow()
+                .getNombre()).isEqualTo("Clínica San Pablo");
+
+        // Uno que no está en el catálogo: se acepta y se anota en la solicitud para el administrador.
+        Datos nuevo = registrar(x -> x.establecimiento = "Consultorio Santa Rosa");
+        assertThat(medicoDe(nuevo.email).getEstablecimiento()).isNull();
+        assertThat(solicitudes.findById(solicitudDe(nuevo.email)).orElseThrow().getEstablecimientoIndicado())
+                .isEqualTo("Consultorio Santa Rosa");
+        assertThat(admin.datos().applications()).filteredOn(a -> a.email().equals(nuevo.email))
+                .singleElement().extracting("establecimiento")
+                .isEqualTo("Consultorio Santa Rosa (no está en el catálogo)");
     }
 
     @Test

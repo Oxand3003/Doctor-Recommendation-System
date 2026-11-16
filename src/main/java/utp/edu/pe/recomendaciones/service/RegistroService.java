@@ -127,12 +127,13 @@ public class RegistroService {
 
         Especialidad esp = especialidad(f.especialidad());
         Establecimiento est = establecimiento(f.establecimiento());
+        String indicado = est == null ? establecimientoIndicado(f.establecimiento()) : null;
         Sustento sustento = validarSustento(f.sustento());
 
         // ¿Es un médico rechazado que vuelve a enviar su solicitud?
         Optional<Usuario> existente = usuarios.findByEmail(p.email());
         if (existente.isPresent()) {
-            reenviar(existente.get(), p, cmp, rne, titulo, universidad, f, esp, est, sustento);
+            reenviar(existente.get(), p, cmp, rne, titulo, universidad, f, esp, est, indicado, sustento);
             return;
         }
 
@@ -157,11 +158,12 @@ public class RegistroService {
         m.setEstablecimiento(est);
         m = medicos.save(m);
 
-        crearSolicitud(m, sustento);
+        crearSolicitud(m, indicado, sustento);
     }
 
     private void reenviar(Usuario u, Persona p, String cmp, String rne, String titulo, String universidad,
-                          RegistroMedicoForm f, Especialidad esp, Establecimiento est, Sustento sustento) {
+                          RegistroMedicoForm f, Especialidad esp, Establecimiento est, String indicado,
+                          Sustento sustento) {
         Medico m = medicos.findByUsuarioId(u.getId()).orElse(null);
         boolean puede = m != null
                 && "MEDICO".equals(u.getRol().getNombre())
@@ -195,23 +197,16 @@ public class RegistroService {
         m.setEstablecimiento(est);
         medicos.save(m);
 
-        crearSolicitud(m, sustento);
+        crearSolicitud(m, indicado, sustento);
     }
 
     // ------------------------------------------------------------------
-    // Opciones para los <select> del formulario de médico
+    // Especialidades activas (las que ven los pacientes)
     // ------------------------------------------------------------------
     @Transactional(readOnly = true)
     public List<OpcionView> especialidades() {
         return especialidades.findByActivaTrueOrderByNombreAsc().stream()
                 .map(e -> new OpcionView(e.getId(), e.getNombre()))
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<OpcionView> establecimientos() {
-        return establecimientos.findByPropietarioIsNull(Sort.by("nombre")).stream()
-                .map(e -> new OpcionView(e.getId(), e.getNombre() + " — " + e.getDistrito().getNombre()))
                 .toList();
     }
 
@@ -277,10 +272,11 @@ public class RegistroService {
      * ahí un enlace externo; vacío si no adjuntó constancia, que es opcional). La columna es NOT NULL y la ruta
      * necesita el id, por eso se guarda dos veces.
      */
-    private void crearSolicitud(Medico m, Sustento sustento) {
+    private void crearSolicitud(Medico m, String establecimientoIndicado, Sustento sustento) {
         SolicitudVerificacion s = new SolicitudVerificacion();
         s.setMedico(m);
         s.setSustentoUrl("");                      // sin constancia (es opcional): el panel lo indica
+        s.setEstablecimientoIndicado(establecimientoIndicado);
         s.setEstado(EstadoSolicitud.PENDIENTE);
         s = solicitudes.save(s);
         if (sustento == null) return;
@@ -367,7 +363,10 @@ public class RegistroService {
                 });
     }
 
-    /** Establecimiento escrito o elegido de la lista ("Nombre — Distrito" o solo el nombre); vacío = aún no tiene. */
+    /**
+     * Establecimiento del catálogo que coincide con lo escrito ("Nombre — Distrito" o solo el nombre, sin importar
+     * tildes ni mayúsculas); null si no escribió nada o si no está en el catálogo (ver establecimientoIndicado).
+     */
     private Establecimiento establecimiento(String texto) {
         String valor = AsistenteTexto.normalizar(texto);
         if (valor.isEmpty()) return null;
@@ -377,9 +376,17 @@ public class RegistroService {
         if (exacto.isPresent()) return exacto.get();
         List<Establecimiento> porNombre = catalogo.stream()
                 .filter(e -> AsistenteTexto.normalizar(e.getNombre()).equals(valor)).toList();
-        if (porNombre.size() == 1) return porNombre.get(0);
-        throw new NegocioException("Elige el establecimiento de la lista o déjalo vacío si aún no tienes uno; "
-                + "podrás registrar tus sedes desde tu perfil cuando te aprueben.");
+        return porNombre.size() == 1 ? porNombre.get(0) : null;
+    }
+
+    /** Establecimiento escrito que no está en el catálogo: se anota en la solicitud tal como lo escribió. */
+    private String establecimientoIndicado(String texto) {
+        String v = limpiar(texto).replaceAll("\\s+", " ");
+        if (v.isEmpty()) return null;
+        if (v.length() < 3 || v.length() > 150 || !CON_LETRA.matcher(v).matches()) {
+            throw new NegocioException("El establecimiento debe tener entre 3 y 150 caracteres y contener letras.");
+        }
+        return v;
     }
 
     private static String etiqueta(Establecimiento e) {
