@@ -9,6 +9,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${title}">MediCerca</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+  <!-- Pide el token CSRF antes de enviar el cuerpo de la página: así se crea a tiempo la sesión donde se guarda.
+       Si se pide recién en un formulario al final de una página larga (contacto del inicio), la respuesta ya
+       empezó a enviarse, la sesión no se puede crear y el visitante sin sesión recibe 403 al enviar. -->
+  <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
