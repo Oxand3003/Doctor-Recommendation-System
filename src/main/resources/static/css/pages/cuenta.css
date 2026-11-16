@@ -1,0 +1,26 @@
+/* "Mi cuenta" (solo datos personales) y "Mis citas" (/mis-citas). Complementa account.css. */
+
+/* Resumen del banner: las cifras de citas llevan a /mis-citas. */
+.profile-stats a{display:grid;gap:2px;color:inherit;text-decoration:none}
+.profile-stats a:focus-visible{outline:2px solid #fff;outline-offset:6px;border-radius:8px}
+
+/* Mi cuenta: las dos tarjetas se ven completas, sin quedarse fijas al hacer scroll. */
+.account-page .account-card{position:static}
+.shortcut-list{list-style:none;display:grid;gap:10px}
+.shortcut-list a{display:grid;gap:2px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--bg);
+  color:var(--ink);text-decoration:none;transition:border-color .2s,background .2s,transform .25s var(--ease-out)}
+.shortcut-list a:hover,.shortcut-list a:focus-visible{border-color:var(--aqua);background:var(--aqua-soft);transform:translateX(3px)}
+.shortcut-list b{font-weight:600}
+.shortcut-list span{font-size:.86rem;color:var(--muted)}
+
+/* Mis citas */
+.citas-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:8px 0 22px}
+.citas-head h1{font-size:clamp(1.8rem,3.2vw,2.4rem);margin:0 0 4px}
+.citas-head p{color:var(--muted);margin:0}
+.tab-count{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:6px;padding:0 7px;border-radius:100px;
+  background:rgba(14,107,92,.12);font-size:.75rem;font-weight:700}
+.account-view-tab.is-active .tab-count{background:rgba(255,255,255,.22)}
+.citas-page .account-panel{max-width:none}
+@media (max-width:560px){
+  .citas-head .btn{width:100%;justify-content:center;text-align:center}
+}

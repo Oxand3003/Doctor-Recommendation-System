@@ -91,6 +91,18 @@ class PaginaInicioIntegrationTest {
         assertThat(fab.find()).isTrue();
         assertThat(fab.group()).contains("href=\"/?modo=ia#patient-search\"");
         assertThat(home).contains("<option value=\"Clínica Prueba " + suffix + "\" data-district=\"Huanchaco\">");
+
+        // "Mi cuenta" solo tiene los datos personales; las citas y el historial están en /mis-citas.
+        assertThat(home).contains("href=\"/mis-citas\">Mis citas</a>");
+        String cuenta = get(http, "/account").body();
+        assertThat(cuenta).contains("Mis datos").doesNotContain("id=\"my-appointments\"").doesNotContain("id=\"clinical-history\"");
+        HttpResponse<String> citas = get(http, "/mis-citas");
+        assertThat(citas.statusCode()).isEqualTo(200);
+        assertThat(citas.body()).contains("id=\"my-appointments\"").contains("id=\"clinical-history\"").doesNotContain("Mis datos");
+        // Enlaces antiguos al buscador que estaba en Mi cuenta.
+        HttpResponse<String> antiguo = get(http, "/account?modo=ia");
+        assertThat(antiguo.statusCode()).isEqualTo(302);
+        assertThat(antiguo.headers().firstValue("Location").orElse("")).endsWith("/?modo=ia#patient-search");
     }
 
     private void medicoEnSede(String sede, Distrito distrito, String suffix, String password) {

@@ -60,7 +60,7 @@ public class NotificacionCitaService {
                         + tabla(r.codigo(), r.fecha(), r.hora(), r.modalidad())
                         + "<p>El médico se pondrá en contacto contigo por WhatsApp, al número que registraste, "
                         + "para coordinar el pago. Mientras tanto, el horario ya es tuyo.</p>"
-                        + "<p><a href=\"" + Html.esc(urlBase + "/account#my-appointments") + "\" style=\"" + BOTON
+                        + "<p><a href=\"" + Html.esc(urlBase + "/mis-citas") + "\" style=\"" + BOTON
                         + "\">Ver mis citas</a></p>");
     }
 

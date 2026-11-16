@@ -57,7 +57,7 @@
           <span class="cx-empty-ico" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/></svg></span>
           <h3>Aún no tienes conversaciones</h3>
           <p th:text="${esMedico} ? 'Cuando un paciente te escriba, la conversación aparecerá aquí.' : 'Reserva una cita con un médico y podrás escribirle desde aquí.'">Tus conversaciones aparecerán aquí.</p>
-          <a th:unless="${esMedico}" th:href="@{/account}" class="btn btn-primary btn-sm">Buscar un médico</a>
+          <a th:unless="${esMedico}" th:href="@{/} + '#patient-search'" class="btn btn-primary btn-sm">Buscar un médico</a>
         </div>
 
         <!-- Búsqueda o filtro sin resultados -->

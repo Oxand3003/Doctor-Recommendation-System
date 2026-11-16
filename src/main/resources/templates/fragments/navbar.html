@@ -20,7 +20,7 @@
      del th:with del contenedor. -->
 <th:block th:fragment="cuenta">
   <a th:if="${esPaciente}" th:href="@{/} + '#patient-search'" data-nav-main>Buscar médicos</a>
-  <a th:if="${esPaciente}" th:href="@{/account} + '#my-appointments'">Mis citas</a>
+  <a th:if="${esPaciente}" th:href="@{/mis-citas}">Mis citas</a>
   <a th:if="${esMedico}" th:href="@{/medico/perfil}">Mi perfil</a>
   <a th:replace="~{fragments/navbar :: chat}"></a>
   <a th:if="${esPaciente}" th:href="@{/account}" class="btn btn-ghost" aria-label="Ir a mi perfil" title="Mi cuenta"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg> Mi cuenta</a>

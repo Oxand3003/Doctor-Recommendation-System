@@ -30,7 +30,7 @@
           <li><a th:href="@{/}">Buscar médicos</a></li>
           <li><a th:href="@{/#specialties}">Especialidades</a></li>
           <li><a th:href="@{/#how-it-works}">Cómo funciona</a></li>
-          <li th:if="${esPaciente}"><a th:href="@{/account} + '#my-appointments'">Mis citas</a></li>
+          <li th:if="${esPaciente}"><a th:href="@{/mis-citas}">Mis citas</a></li>
           <li th:if="${esPaciente}"><a th:href="@{/account}">Mi cuenta</a></li>
           <li th:unless="${esPaciente or esMedico}"><a th:href="@{/login}">Iniciar sesión</a></li>
         </ul>
