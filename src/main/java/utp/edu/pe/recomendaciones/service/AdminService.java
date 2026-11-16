@@ -103,8 +103,13 @@ public class AdminService {
         u.setEstado(EstadoUsuario.ACTIVO);
         usuarios.save(u);
 
+        // Especialidad nueva escrita por el médico al registrarse: se activa junto con su cuenta.
+        boolean especialidadNueva = !m.getEspecialidad().isActiva();
+        if (especialidadNueva) m.getEspecialidad().setActiva(true);
+
         registrar(admin, AccionAuditoria.APROBAR_MEDICO, m,
-                "Solicitud aprobada: " + nombre(u) + " (CMP " + m.getCmp() + ")");
+                "Solicitud aprobada: " + nombre(u) + " (CMP " + m.getCmp() + ")"
+                        + (especialidadNueva ? ". Nueva especialidad activada: " + m.getEspecialidad().getNombre() : ""));
         return new DecisionMedico(true, u.getEmail(), nombre(u), null);
     }
 

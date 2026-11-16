@@ -1,5 +1,6 @@
 package utp.edu.pe.recomendaciones.Controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import utp.edu.pe.recomendaciones.dto.RegistroMedicoForm;
@@ -60,15 +62,16 @@ public class AuthController {
     }
 
     @PostMapping("/register/doctor")
-    public String registrarMedico(@RequestParam Map<String, String> p, RedirectAttributes ra) {
+    public String registrarMedico(@RequestParam Map<String, String> p,
+                                  @RequestParam(name = "sustento", required = false) MultipartFile sustento,
+                                  RedirectAttributes ra) {
         try {
             registro.registrarMedico(new RegistroMedicoForm(
                     p.get("nombres"), p.get("apellidos"), p.get("dni"), p.get("telefono"),
-                    p.get("email"), p.get("password"),
+                    p.get("email"), p.get("password"), p.get("passwordConfirmacion"),
                     p.get("cmp"), p.get("rne"), p.get("tituloProfesional"), p.get("universidad"),
                     entero(p.get("anioEgreso")), entero(p.get("aniosExperiencia")),
-                    largo(p.get("especialidadId")), largo(p.get("establecimientoId")),
-                    p.get("sustentoUrl")));
+                    p.get("especialidad"), p.get("establecimiento"), archivo(sustento)));
             ra.addFlashAttribute("success",
                     "Solicitud enviada. Un administrador revisará tus credenciales; "
                             + "podrás iniciar sesión cuando sea aprobada.");
@@ -98,11 +101,16 @@ public class AuthController {
         }
     }
 
-    private Long largo(String s) {
+    /** null si no se adjuntó nada; el servicio decide si el archivo es válido. */
+    private RegistroMedicoForm.ArchivoSustento archivo(MultipartFile f) {
+        if (f == null || f.isEmpty()) return null;
+        if (f.getSize() > RegistroService.MAX_SUSTENTO) {
+            throw new NegocioException("El archivo de sustento supera el tamaño máximo de 5 MB.");
+        }
         try {
-            return s == null || s.isBlank() ? null : Long.valueOf(s.trim());
-        } catch (NumberFormatException e) {
-            return null;
+            return new RegistroMedicoForm.ArchivoSustento(f.getOriginalFilename(), f.getContentType(), f.getBytes());
+        } catch (IOException e) {
+            throw new NegocioException("No se pudo leer el archivo de sustento. Vuelve a adjuntarlo.");
         }
     }
 }

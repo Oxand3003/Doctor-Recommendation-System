@@ -455,6 +455,8 @@ document.addEventListener('DOMContentLoaded', function () {
   function safeUrl(raw) {
     var text = raw == null ? '' : String(raw).trim();
     if (!text || text === 'null' || text === 'undefined') return '';
+    // Archivo adjuntado en el registro: lo sirve este mismo panel.
+    if (/^\/admin\/api\/applications\/\d+\/sustento$/.test(text)) return text;
     if (!/^[a-z][a-z0-9+.-]*:/i.test(text)) text = 'https://' + text.replace(/^\/+/, '');
     try {
       var url = new URL(text);
@@ -509,7 +511,8 @@ document.addEventListener('DOMContentLoaded', function () {
       link.rel = 'noopener noreferrer';
       link.removeAttribute('aria-disabled');
       link.classList.remove('is-disabled');
-      $('#detail-proof-url').textContent = proof.length > 70 ? proof.slice(0, 67) + '…' : proof;
+      $('#detail-proof-url').textContent = proof.charAt(0) === '/' ? 'Archivo adjuntado por el médico (PDF o imagen)'
+        : proof.length > 70 ? proof.slice(0, 67) + '…' : proof;
       link.title = proof;
       card.classList.remove('proof-missing');
     } else {
@@ -517,7 +520,9 @@ document.addEventListener('DOMContentLoaded', function () {
       link.setAttribute('aria-disabled', 'true');
       link.classList.add('is-disabled');
       link.removeAttribute('title');
-      $('#detail-proof-url').textContent = 'El médico no registró un enlace válido.';
+      // La constancia es opcional: sin ella, el CMP se verifica en el buscador del Colegio Médico.
+      $('#detail-proof-url').textContent = app.sustento ? 'El médico no registró un enlace válido.'
+        : 'No adjuntó constancia. Verifica el CMP en el portal del Colegio Médico del Perú.';
       card.classList.add('proof-missing');
     }
 
@@ -541,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
   $('#detail-proof').addEventListener('click', function (e) {
     if (this.getAttribute('aria-disabled') === 'true' || !this.getAttribute('href')) {
       e.preventDefault();
-      toast('Esta solicitud no tiene un enlace de sustento válido.');
+      toast('Esta solicitud no tiene una constancia adjunta.');
     }
   });
 

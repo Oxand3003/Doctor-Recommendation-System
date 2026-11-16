@@ -96,6 +96,37 @@ document.addEventListener('DOMContentLoaded', function () {
     showRecoverStep(reabrir === 'recuperar-codigo' ? 'confirm' : 'request');
   }
 
+  // Registro de médico: avisa antes de enviar lo que el HTML no puede comprobar solo (el servidor valida igual).
+  var doctorStatus = document.querySelector('#doctor-status');
+  var MAX_SUSTENTO = 5 * 1024 * 1024;
+  var TIPOS_SUSTENTO = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+  function doctorProblem() {
+    var pass = doctorForm.querySelector('#doctor-password').value;
+    if (pass !== doctorForm.querySelector('#doctor-password-confirm').value) return 'Las contraseñas no coinciden.';
+    var egreso = parseInt(doctorForm.querySelector('#doctor-graduation-year').value, 10);
+    var experiencia = parseInt(doctorForm.querySelector('#doctor-experience').value, 10);
+    var maximo = new Date().getFullYear() - egreso;
+    if (!isNaN(egreso) && !isNaN(experiencia) && experiencia > maximo) {
+      return 'Los años de experiencia no pueden ser más que los años desde tu egreso (' + maximo + ').';
+    }
+    var archivo = doctorForm.querySelector('#doctor-proof').files[0];
+    if (archivo) {
+      var extension = /\.(pdf|jpe?g|png|webp)$/i.test(archivo.name);
+      if (TIPOS_SUSTENTO.indexOf(archivo.type) === -1 && !extension) return 'Adjunta un PDF o una imagen JPG, PNG o WEBP.';
+      if (archivo.size > MAX_SUSTENTO) return 'El archivo pesa ' + (archivo.size / 1048576).toFixed(1) + ' MB: el máximo es 5 MB.';
+    }
+    return '';
+  }
+  doctorForm.addEventListener('submit', function (event) {
+    var problema = doctorProblem();
+    if (doctorStatus) doctorStatus.textContent = problema;
+    if (problema) event.preventDefault();
+  });
+  // Al volver con un error del servidor, el archivo no se conserva (el navegador no lo permite): se avisa.
+  if (window.location.hash === '#register-doctor' && document.querySelector('#flash-error') && doctorStatus) {
+    doctorStatus.textContent = 'Si habías adjuntado tu constancia, vuelve a adjuntarla antes de enviar.';
+  }
+
   // Open the register tab directly with /login#register
   var hash = window.location.hash;
   if (hash === '#register' || hash === '#register-patient') tabRegister.click();

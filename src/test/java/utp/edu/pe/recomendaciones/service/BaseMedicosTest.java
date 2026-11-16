@@ -49,13 +49,19 @@ abstract class BaseMedicosTest {
     protected String registrarPendiente() {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         String email = "medico" + r.nextInt(1_000_000_000) + "@prueba.local";
-        Long especialidad = registro.especialidades().get(0).id();
+        String especialidad = registro.especialidades().get(0).label();
         registro.registrarMedico(new RegistroMedicoForm(
                 "Prueba", "Medico", String.valueOf(r.nextInt(10_000_000, 100_000_000)), "999111222",
-                email, PASSWORD_INICIAL,
-                "T" + r.nextInt(100_000, 1_000_000), null, "Médico cirujano", "UNMSM", 2010, 5,
-                especialidad, null, "https://ejemplo.com/sustento"));
+                email, PASSWORD_INICIAL, PASSWORD_INICIAL,
+                String.valueOf(r.nextInt(100_000, 1_000_000)), null, "Médico cirujano", "UNMSM", 2010, 5,
+                especialidad, null, constanciaPdf()));
         return email;
+    }
+
+    /** Un PDF mínimo como constancia de sustento. */
+    protected static RegistroMedicoForm.ArchivoSustento constanciaPdf() {
+        return new RegistroMedicoForm.ArchivoSustento("constancia.pdf", "application/pdf",
+                "%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
     }
 
     /** Registra un médico y lo aprueba: cuenta ACTIVA lista para usar. */

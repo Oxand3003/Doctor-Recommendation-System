@@ -1,9 +1,13 @@
 package utp.edu.pe.recomendaciones.Controller;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import utp.edu.pe.recomendaciones.dto.AdminDataView;
 import utp.edu.pe.recomendaciones.dto.DecisionMedico;
 import utp.edu.pe.recomendaciones.exception.NegocioException;
+import utp.edu.pe.recomendaciones.repository.SustentoSolicitudRepository;
 import utp.edu.pe.recomendaciones.service.AdminService;
 import utp.edu.pe.recomendaciones.service.NotificacionMedicoService;
 
@@ -29,15 +34,31 @@ public class AdminApiController {
 
     private final AdminService admin;
     private final NotificacionMedicoService notificaciones;
+    private final SustentoSolicitudRepository sustentos;
 
-    public AdminApiController(AdminService admin, NotificacionMedicoService notificaciones) {
+    public AdminApiController(AdminService admin, NotificacionMedicoService notificaciones,
+                              SustentoSolicitudRepository sustentos) {
         this.admin = admin;
         this.notificaciones = notificaciones;
+        this.sustentos = sustentos;
     }
 
     @GetMapping("/data")
     public AdminDataView data() {
         return admin.datos();
+    }
+
+    /** Archivo de sustento que adjuntó el médico (PDF o imagen), para verlo en el navegador. */
+    @GetMapping("/applications/{id}/sustento")
+    public ResponseEntity<byte[]> sustento(@PathVariable Long id) {
+        return sustentos.findBySolicitudId(id)
+                .map(s -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(s.getTipo()))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.inline()
+                                .filename(s.getNombre(), StandardCharsets.UTF_8).build().toString())
+                        .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
+                        .body(s.getDatos()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/applications/{id}/approve")

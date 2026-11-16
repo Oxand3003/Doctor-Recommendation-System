@@ -94,42 +94,49 @@
       </form>
 
       <!-- Doctor -->
-      <form id="doctor-form" class="auth-form" th:action="@{/register/doctor}" method="post" hidden>
+      <form id="doctor-form" class="auth-form" th:action="@{/register/doctor}" method="post" enctype="multipart/form-data" hidden
+            th:with="anioActual=${#temporals.year(#temporals.createNow())}">
         <h2>Datos de identificación</h2>
         <div class="auth-grid">
-          <div class="form-group"><label for="doctor-first-name">Nombres *</label><input id="doctor-first-name" name="nombres" th:value="${f?.get('nombres')}" maxlength="100" required></div>
-          <div class="form-group"><label for="doctor-last-name">Apellidos *</label><input id="doctor-last-name" name="apellidos" th:value="${f?.get('apellidos')}" maxlength="100" required></div>
-          <div class="form-group"><label for="doctor-dni">DNI *</label><input id="doctor-dni" name="dni" th:value="${f?.get('dni')}" data-solo-digitos inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required></div>
-          <div class="form-group"><label for="doctor-phone">Teléfono *</label><input id="doctor-phone" name="telefono" th:value="${f?.get('telefono')}" data-solo-digitos type="tel" inputmode="numeric" pattern="[0-9]{9}" maxlength="9" required></div>
-          <div class="form-group"><label for="doctor-email">Correo electrónico *</label><input id="doctor-email" name="email" th:value="${f?.get('email')}" type="email" maxlength="190" required></div>
-          <div class="form-group"><label for="doctor-password">Contraseña (mínimo 8 caracteres) *</label><input id="doctor-password" name="password" type="password" minlength="8" maxlength="72" required></div>
+          <div class="form-group"><label for="doctor-first-name">Nombres *</label><input id="doctor-first-name" name="nombres" th:value="${f?.get('nombres')}" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ '.\-]{1,99}" title="Solo letras y espacios (mínimo 2 letras)" autocomplete="given-name" required></div>
+          <div class="form-group"><label for="doctor-last-name">Apellidos *</label><input id="doctor-last-name" name="apellidos" th:value="${f?.get('apellidos')}" maxlength="100" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ '.\-]{1,99}" title="Solo letras y espacios (mínimo 2 letras)" autocomplete="family-name" required></div>
+          <div class="form-group"><label for="doctor-dni">DNI *</label><input id="doctor-dni" name="dni" th:value="${f?.get('dni')}" data-solo-digitos inputmode="numeric" pattern="[0-9]{8}" maxlength="8" title="8 dígitos" required></div>
+          <div class="form-group"><label for="doctor-phone">Celular *</label><input id="doctor-phone" name="telefono" th:value="${f?.get('telefono')}" data-solo-digitos type="tel" inputmode="numeric" pattern="9[0-9]{8}" maxlength="9" title="9 dígitos, empieza con 9" autocomplete="tel" required></div>
+          <div class="form-group auth-span"><label for="doctor-email">Correo electrónico *</label><input id="doctor-email" name="email" th:value="${f?.get('email')}" type="email" maxlength="190" autocomplete="email" required></div>
+          <div class="form-group"><label for="doctor-password">Contraseña *</label><input id="doctor-password" name="password" type="password" minlength="8" maxlength="72" pattern="(?=.*[A-Za-zÁÉÍÓÚÑáéíóúñ])(?=.*\d).{8,72}" title="Mínimo 8 caracteres, con letras y números" placeholder="Mínimo 8, con letras y números" autocomplete="new-password" required></div>
+          <div class="form-group"><label for="doctor-password-confirm">Confirmar contraseña *</label><input id="doctor-password-confirm" name="passwordConfirmacion" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></div>
         </div>
 
         <h2>Datos profesionales para verificación</h2>
         <div class="auth-grid">
-          <div class="form-group"><label for="doctor-cmp">Número CMP *</label><input id="doctor-cmp" name="cmp" th:value="${f?.get('cmp')}" pattern="[A-Za-z0-9-]{4,20}" maxlength="20" required></div>
-          <div class="form-group"><label for="doctor-rne">Número RNE (si corresponde)</label><input id="doctor-rne" name="rne" th:value="${f?.get('rne')}" maxlength="20"></div>
-          <div class="form-group"><label for="doctor-title">Título profesional *</label><input id="doctor-title" name="tituloProfesional" th:value="${f?.get('tituloProfesional')}" maxlength="150" placeholder="Médico cirujano" required></div>
-          <div class="form-group"><label for="doctor-university">Universidad *</label><input id="doctor-university" name="universidad" th:value="${f?.get('universidad')}" maxlength="180" required></div>
-          <div class="form-group"><label for="doctor-graduation-year">Año de egreso *</label><input id="doctor-graduation-year" name="anioEgreso" th:value="${f?.get('anioEgreso')}" type="number" min="1950" max="2100" required></div>
+          <div class="form-group"><label for="doctor-cmp">Número CMP *</label><input id="doctor-cmp" name="cmp" th:value="${f?.get('cmp')}" data-solo-digitos inputmode="numeric" pattern="[0-9]{4,6}" maxlength="6" title="Entre 4 y 6 dígitos" placeholder="012345" required></div>
+          <div class="form-group"><label for="doctor-rne">Número RNE (si corresponde)</label><input id="doctor-rne" name="rne" th:value="${f?.get('rne')}" data-solo-digitos inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" title="Solo números, hasta 6 dígitos"></div>
+          <div class="form-group"><label for="doctor-title">Título profesional *</label><input id="doctor-title" name="tituloProfesional" th:value="${f?.get('tituloProfesional')}" minlength="3" maxlength="150" placeholder="Médico cirujano" required></div>
+          <div class="form-group"><label for="doctor-university">Universidad *</label><input id="doctor-university" name="universidad" th:value="${f?.get('universidad')}" minlength="3" maxlength="180" required></div>
+          <div class="form-group"><label for="doctor-graduation-year">Año de egreso *</label><input id="doctor-graduation-year" name="anioEgreso" th:value="${f?.get('anioEgreso')}" type="number" min="1950" th:max="${anioActual}" max="2026" required></div>
           <div class="form-group"><label for="doctor-experience">Años de experiencia *</label><input id="doctor-experience" name="aniosExperiencia" th:value="${f?.get('aniosExperiencia')}" type="number" min="0" max="80" required></div>
+          <!-- Especialidad y establecimiento: se escriben o se eligen de la lista de sugerencias. Una especialidad
+               que aún no existe se crea al aprobar la solicitud; el establecimiento debe ser uno de la lista. -->
           <div class="form-group">
             <label for="doctor-specialty">Especialidad *</label>
-            <select id="doctor-specialty" name="especialidadId" required>
-              <option value="">Selecciona una especialidad</option>
-              <option th:each="item : ${specialties}" th:value="${item.id()}" th:text="${item.label()}"
-                      th:selected="${f?.get('especialidadId') == item.id().toString()}">Especialidad</option>
-            </select>
+            <input id="doctor-specialty" name="especialidad" list="doctor-specialty-list" th:value="${f?.get('especialidad')}"
+                   minlength="4" maxlength="60" pattern="[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ ]{3,59}" title="Solo letras y espacios"
+                   placeholder="Escribe o elige, p. ej. Cardiología" autocomplete="off" required>
+            <datalist id="doctor-specialty-list"><option th:each="item : ${specialties}" th:value="${item.label()}"></option></datalist>
+            <small>Si tu especialidad no aparece, escríbela: se agregará al aprobar tu cuenta.</small>
           </div>
           <div class="form-group">
             <label for="doctor-establishment">Establecimiento (opcional)</label>
-            <select id="doctor-establishment" name="establecimientoId">
-              <option value="">Aún no tengo uno</option>
-              <option th:each="item : ${establishments}" th:value="${item.id()}" th:text="${item.label()}"
-                      th:selected="${f?.get('establecimientoId') == item.id().toString()}">Establecimiento</option>
-            </select>
+            <input id="doctor-establishment" name="establecimiento" list="doctor-establishment-list" th:value="${f?.get('establecimiento')}"
+                   maxlength="200" placeholder="Escribe para buscar o déjalo vacío" autocomplete="off">
+            <datalist id="doctor-establishment-list"><option th:each="item : ${establishments}" th:value="${item.label()}"></option></datalist>
+            <small>Elige uno de la lista. Si aún no tienes, déjalo vacío: podrás registrar tus sedes después.</small>
           </div>
-          <div class="form-group auth-span"><label for="doctor-proof">Enlace a constancia CMP, RNE o título *</label><input id="doctor-proof" name="sustentoUrl" th:value="${f?.get('sustentoUrl')}" type="url" maxlength="500" placeholder="https://..." required><small>Comparte un enlace que el administrador pueda abrir y corroborar.</small></div>
+          <div class="form-group auth-span">
+            <label for="doctor-proof">Constancia CMP, RNE o título (opcional)</label>
+            <input id="doctor-proof" name="sustento" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,.pdf,.jpg,.jpeg,.png,.webp">
+            <small>PDF o imagen (JPG, PNG o WEBP) de hasta 5 MB. Ayuda a aprobar tu cuenta más rápido; solo la verá el administrador.</small>
+          </div>
         </div>
         <p class="auth-note">Tu cuenta permanecerá pendiente. No podrás iniciar sesión ni aparecer en las recomendaciones hasta su aprobación.</p>
         <p class="search-status" id="doctor-status" role="status" aria-live="polite"></p>
