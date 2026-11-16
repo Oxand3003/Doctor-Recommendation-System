@@ -268,6 +268,23 @@ document.addEventListener('DOMContentLoaded', function () {
       return item;
     }
 
+    /* Tarjeta de emergencia: cuando el asistente detecta una posible urgencia (data.urgent) se muestra destacada,
+       con un botón para llamar al SAMU, en vez de quedar como una frase más dentro de la respuesta. */
+    var AVISO_URGENCIA = /^⚠️[\s\S]*?sin esperar una cita\.\s*/;
+    function addEmergencyCard() {
+      if (!chatMessages) return;
+      var card = document.createElement('div');
+      card.className = 'chat-emergency';
+      card.setAttribute('role', 'alert');
+      card.innerHTML = '<span class="chat-emergency-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/>' +
+        '<path d="M12 10v4M12 17.5v.01"/></svg></span><div class="chat-emergency-text"><strong>Esto podría ser una urgencia</strong>' +
+        '<p>Si es intenso, te falta el aire o va empeorando, no esperes una cita: acude a la emergencia más cercana.</p></div>' +
+        '<a class="emergency-call" href="tel:106">Llamar al 106 (SAMU)</a>';
+      chatMessages.appendChild(card);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
     function showTyping() {
       var item = addMessage('Escribiendo…', 'assistant');
       if (item) item.classList.add('is-typing');
@@ -453,6 +470,11 @@ document.addEventListener('DOMContentLoaded', function () {
       lastDoctors = data.doctors || [];
       if (talk) {
         var reply = data.reply || 'Actualicé los médicos recomendados según los datos disponibles.';
+        if (data.urgent) {
+          // La tarjeta reemplaza a la frase de aviso que el servidor antepone a la respuesta.
+          addEmergencyCard();
+          reply = reply.replace(AVISO_URGENCIA, '') || reply;
+        }
         addMessage(reply, 'assistant');
         chatHistory.push({ role: 'assistant', content: reply.slice(0, 500) });
         chatHistory = chatHistory.slice(-10);
