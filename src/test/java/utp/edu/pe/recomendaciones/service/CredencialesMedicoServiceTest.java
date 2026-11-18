@@ -155,7 +155,13 @@ class CredencialesMedicoServiceTest extends BaseMedicosTest {
                 .isInstanceOf(NegocioException.class).hasMessageContaining("igual");
         assertThatThrownBy(() -> credenciales.solicitarCodigoEmail(actual, otroMedico, otroMedico))
                 .isInstanceOf(NegocioException.class).hasMessageContaining("ya está registrado");
-        assertThatThrownBy(() -> credenciales.solicitarCodigoEmail(actual, "carlos.mendoza@correo.com", "carlos.mendoza@correo.com"))
+        // Un correo de paciente también cuenta como registrado. Se crea aquí y no se usa uno de la demo: según el
+        // orden de las pruebas, la base compartida puede no tener los datos de demostración.
+        String paciente = "paciente" + java.util.concurrent.ThreadLocalRandom.current().nextInt(1_000_000_000) + "@prueba.local";
+        registro.registrarPaciente(new utp.edu.pe.recomendaciones.dto.RegistroPacienteForm("Ana", "Paciente",
+                String.valueOf(java.util.concurrent.ThreadLocalRandom.current().nextInt(10_000_000, 100_000_000)),
+                "999111222", paciente, PASSWORD_INICIAL));
+        assertThatThrownBy(() -> credenciales.solicitarCodigoEmail(actual, paciente, paciente))
                 .isInstanceOf(NegocioException.class).hasMessageContaining("ya está registrado");
         verify(correo, never()).enviarHtml(eq(actual), anyString(), anyString());
     }
