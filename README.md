@@ -224,6 +224,32 @@ Para ver los tests automatizados: `./mvnw test`.
 
 ---
 
+## CI/CD (GitHub Actions + Docker)
+
+El flujo `.github/workflows/ci.yml` corre en cada pull request y en cada push a `main` o `develop`:
+
+| Etapa | Qué hace | Cuándo |
+|---|---|---|
+| **Compilar, probar y empaquetar** | `./mvnw clean verify`: compila y ejecuta todas las pruebas. Publica un resumen y guarda los reportes y el `.jar` como evidencias. | Siempre |
+| **Imagen Docker** | Construye la imagen con el `Dockerfile` (la misma que usa Render), la arranca con una base H2 en memoria y comprueba que responde y que no corre como root. | Siempre, si las pruebas pasaron |
+| | Publica la imagen en `ghcr.io/oxand3003/doctor-recommendation-system` (etiquetas `latest` y el commit). | Solo en `main` |
+| **Desplegar en Render** | Llama al *Deploy Hook* de Render. | Solo en `main` y solo si todo lo anterior pasó |
+
+Si un PR rompe una prueba o la app no arranca, el PR queda en rojo y ese commit nunca se despliega.
+
+**Configuración en Render (una sola vez):**
+
+1. En Render, abrir el servicio > *Settings* > *Deploy Hook* y copiar la URL.
+2. En GitHub: *Settings* > *Secrets and variables* > *Actions* > *New repository secret*, con nombre
+   `RENDER_DEPLOY_HOOK_URL` y la URL copiada como valor.
+3. En Render, *Settings* > *Auto-Deploy*: cambiarlo a **Off** (si no, Render despliega cada push sin esperar
+   a las pruebas y además habría despliegues dobles).
+
+Para construir y probar la imagen en local: `docker build -t medicerca .` y luego
+`docker run -p 8080:8080 --env-file .env medicerca`.
+
+---
+
 ## Estructura del proyecto
 
 ```
