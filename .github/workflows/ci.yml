@@ -1,1 +1,77 @@
+name: CI MediCerca
 
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Compilar, probar y empaquetar
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v7
+
+      - name: Preparar Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilar y ejecutar todas las pruebas
+        run: mvn --batch-mode --no-transfer-progress clean verify
+
+      - name: Publicar resumen de pruebas
+        if: always()
+        env:
+          BUILD_RESULT: ${{ job.status }}
+        run: |
+          python3 - <<'PY'
+          import glob, os, xml.etree.ElementTree as ET
+          reports = glob.glob("target/surefire-reports/TEST-*.xml")
+          counts = dict.fromkeys(("tests", "failures", "errors", "skipped"), 0)
+          rows = []
+          for report in sorted(reports):
+              suite = ET.parse(report).getroot()
+              for key in counts:
+                  counts[key] += int(suite.get(key, 0))
+              rows.append("| " + suite.get("name", "").split(".")[-1] + " | " +
+                          " | ".join(suite.get(k, "0") for k in counts) + " |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as out:
+              out.write("# MediCerca: resultados de CI\n\n")
+              out.write("Estado previo al resumen: **" + os.environ["BUILD_RESULT"] + "**\n\n")
+              out.write("Commit del evento: `" + os.environ["GITHUB_SHA"] + "`\n\n")
+              if not reports:
+                  out.write("No se generaron reportes de pruebas. Revisar los logs de compilacion.\n")
+              else:
+                  out.write("| Suite | Pruebas | Fallos | Errores | Omitidas |\n")
+                  out.write("|---|---:|---:|---:|---:|\n")
+                  out.write("\n".join(rows) + "\n")
+                  out.write("| **TOTAL** | " + " | ".join(str(v) for v in counts.values()) + " |\n")
+          PY
+
+      - name: Guardar reportes de pruebas
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: medicerca-reportes-pruebas
+          path: target/surefire-reports/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Guardar aplicacion compilada
+        uses: actions/upload-artifact@v7
+        with:
+          name: medicerca-aplicacion
+          path: target/*.jar
+          retention-days: 7
+          if-no-files-found: error
