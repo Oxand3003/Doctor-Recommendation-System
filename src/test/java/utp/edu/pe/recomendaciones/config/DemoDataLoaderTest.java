@@ -15,8 +15,16 @@ import utp.edu.pe.recomendaciones.repository.EstablecimientoRepository;
 import utp.edu.pe.recomendaciones.repository.MedicoRepository;
 import utp.edu.pe.recomendaciones.service.DoctorSearchService;
 
-/** La demo usa sedes de Trujillo, y una base cargada con la demo antigua (sedes de Lima) se corrige al arrancar. */
-@SpringBootTest
+/**
+ * La demo usa sedes de Trujillo, y una base cargada con la demo antigua (sedes de Lima) se corrige al arrancar.
+ * <p>
+ * Usa su propia base en memoria: las demás pruebas comparten "medicerca-tests" y, según el orden en que corran
+ * (en GitHub Actions no es el mismo que en Windows), la recrean o le agregan médicos, y entonces la demo no
+ * se carga (solo corre con la base vacía). Con una base propia esta prueba no depende del orden.
+ */
+@SpringBootTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:demo-data-loader;DB_CLOSE_DELAY=-1",
+        "medicerca.demo-data=true"})
 @Transactional
 class DemoDataLoaderTest {
 
