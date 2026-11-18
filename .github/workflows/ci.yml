@@ -1,4 +1,11 @@
-name: CI MediCerca
+name: CI/CD MediCerca
+
+# Flujo:
+#   1. verificar  -> compila y corre todas las pruebas (en cada PR y en cada push).
+#   2. imagen     -> construye la imagen Docker (la misma que usa Render) y comprueba que la app arranca.
+#                    En main además la publica en GitHub Container Registry (ghcr.io).
+#   3. desplegar  -> solo en main y solo si 1 y 2 pasaron: pide a Render que despliegue.
+# Así un commit con pruebas fallidas o que no arranca nunca llega a producción.
 
 on:
   pull_request:
@@ -9,6 +16,11 @@ on:
 
 permissions:
   contents: read
+
+# En un PR, un push nuevo cancela la ejecución anterior (ya no sirve). En main no se cancela nada.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verificar:
@@ -27,8 +39,9 @@ jobs:
           java-version: '17'
           cache: maven
 
+      # Con el wrapper (./mvnw) se usa la misma versión de Maven que en el Dockerfile y en Render.
       - name: Compilar y ejecutar todas las pruebas
-        run: mvn --batch-mode --no-transfer-progress clean verify
+        run: chmod +x mvnw && ./mvnw --batch-mode --no-transfer-progress clean verify
 
       - name: Publicar resumen de pruebas
         if: always()
@@ -75,3 +88,110 @@ jobs:
           path: target/*.jar
           retention-days: 7
           if-no-files-found: error
+
+  imagen:
+    name: Imagen Docker (construir y probar arranque)
+    needs: verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write          # para publicar en ghcr.io (solo se usa en main)
+
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v7
+
+      - name: Preparar Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Construir la imagen
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: medicerca:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # La app arranca con una base H2 en memoria (no necesita MySQL) y debe responder la página de inicio.
+      - name: Probar que la app arranca dentro del contenedor
+        run: |
+          docker run -d --name medicerca -p 8080:8080 \
+            -e SPRING_DATASOURCE_URL='jdbc:h2:mem:smoke;DB_CLOSE_DELAY=-1' \
+            -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver \
+            -e SPRING_DATASOURCE_USERNAME=sa \
+            -e SPRING_DATASOURCE_PASSWORD= \
+            -e SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop \
+            -e SPRING_JPA_SHOW_SQL=false \
+            medicerca:ci
+          for i in $(seq 1 60); do
+            if curl -fs -o /dev/null http://localhost:8080/; then
+              echo "La app respondió en el intento $i"; ok=1; break
+            fi
+            sleep 3
+          done
+          docker logs medicerca 2>&1 | tail -40
+          if [ -z "$ok" ]; then echo "::error::La app no respondió en 3 minutos"; exit 1; fi
+          curl -fsS -o /dev/null -w "Inicio: HTTP %{http_code}\n" http://localhost:8080/
+          curl -fsS -o /dev/null -w "Login: HTTP %{http_code}\n" http://localhost:8080/login
+          # La app no debe correr como root dentro del contenedor.
+          test "$(docker exec medicerca id -u)" != "0"
+
+      - name: Datos de la imagen publicada
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Iniciar sesion en GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Reutiliza la caché del paso anterior: no vuelve a compilar, solo sube las capas.
+      - name: Publicar la imagen
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+
+  desplegar:
+    name: Desplegar en Render
+    needs: [verificar, imagen]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Dos despliegues nunca corren a la vez; el siguiente espera a que termine el anterior.
+    concurrency:
+      group: despliegue-produccion
+      cancel-in-progress: false
+    environment:
+      name: produccion
+      url: https://www.medicerca.cloud
+
+    steps:
+      # El Deploy Hook de Render es una URL secreta: se guarda en Settings > Secrets > RENDER_DEPLOY_HOOK_URL.
+      # Si no está configurado, el paso no falla: avisa en el resumen (Render puede seguir con su auto-deploy).
+      - name: Pedir el despliegue a Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "::warning::Falta el secreto RENDER_DEPLOY_HOOK_URL: no se pidió el despliegue."
+            echo "Despliegue omitido: falta el secreto \`RENDER_DEPLOY_HOOK_URL\`." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" -o /dev/null
+          echo "Despliegue de \`${GITHUB_SHA::7}\` solicitado a Render." >> "$GITHUB_STEP_SUMMARY"
